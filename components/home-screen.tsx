@@ -140,16 +140,14 @@ export function HomeScreen({
               >
                 Connect Wallet
               </button>
-              {cfg?.chainId === 8453 && (
-                <div className="flex flex-col items-center gap-2 w-full">
-                  <span className={cn('text-xs', ui.bodyMuted)}>or</span>
-                  <SignInWithBase />
-                </div>
-              )}
+              <div className="flex flex-col items-center gap-2 w-full relative z-10">
+                <span className={cn('text-xs', ui.bodyMuted)}>or</span>
+                <SignInWithBase />
+              </div>
               <button
                 onClick={handleStartaleConnect}
                 disabled={startaleConnecting}
-                className={cn('w-full flex items-center justify-center gap-2', ui.btnSecondary, 'h-12 px-6 disabled:opacity-50')}
+                className={cn('w-full flex items-center justify-center gap-2 relative z-10', ui.btnSecondary, 'h-12 px-6 disabled:opacity-50')}
               >
                 <svg width="18" height="18" viewBox="0 0 181 180" fill="none" aria-hidden="true">
                   <g clipPath="url(#startale-clip)">

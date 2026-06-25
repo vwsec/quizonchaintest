@@ -1,7 +1,7 @@
 'use client';
 
 import { useState } from 'react';
-import { useConnect, useAccount } from 'wagmi';
+import { useConnect, useAccount, useSwitchChain } from 'wagmi';
 import { SignInWithBaseButton } from '@base-org/account-ui/react';
 
 export function SignInWithBase() {
@@ -9,6 +9,7 @@ export function SignInWithBase() {
   const [error, setError] = useState<string | null>(null);
   const { isConnected } = useAccount();
   const { connectAsync, connectors } = useConnect();
+  const { switchChainAsync } = useSwitchChain();
 
   const baseAccountConnector = connectors.find(
     (connector) => connector.id === 'baseAccount'
@@ -21,24 +22,15 @@ export function SignInWithBase() {
     setError(null);
 
     try {
-      await connectAsync({ connector: baseAccountConnector });
+      await connectAsync({ connector: baseAccountConnector, chainId: 8453 });
 
-      const provider = baseAccountConnector.provider;
-
-      await (provider as any).request({
-        method: 'wallet_connect',
-        params: [
-          {
-            version: '1',
-            capabilities: {
-              signInWithEthereum: {
-                nonce: window.crypto.randomUUID().replace(/-/g, ''),
-                chainId: '0x2105',
-              },
-            },
-          },
-        ],
-      });
+      if (switchChainAsync) {
+        try {
+          await switchChainAsync({ chainId: 8453 });
+        } catch (switchError) {
+          console.warn('Failed to switch chain to Base automatically:', switchError);
+        }
+      }
     } catch (err: any) {
       console.error('Base sign-in error:', err);
       setError(err.message || 'Sign in failed');
