@@ -385,14 +385,20 @@ export function NftMintModal({ defaultOpen = false, showTrigger = true, onClose 
 
       <Dialog open={open} onOpenChange={(v) => { if (!v) handleClose() }}>
         <DialogContent
-          className={`w-full max-w-md border-0 p-0 text-white bg-transparent ${getContainerBorderRadius(cfg?.name)}`}
+          className={`w-full max-w-md border-0 p-0 text-white bg-transparent ${getContainerBorderRadius(cfg?.name)} overflow-hidden`}
           style={{
-            background: "#0F0F23",
-            backgroundImage: "linear-gradient(160deg, #0F0F23, #0F0F2B)",
-            boxShadow: `0 0 0 1px ${accent}22, 0 24px 80px rgba(0,0,0,0.6)`,
-            animation: "slideUp 0.3s cubic-bezier(0.34,1.56,0.64,1) forwards",
+            background: `radial-gradient(120% 100% at 50% 0%, #171738 0%, #090914 100%)`,
+            boxShadow: `0 0 0 1px ${accent}33, 0 32px 100px rgba(0,0,0,0.8), inset 0 1px 0 rgba(255,255,255,0.1)`,
+            animation: "slideUp 0.4s cubic-bezier(0.16, 1, 0.3, 1) forwards",
           }}
         >
+          {/* Ambient center glow */}
+          <div 
+            className="absolute inset-0 pointer-events-none"
+            style={{
+              background: `radial-gradient(circle at 50% 20%, ${accent}15 0%, transparent 60%)`
+            }}
+          />
           {/* Confetti layer */}
           {mintState === "confirmed" && <ConfettiCanvas />}
 
@@ -408,14 +414,17 @@ export function NftMintModal({ defaultOpen = false, showTrigger = true, onClose 
 
           <div className="px-6 pb-8 pt-6">
             {/* NFT Image */}
-            <div className="mb-5 flex justify-center">
+            <div className="mb-6 flex justify-center relative z-10">
               <div
-                className={`relative h-44 w-44 overflow-hidden ${getContainerBorderRadius(cfg?.name)}`}
+                className={`relative h-48 w-48 overflow-hidden ${getContainerBorderRadius(cfg?.name)} group`}
                 style={{
-                  border: `1px solid ${accent}44`,
-                  boxShadow: `0 0 32px ${accent}22, 0 0 60px rgba(139,92,246,0.08)`,
+                  border: `1px solid ${accent}66`,
+                  boxShadow: `0 0 40px ${accent}33, 0 0 80px rgba(139,92,246,0.15), inset 0 0 20px ${accent}22`,
                 }}
               >
+                {/* Glass shimmer overlay */}
+                <div className="absolute inset-0 z-10 bg-gradient-to-tr from-white/0 via-white/20 to-white/0 opacity-0 group-hover:opacity-100 transition-opacity duration-700 pointer-events-none transform -translate-x-full group-hover:translate-x-full" style={{ transitionProperty: 'opacity, transform' }} />
+                
                 <Image
                   src={`/nft/${chainName.toLowerCase()}.png`}
                   alt="Quiz On Chain NFT"
@@ -574,14 +583,15 @@ export function NftMintModal({ defaultOpen = false, showTrigger = true, onClose 
                   <button
                     onClick={handleMint}
                     disabled={mintState === "pending" || !walletClient || !nftContract}
-                    className={`relative mt-4 w-full cursor-pointer py-3 text-sm font-bold transition-all duration-200 hover:scale-[1.02] active:scale-[0.98] disabled:cursor-not-allowed disabled:opacity-50 focus-visible:ring-2 focus-visible:ring-[#FBBF24] focus-visible:outline-none ${getButtonBorderRadius(cfg?.name)} ${getChainFontClass(cfg?.name)}`}
+                    className={`relative mt-6 w-full cursor-pointer py-3.5 text-[15px] font-bold tracking-wide transition-all duration-300 hover:scale-[1.02] active:scale-[0.98] disabled:cursor-not-allowed disabled:opacity-50 focus-visible:ring-2 focus-visible:ring-[#FBBF24] focus-visible:outline-none overflow-hidden group ${getButtonBorderRadius(cfg?.name)} ${getChainFontClass(cfg?.name)}`}
                     style={{
                       background: mintState === "pending" ? `${accent}88` : getButtonGradient(),
-                      boxShadow: mintState !== "pending" ? getChainGlow() : "none",
+                      boxShadow: mintState !== "pending" ? `${getChainGlow()}, inset 0 1px 0 rgba(255,255,255,0.2)` : "none",
                       color: "#fff",
                       textShadow: "0 1px 2px rgba(0,0,0,0.3)",
                     }}
                   >
+                    <div className="absolute inset-0 bg-white/20 opacity-0 group-hover:opacity-100 transition-opacity duration-300 pointer-events-none" />
                     {mintState === "pending" ? (
                       <span className="flex items-center justify-center gap-2">
                         <Loader2 className="size-4 animate-spin" />
@@ -627,7 +637,8 @@ function StatBox({
   loading?: boolean
 }) {
   return (
-    <div className="flex flex-1 flex-col items-center rounded-xl border border-white/[0.07] bg-white/[0.04] py-3 px-1 transition-all">
+    <div className="relative flex flex-1 flex-col items-center rounded-xl border border-white/5 bg-white/[0.02] py-3.5 px-1 transition-all duration-300 hover:bg-white/[0.04] hover:border-white/10 group overflow-hidden shadow-inner">
+      <div className="absolute inset-0 bg-gradient-to-b from-white/[0.08] to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300 pointer-events-none" />
       {loading ? (
         <div className="h-7 w-12 bg-white/10 rounded animate-pulse mb-1" />
       ) : (
