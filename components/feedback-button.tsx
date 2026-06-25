@@ -22,10 +22,8 @@ export function FeedbackButton() {
       <button
         onClick={() => setOpen(true)}
         className={cn(
-          "fixed bottom-6 right-6 z-50 flex items-center gap-2 rounded-full px-4 py-3 text-sm font-medium shadow-lg transition-all active:scale-95 sm:px-5 sm:py-3",
-          themed
-            ? "bg-[var(--primary)] text-[var(--primary-foreground)] hover:bg-[var(--primary)]/90 hover:shadow-[0_0_20px_var(--primary)]"
-            : "bg-white text-black hover:bg-gray-200",
+          "fixed bottom-6 right-6 z-50 flex items-center gap-2 rounded-full px-4 py-3 text-sm font-medium shadow-lg transition-colors duration-200 cursor-pointer sm:px-5",
+          "bg-primary text-primary-foreground hover:bg-primary/90 hover:shadow-[0_0_20px_rgba(124,58,237,0.4)]",
         )}
         aria-label="Give Feedback"
       >

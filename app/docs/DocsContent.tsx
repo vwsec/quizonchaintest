@@ -12,6 +12,7 @@ import {
 } from "@/components/ui/accordion"
 import { useWallet } from "@/components/wallet-provider"
 import { useActiveChain } from "@/hooks/use-active-chain"
+import { useChainUI } from "@/hooks/use-chain-ui"
 import { NFT_CONTRACTS } from "@/lib/nft-contracts"
 import { megaEth, soneiumMainnet, unichain } from "@/lib/chains"
 
@@ -108,13 +109,14 @@ export default function DocsContent() {
   const [activeSection, setActiveSection] = useState("about")
   const { isConnected } = useWallet()
   const { chainConfig: cfg } = useActiveChain()
-  const isMegaEth = isConnected && cfg?.name === 'MegaETH'
-  const isInk = isConnected && cfg?.name === 'Ink'
-  const isUnichain = isConnected && cfg?.name === 'Unichain'
-  const isBase = isConnected && cfg?.name === 'Base'
-  const isSoneium = isConnected && cfg?.name === 'Soneium'
-  const isLitvm = isConnected && cfg?.name === 'LitVM'
-  const isArc = isConnected && cfg?.name === 'Arc Testnet'
+  const ui = useChainUI()
+  const isMegaEth = ui.key === 'megaeth'
+  const isInk = ui.key === 'ink'
+  const isUnichain = ui.key === 'unichain'
+  const isBase = ui.key === 'base'
+  const isSoneium = ui.key === 'soneium'
+  const isLitvm = ui.key === 'litvm'
+  const isArc = ui.key === 'arc'
 
   const displayNetworks = NETWORKS
 
@@ -162,13 +164,13 @@ export default function DocsContent() {
   const step2Text = "Choose from Ink, Soneium, Base, Unichain, MegaETH, LitVM, or Arc"
 
   return (
-    <main className={`relative z-10 min-h-screen pt-24 pb-12 px-4 md:px-8 ${isMegaEth ? 'text-white font-mono' : isBase ? 'text-black' : isLitvm ? 'text-[#E2E8F0] font-mono' : 'text-white'}`}>
+    <main className={cn("relative z-10 min-h-screen pt-28 pb-12 px-4 md:px-8", ui.page)}>
         <div className="max-w-7xl mx-auto flex flex-col md:flex-row md:items-start gap-8 md:gap-12">
           {/* Sticky Sidebar */}
           <aside className="hidden md:block w-[260px] shrink-0 sticky top-[80px] self-start h-fit max-h-[calc(100vh-100px)] overflow-y-auto">
             <nav className="space-y-1 pr-4">
-              <h3 className={`text-xs font-semibold ${isLitvm ? 'lowercase' : 'uppercase'} tracking-wider mb-4 px-3 ${isMegaEth ? 'text-[#00ff88]' : isInk ? 'text-[#7B61FF]' : isUnichain ? 'text-[#FF007A]' : isBase ? 'text-[#0052FF]' : isLitvm ? 'text-[#00F2FE]' : isArc ? 'text-[#4D8EE9]' : !isConnected ? 'text-white' : 'text-[#0047FF]'}`}>
-                {isMegaEth ? '// DOCUMENTATION' : isLitvm ? '>> documentation' : 'Documentation'}
+              <h3 className={cn('text-xs font-semibold tracking-wider mb-4 px-3', ui.label)}>
+                {ui.key === 'megaeth' ? '// DOCUMENTATION' : ui.key === 'litvm' ? '>> documentation' : 'Documentation'}
               </h3>
               {SECTIONS.map((section) => (
                 <button

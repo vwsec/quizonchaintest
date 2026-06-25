@@ -47,3 +47,10 @@ next-env.d.ts
 *.pem
 map.md
 sec_repport.md
+
+# AI and Tool generated directories
+.agents/
+.cursor/
+design-system/
+graphify-out/
+.opencode/

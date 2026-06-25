@@ -6,7 +6,9 @@ import { getThemeClass } from '@/lib/active-chain-config'
 
 export function ThemeUpdater() {
   const { chainConfig, isConnected } = useActiveChain()
-  const themeClass = isConnected ? getThemeClass(chainConfig ?? undefined) : ''
+  const themeClass = isConnected
+    ? getThemeClass(chainConfig ?? undefined)
+    : 'theme-default'
 
   useEffect(() => {
     document.documentElement.className = themeClass

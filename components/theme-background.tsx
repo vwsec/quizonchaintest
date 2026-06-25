@@ -2,39 +2,60 @@
 
 import { useEffect, useState } from 'react';
 import { useActiveChain } from '@/hooks/use-active-chain';
+import { getChainThemeKey } from '@/lib/chain-ui';
+
+const NOISE_STYLE: React.CSSProperties = {
+  position: 'absolute',
+  inset: 0,
+  backgroundImage: `url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)' opacity='0.04'/%3E%3C/svg%3E")`,
+  opacity: 0.4,
+  zIndex: 0,
+  pointerEvents: 'none',
+};
 
 export function ThemeBackground() {
   const [mounted, setMounted] = useState(false);
   useEffect(() => setMounted(true), []);
 
   const { chainConfig: cfg, isConnected } = useActiveChain();
-
-  const isMegaEth = isConnected && cfg?.name === 'MegaETH';
-  const isInk = isConnected && cfg?.name === 'Ink';
-  const isUnichain = isConnected && cfg?.name === 'Unichain';
-  const isBase = isConnected && cfg?.name === 'Base';
-  const isSoneium = isConnected && cfg?.name === 'Soneium';
-  const isLitvm = isConnected && cfg?.name === 'LitVM';
-  const isArc = isConnected && cfg?.name === 'Arc Testnet';
+  const themeKey = getChainThemeKey(cfg?.name, isConnected);
 
   if (!mounted) return null;
 
+  const bgClass: Record<string, string> = {
+    default: 'bg-[#0F0F23]',
+    megaeth: 'bg-black',
+    ink: 'bg-[#0a0a0f]',
+    unichain: 'bg-[#0d0014]',
+    base: 'bg-white',
+    soneium: 'bg-[#00040F]',
+    litvm: 'bg-[#080F1A]',
+    arc: 'bg-[#000B24]',
+  };
+
   return (
-    <div className={`fixed inset-0 z-[-1] pointer-events-none ${!isConnected ? 'bg-[#0a0a0f]' : isMegaEth ? 'bg-black' : isInk ? 'bg-[#0a0a0f]' : isUnichain ? 'bg-[#0d0014]' : isBase ? 'bg-white' : isSoneium ? 'bg-[#00040F]' : isLitvm ? 'bg-[#080F1A]' : isArc ? 'bg-[#000B24]' : 'bg-[#0a0a0f]'}`}>
-      {/* MegaEth / Ink / Base / Soneium Noise Overlay */}
-      {isConnected && (isMegaEth || isInk || isBase || isSoneium) && (
-        <div style={{
-          position: 'absolute',
-          inset: 0,
-          backgroundImage: `url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)' opacity='0.04'/%3E%3C/svg%3E")`,
-          opacity: 0.4,
-          zIndex: 0,
-          pointerEvents: 'none',
-        }} />
+    <div className={`fixed inset-0 z-[-1] pointer-events-none ${bgClass[themeKey] ?? bgClass.default}`}>
+      {themeKey === 'default' && (
+        <>
+          <div
+            className="absolute inset-0"
+            style={{
+              backgroundImage: `
+                radial-gradient(ellipse at 20% 0%, rgba(124, 58, 237, 0.1) 0%, transparent 50%),
+                radial-gradient(ellipse at 80% 100%, rgba(244, 63, 94, 0.06) 0%, transparent 50%),
+                linear-gradient(160deg, #0F0F23 0%, #0a0a18 50%, #0F0F23 100%)
+              `,
+            }}
+          />
+          <div className="absolute left-1/2 top-1/3 h-[28rem] w-[28rem] -translate-x-1/2 -translate-y-1/2 rounded-full bg-[#7C3AED]/10 blur-3xl" />
+        </>
       )}
 
-      {/* Unichain Grid Overlay */}
-      {isUnichain && (
+      {['megaeth', 'ink', 'base', 'soneium'].includes(themeKey) && (
+        <div style={NOISE_STYLE} />
+      )}
+
+      {themeKey === 'unichain' && (
         <div style={{
           position: 'absolute',
           inset: 0,
@@ -43,175 +64,27 @@ export function ThemeBackground() {
         }} />
       )}
 
-      {/* MegaEth Crosses */}
-      {isMegaEth && Array.from({ length: 20 }).map((_, i) => (
-        <span key={`mega-${i}`} style={{
-          position: 'absolute',
-          left: `${(i * 17 + 7) % 100}%`,
-          top: `${(i * 13 + 11) % 100}%`,
-          color: 'rgba(255,255,255,0.15)',
-          fontSize: 12,
-        }}>×</span>
-      ))}
-
-      {/* Ink Drops */}
-      {isInk && Array.from({ length: 20 }).map((_, i) => (
-        <span key={`ink-${i}`} style={{
-          position: 'absolute',
-          left: `${(i * 17 + 7) % 100}%`,
-          top: `${(i * 13 + 11) % 100}%`,
-          color: 'rgba(108,92,231,0.2)',
-          fontSize: 16,
-        }}>•</span>
-      ))}
-
-      {/* Unichain Sparkles */}
-      {isUnichain && Array.from({ length: 20 }).map((_, i) => (
-        <span key={`uni-${i}`} style={{
-          position: 'absolute',
-          left: `${(i * 17 + 7) % 100}%`,
-          top: `${(i * 13 + 11) % 100}%`,
-          color: 'rgba(255,0,122,0.2)',
-          fontSize: 14,
-        }}>✦</span>
-      ))}
-
-      {/* Base Pattern (Vertical Bars) */}
-      {isBase && (
+      {themeKey === 'litvm' && (
         <>
           <div style={{
-            position: 'absolute',
-            inset: 0,
-            backgroundImage: 'linear-gradient(90deg, rgba(0,0,0,0.03) 1px, transparent 1px)',
-            backgroundSize: '10vw 100%',
-          }} />
-          {Array.from({ length: 20 }).map((_, i) => (
-            <span key={`base-${i}`} style={{
-              position: 'absolute',
-              left: `${(i * 17 + 7) % 100}%`,
-              top: `${(i * 13 + 11) % 100}%`,
-              color: 'rgba(0,82,255,0.15)',
-              fontSize: 14,
-            }}>○</span>
-          ))}
-        </>
-      )}
-      
-      {/* LitVM Deep Navy Background + Animated Glow Orbs */}
-      {isLitvm && (
-        <>
-          {/* Base gradient matching litvm.com */}
-          <div style={{
-            position: 'absolute',
-            inset: 0,
+            position: 'absolute', inset: 0,
             background: 'linear-gradient(160deg, #0B192C 0%, #080F1A 40%, #0F1923 70%, #0B192C 100%)',
             pointerEvents: 'none',
-            zIndex: 0,
           }} />
-          {/* Top-left cyan glow orb */}
-          <div style={{
-            position: 'absolute',
-            left: '-5%',
-            top: '-10%',
-            width: '50vw',
-            height: '50vh',
-            background: 'radial-gradient(circle, rgba(0,242,254,0.06) 0%, transparent 70%)',
-            pointerEvents: 'none',
-            zIndex: 0,
-            filter: 'blur(60px)',
-          }} />
-          {/* Bottom-right warm glow orb */}
-          <div style={{
-            position: 'absolute',
-            right: '-10%',
-            bottom: '-5%',
-            width: '40vw',
-            height: '40vh',
-            background: 'radial-gradient(circle, rgba(161,140,209,0.04) 0%, transparent 70%)',
-            pointerEvents: 'none',
-            zIndex: 0,
-            filter: 'blur(80px)',
-          }} />
-          {/* Subtle grid lines */}
-          <div style={{
-            position: 'absolute',
-            inset: 0,
-            backgroundImage: `
-              linear-gradient(rgba(0,242,254,0.02) 1px, transparent 1px),
-              linear-gradient(90deg, rgba(0,242,254,0.02) 1px, transparent 1px)
-            `,
-            backgroundSize: '80px 80px',
-            pointerEvents: 'none',
-            zIndex: 0,
-          }} />
+          <div className="absolute -left-[5%] -top-[10%] w-[50vw] h-[50vh] rounded-full bg-[#00F2FE]/6 blur-[60px] pointer-events-none" />
+          <div className="absolute -right-[10%] -bottom-[5%] w-[40vw] h-[40vh] rounded-full bg-[#A18CD1]/4 blur-[80px] pointer-events-none" />
         </>
       )}
 
-      {/* Arc Deep Navy Background + Blue Glow Orbs */}
-      {isArc && (
+      {themeKey === 'arc' && (
         <>
           <div style={{
-            position: 'absolute',
-            inset: 0,
+            position: 'absolute', inset: 0,
             background: 'linear-gradient(160deg, #000B24 0%, #010D28 40%, #000920 70%, #000B24 100%)',
             pointerEvents: 'none',
-            zIndex: 0,
           }} />
-          <div style={{
-            position: 'absolute',
-            left: '-5%',
-            top: '-10%',
-            width: '50vw',
-            height: '50vh',
-            background: 'radial-gradient(circle, rgba(77,142,233,0.06) 0%, transparent 70%)',
-            pointerEvents: 'none',
-            zIndex: 0,
-            filter: 'blur(60px)',
-          }} />
-          <div style={{
-            position: 'absolute',
-            right: '-10%',
-            bottom: '-5%',
-            width: '40vw',
-            height: '40vh',
-            background: 'radial-gradient(circle, rgba(172,198,233,0.04) 0%, transparent 70%)',
-            pointerEvents: 'none',
-            zIndex: 0,
-            filter: 'blur(80px)',
-          }} />
-          <div style={{
-            position: 'absolute',
-            inset: 0,
-            backgroundImage: `
-              linear-gradient(rgba(77,142,233,0.02) 1px, transparent 1px),
-              linear-gradient(90deg, rgba(77,142,233,0.02) 1px, transparent 1px)
-            `,
-            backgroundSize: '80px 80px',
-            pointerEvents: 'none',
-            zIndex: 0,
-          }} />
+          <div className="absolute -left-[5%] -top-[10%] w-[50vw] h-[50vh] rounded-full bg-[#4D8EE9]/6 blur-[60px] pointer-events-none" />
         </>
-      )}
-
-      {/* Soneium Stars */}
-      {isSoneium && Array.from({ length: 20 }).map((_, i) => (
-        <span key={`soneium-${i}`} style={{
-          position: 'absolute',
-          left: `${(i * 17 + 7) % 100}%`,
-          top: `${(i * 13 + 11) % 100}%`,
-          color: 'rgba(0,71,255,0.2)',
-          fontSize: 18,
-          pointerEvents: 'none',
-          userSelect: 'none',
-          zIndex: 0,
-        }}>·</span>
-      ))}
-
-      {/* Default neutral glow — only when connected to an unrecognized chain */}
-      {isConnected && !isMegaEth && !isInk && !isUnichain && !isBase && !isSoneium && !isLitvm && !isArc && (
-        <div className="absolute inset-0">
-          <div className="absolute left-1/2 top-1/2 h-[36rem] w-[36rem] -translate-x-1/2 -translate-y-1/2 rounded-full bg-[rgba(0,71,255,0.08)] blur-3xl animate-pulse" />
-        </div>
       )}
     </div>
   );

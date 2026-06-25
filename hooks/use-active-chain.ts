@@ -4,10 +4,10 @@ import { useChainId } from 'wagmi'
 import { getChainConfig, activeChainConfig } from '@/lib/active-chain-config'
 
 const NEUTRAL_DEFAULTS = {
-  color: '#ffffff',
+  color: '#FFFFFF',
   name: 'Quiz On Chain',
   heroTitle: 'The Knowledge of Web3',
-  heroSubtitle: 'Test your blockchain knowledge across the ecosystem',
+  heroSubtitle: 'Test your blockchain knowledge across the ecosystem. Prove it on-chain.',
   heroLabel: 'WEB3',
 }
 

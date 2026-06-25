@@ -2,6 +2,7 @@
 
 import { useEffect, useState, useCallback, useRef } from "react"
 import Image from "next/image"
+import Link from "next/link"
 import { useAccount } from "wagmi"
 import { createPublicClient, http, isAddress, type Chain } from "viem"
 import { fetchGlobalLeaderboard, getChainLeaderboard, type GlobalPlayer } from "@/lib/chain-leaderboard"
@@ -207,7 +208,10 @@ export function Leaderboard({ chainFilter = 'Global' }: { chainFilter?: ChainFil
             rawDataRef.current = top
             void loadNftData(top)
           } catch (err) {
-            console.error(`Failed to fetch ${chainFilter} leaderboard:`, err)
+            const msg = err instanceof Error ? err.message.split('\n')[0] : String(err)
+            if (process.env.NODE_ENV === 'development') {
+              console.warn(`[Leaderboard] ${chainFilter} RPC unavailable:`, msg)
+            }
             setFailedNetworks([chainFilter])
             setData([])
             rawDataRef.current = []
@@ -220,7 +224,9 @@ export function Leaderboard({ chainFilter = 'Global' }: { chainFilter?: ChainFil
         }
       }
     } catch (err) {
-      console.error("Critical failure during fetch:", err)
+      if (process.env.NODE_ENV === 'development') {
+        console.warn('[Leaderboard] Unexpected error during fetch:', err)
+      }
     } finally {
       setLoading(false)
     }
@@ -434,20 +440,78 @@ export function Leaderboard({ chainFilter = 'Global' }: { chainFilter?: ChainFil
           </thead>
           <tbody>
             {loading && data.length === 0 ? (
-              Array.from({ length: 5 }).map((_, i) => (
+              Array.from({ length: 6 }).map((_, i) => (
                 <tr key={i} className={`border-b animate-pulse ${isBase ? 'border-black/5' : 'border-white/5'}`}>
-                  <td className="py-4 pl-4"><div className={`w-8 h-6 rounded ${isBase ? 'bg-black/10' : 'bg-white/10'}`} /></td>
-                  <td><div className={`w-32 h-6 rounded ${isBase ? 'bg-black/10' : 'bg-white/10'}`} /></td>
-                  {chainFilter === 'Global' && (<td><div className={`w-16 h-6 rounded ${isBase ? 'bg-black/10' : 'bg-white/10'}`} /></td>)}
-                  <td><div className={`w-12 h-6 rounded ml-auto ${isBase ? 'bg-black/10' : 'bg-white/10'}`} /></td>
-                  <td><div className={`w-12 h-6 rounded ml-auto ${isBase ? 'bg-black/10' : 'bg-white/10'}`} /></td>
-                  <td className="pr-4"><div className={`w-12 h-6 rounded ml-auto ${isBase ? 'bg-black/10' : 'bg-white/10'}`} /></td>
+                  {/* Rank placeholder */}
+                  <td className="py-4.5 pl-4">
+                    <div className="flex items-center gap-2">
+                      <div className={`size-4 rounded-full ${isBase ? 'bg-black/10' : 'bg-white/10'}`} />
+                      <div className={`w-6 h-4 rounded ${isBase ? 'bg-black/10' : 'bg-white/10'}`} />
+                    </div>
+                  </td>
+                  {/* Wallet address placeholder */}
+                  <td className="py-4.5">
+                    <div className="flex items-center gap-2">
+                      <div className={`w-28 h-4 rounded ${isBase ? 'bg-black/10' : 'bg-white/10'}`} />
+                      {i < 2 && (
+                        <div className={`w-14 h-4 rounded-full ${isBase ? 'bg-black/10' : 'bg-white/10'}`} />
+                      )}
+                    </div>
+                  </td>
+                  {/* Chains column placeholder (Global only) */}
+                  {chainFilter === 'Global' && (
+                    <td className="py-4.5">
+                      <div className="flex items-center gap-1">
+                        <div className={`size-5 rounded-full ${isBase ? 'bg-black/10' : 'bg-white/10'}`} />
+                        <div className={`size-5 rounded-full ${isBase ? 'bg-black/10' : 'bg-white/10'}`} />
+                      </div>
+                    </td>
+                  )}
+                  {/* Stats columns */}
+                  <td className="py-4.5">
+                    <div className={`w-10 h-4 rounded ml-auto ${isBase ? 'bg-black/10' : 'bg-white/10'}`} />
+                  </td>
+                  <td className="py-4.5">
+                    <div className={`w-8 h-4 rounded ml-auto ${isBase ? 'bg-black/10' : 'bg-white/10'}`} />
+                  </td>
+                  <td className="py-4.5 pr-4">
+                    <div className={`w-10 h-4 rounded ml-auto ${isBase ? 'bg-black/10' : 'bg-white/10'}`} />
+                  </td>
                 </tr>
               ))
             ) : displayData.length === 0 ? (
               <tr>
-                <td colSpan={chainFilter === 'Global' ? 6 : 5} className={`py-8 text-center ${isBase ? 'text-black/40' : 'text-gray-400'}`}>
-                  {showMastersOnly ? "No NFT Masters found on this leaderboard" : "No players yet"}
+                <td colSpan={chainFilter === 'Global' ? 6 : 5} className="py-16 text-center px-4">
+                  <div className="flex flex-col items-center justify-center max-w-sm mx-auto animate-scale-in">
+                    <div className="mb-4 relative">
+                      <div className="absolute inset-0 bg-white/5 blur-xl rounded-full scale-150 animate-pulse pointer-events-none" />
+                      <div className="relative p-4 bg-white/[0.03] border border-white/[0.08] rounded-full flex items-center justify-center">
+                        <Star className="size-8 text-yellow-500/80 animate-[float_4s_infinite]" />
+                      </div>
+                    </div>
+                    <h3 className="text-base font-bold text-foreground mb-1.5 uppercase tracking-wide">
+                      {showMastersOnly ? "No Masters Found" : "Leaderboard Empty"}
+                    </h3>
+                    <p className="text-xs text-muted-foreground opacity-75 mb-6 leading-relaxed">
+                      {showMastersOnly 
+                        ? "None of the players on this leaderboard have unlocked their NFT Master badge yet." 
+                        : `Be the first to secure a spot on the ${chainFilter === 'Global' ? 'global' : chainFilter} leaderboard by playing the quiz!`}
+                    </p>
+                    {!showMastersOnly && (
+                      <Link
+                        href="/"
+                        className={`inline-flex cursor-pointer items-center justify-center gap-1.5 px-5 py-2.5 text-xs font-bold transition-all duration-300 hover:scale-[1.02] active:scale-[0.98] text-white shadow-md ${
+                          isMegaEth || isLitvm ? 'rounded-none font-mono' : 'rounded-xl'
+                        }`}
+                        style={{
+                          background: `linear-gradient(135deg, ${cfg?.color ?? '#0047FF'}, ${(cfg?.color ?? '#0047FF')}cc)`,
+                          boxShadow: `0 4px 15px ${(cfg?.color ?? '#0047FF')}33`
+                        }}
+                      >
+                        Start Quiz Challenge
+                      </Link>
+                    )}
+                  </div>
                 </td>
               </tr>
             ) : (

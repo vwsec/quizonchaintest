@@ -10,10 +10,15 @@ import {
   getContractAddressPreview,
   getTimeUntilNextSubmissionSeconds,
   useSubmitScore,
+  quizScoresAbi,
 } from "@/lib/submitScore"
 import { getSoneiumChainById, soneiumMainnet } from "@/lib/chains"
-import { XCircle, ExternalLink, CheckCircle } from "lucide-react"
+import { XCircle, ExternalLink, CheckCircle, Trophy, Award, Sparkles } from "lucide-react"
 import { useActiveChain } from "@/hooks/use-active-chain"
+import { useChainUI } from "@/hooks/use-chain-ui"
+import { cn } from "@/lib/utils"
+import { NFT_CONTRACTS, NFT_ABI } from "@/lib/nft-contracts"
+import { NftMintModal } from "@/components/nft-mint"
 
 const EXPLORER_APIS: Record<number, string> = {
   1868: "https://soneium.blockscout.com/api/v2",
@@ -82,6 +87,7 @@ export function ResultsScreen({
 
   const chainId = useChainId()
   const { chainConfig: cfg } = useActiveChain()
+  const ui = useChainUI()
   const chain = getSoneiumChainById(chainId) ?? soneiumMainnet
   const { switchChainAsync } = useSwitchChain()
   const { chainId: walletChainId, isConnected, chain: walletChain, address } = useAccount()
@@ -99,6 +105,89 @@ export function ResultsScreen({
 
   const total = totalQuestions
   const percentage = Math.round((score / total) * 100)
+
+  // Score Count-Up Animation
+  const [displayScore, setDisplayScore] = useState(0)
+  useEffect(() => {
+    if (!mounted) return
+    let start = 0
+    if (score === 0) {
+      setDisplayScore(0)
+      return
+    }
+    const duration = 800
+    const stepTime = Math.max(Math.floor(duration / score), 35)
+    const timer = setInterval(() => {
+      start += 1
+      setDisplayScore(start)
+      if (start >= score) {
+        clearInterval(timer)
+      }
+    }, stepTime)
+    return () => clearInterval(timer)
+  }, [mounted, score])
+
+  // Progress Bar reveal animation
+  const [animatedPercent, setAnimatedPercent] = useState(0)
+  useEffect(() => {
+    if (mounted) {
+      const timer = setTimeout(() => {
+        setAnimatedPercent(percentage)
+      }, 150)
+      return () => clearTimeout(timer)
+    }
+  }, [mounted, percentage])
+
+  // NFT State variables
+  const [totalPoints, setTotalPoints] = useState<number | null>(null)
+  const [hasMinted, setHasMinted] = useState(false)
+  const [loadingNft, setLoadingNft] = useState(true)
+  const [showNftModal, setShowNftModal] = useState(false)
+
+  useEffect(() => {
+    if (!isConnected || !address || !publicClient) {
+      setLoadingNft(false)
+      return
+    }
+    let cancelled = false
+    const fetchNftStatus = async () => {
+      try {
+        const quizContract = getContractAddressPreview(chainId)
+        const nftContract = NFT_CONTRACTS[chainId]
+        if (!quizContract || !nftContract) {
+          if (!cancelled) setLoadingNft(false)
+          return
+        }
+        
+        const [pts, minted] = await Promise.all([
+          publicClient.readContract({
+            address: quizContract as `0x${string}`,
+            abi: quizScoresAbi,
+            functionName: "totalPoints",
+            args: [address],
+          }) as Promise<bigint>,
+          publicClient.readContract({
+            address: nftContract as `0x${string}`,
+            abi: NFT_ABI,
+            functionName: "hasMinted",
+            args: [address],
+          }) as Promise<boolean>,
+        ])
+
+        if (!cancelled) {
+          setTotalPoints(Number(pts))
+          setHasMinted(minted)
+          setLoadingNft(false)
+        }
+      } catch (err) {
+        if (!cancelled) setLoadingNft(false)
+      }
+    }
+    void fetchNftStatus()
+    return () => {
+      cancelled = true
+    }
+  }, [isConnected, address, chainId, publicClient, txState])
 
   const chainName = (() => {
     const id = mounted ? (walletChain?.id ?? chainId) : undefined
@@ -254,15 +343,6 @@ export function ResultsScreen({
     setShowConfirmModal(true)
   }
 
-  const isMegaEth = isConnected && cfg?.name === 'MegaETH'
-  const isInk = isConnected && cfg?.name === 'Ink'
-  const isUnichain = isConnected && cfg?.name === 'Unichain'
-  const isBase = isConnected && cfg?.name === 'Base'
-  const isSoneium = isConnected && cfg?.name === 'Soneium'
-  const isLitvm = isConnected && cfg?.name === 'LitVM'
-  const isArc = isConnected && cfg?.name === 'Arc Testnet'
-  const isSepolia = isConnected && cfg?.name === 'Sepolia'
-
   const handleAction = async () => {
     if (isWrongNetwork) {
       try {
@@ -277,252 +357,204 @@ export function ResultsScreen({
     }
   }
 
-  const accentTextColor = 
-    isMegaEth ? 'text-[#00ff88]' 
-    : isInk ? 'text-[#7B61FF]' 
-    : isUnichain ? 'text-[#FF007A]' 
-    : isBase ? 'text-[#0052FF]' 
-    : isSoneium ? 'text-[#0047FF]' 
-    : isArc ? 'text-[#4D8EE9]' 
-    : isLitvm ? 'text-[#00F2FE]' 
-    : 'text-primary'
-  const accentColor = isMegaEth ? '#00ff88' : isInk ? '#8b5cf6' : isUnichain ? '#FF007A' : isBase ? '#0052FF' : isSoneium ? '#0047FF' : isLitvm ? '#00F2FE' : isArc ? '#4D8EE9' : '#0047FF'
+  const accentColor = ui.accent
 
   return (
-    <div className="flex min-h-screen flex-col items-center justify-center px-4 py-12">
+    <div className={cn('flex min-h-screen flex-col items-center justify-center px-4 py-12 pt-28', ui.page)}>
       <div className="flex w-full flex-col items-center text-center">
-
-        {/* CARD WRAPPER */}
         <div
-          className={`max-w-sm mx-auto w-full flex flex-col items-center px-8 py-9 transition-all duration-300 ${
-            isMegaEth ? 'bg-black rounded-none shadow-[0_0_30px_rgba(0,255,136,0.05)]' :
-            isInk ? 'bg-[#0a0a0a] rounded-2xl shadow-[0_0_30px_rgba(139,92,246,0.05)]' :
-            isSoneium ? 'bg-[#0a0a0a] rounded-2xl' :
-            isBase ? 'bg-[#0d0d1a] rounded-2xl' :
-            isUnichain ? 'bg-[#0a0a0a] rounded-3xl shadow-[0_0_30px_rgba(255,0,122,0.05)]' :
-            isLitvm ? 'bg-[#0B192C]/90 rounded-xl backdrop-blur-xl shadow-[0_0_30px_rgba(0,242,254,0.05)]' :
-            isArc ? 'bg-[#0a0a0a] rounded-2xl' :
-            isSepolia ? 'bg-[#0e0e0e] rounded-xl' :
-            'bg-[#0a0a0a] rounded-2xl'
-          }`}
-          style={{
-            border: isMegaEth ? `1px solid ${cfg?.color ?? '#00ff88'}`
-                  : isInk ? `1px solid ${cfg?.color ?? '#8b5cf6'}66`
-                  : isSoneium ? '1px solid rgba(255,255,255,0.08)'
-                  : isBase ? `1px solid ${cfg?.color ?? '#0052ff'}33`
-                  : isUnichain ? `1px solid ${cfg?.color ?? '#ff007a'}40`
-                  : isLitvm ? '1px solid rgba(0, 242, 254, 0.15)'
-                  : isArc ? '1px solid rgba(255,255,255,0.12)'
-                  : isSepolia ? '1px solid rgba(255,255,255,0.08)'
-                  : '1px solid rgba(255,255,255,0.08)',
-          }}
+          className={cn('max-w-sm mx-auto w-full flex flex-col items-center px-8 py-9 transition-colors duration-300 animate-scale-in', ui.cardStrong)}
+          style={{ borderColor: `${ui.accent}33` }}
         >
-          {/* [A] SECTION LABEL */}
-          <div
-            className={
-              isMegaEth ? 'font-mono text-[10px] tracking-[0.18em] uppercase mb-7' :
-              isInk ? 'font-sans text-[10px] tracking-[0.14em] uppercase mb-6' :
-              isSoneium ? 'font-sans text-[10px] tracking-[0.12em] uppercase mb-6' :
-              isBase ? 'font-sans text-[10px] tracking-[0.1em] uppercase mb-6' :
-              isUnichain ? 'font-sans text-[10px] tracking-[0.12em] uppercase mb-6' :
-              isLitvm ? 'font-sans text-[10px] tracking-[0.12em] uppercase mb-6' :
-              isArc ? 'font-sans text-[10px] tracking-[0.12em] uppercase mb-6' :
-              isSepolia ? 'font-sans text-[10px] tracking-[0.1em] uppercase mb-6' :
-              'font-sans text-[10px] tracking-[0.12em] uppercase mb-6'
-            }
-            style={{ color: isMegaEth ? '#00ff88' : cfg?.color ?? '#8b5cf6' }}
-          >
-            SCORE RESULT
+          <div className={cn('text-[10px] tracking-[0.14em] uppercase mb-6', ui.accentClass)}>
+            {ui.key === 'megaeth' ? '// SCORE RESULT' : 'Score Result'}
           </div>
 
-          {/* [B] SCORE NUMBER */}
-          <div className={`relative ${
-            isMegaEth ? 'font-mono' :
-            isLitvm ? 'font-mono' :
-            'font-sans'
-          }`}>
-            <div style={{
-              position: 'absolute',
-              inset: -20,
-              background: `radial-gradient(ellipse at center, ${accentColor}15 0%, transparent 70%)`,
-              pointerEvents: 'none',
-            }} />
-            <div className={
-              isMegaEth ? 'text-[80px] font-bold leading-none tracking-[-2px] text-white' :
-              isInk ? 'text-[88px] font-bold leading-none tracking-[-4px] text-white' :
-              isSoneium ? 'text-[88px] font-bold leading-none tracking-[-4px] text-white' :
-              isBase ? 'text-[88px] font-bold leading-none tracking-[-4px] text-white' :
-              isUnichain ? 'text-[88px] font-bold leading-none tracking-[-4px] text-white' :
-              isLitvm ? 'text-[84px] font-bold leading-none tracking-[-3px] text-white' :
-              isArc ? 'text-[88px] font-bold leading-none tracking-[-4px] text-white' :
-              isSepolia ? 'text-[84px] font-bold leading-none tracking-[-3px] text-white' :
-              'text-[88px] font-bold leading-none tracking-[-4px] text-white'
-            }>
-              {score}
-              <span className={
-                isMegaEth ? 'text-[26px] opacity-35' :
-                isInk ? 'text-[28px] font-light opacity-30' :
-                isSoneium ? 'text-[28px] font-light opacity-30' :
-                isBase ? 'text-[28px] font-light opacity-30' :
-                isUnichain ? 'text-[28px] font-light opacity-30' :
-                isLitvm ? 'text-[26px] font-light opacity-30' :
-                isArc ? 'text-[28px] font-light opacity-30' :
-                isSepolia ? 'text-[26px] font-light opacity-30' :
-                'text-[28px] font-light opacity-30'
-              }>
+          <div className="relative">
+            <div
+              className="absolute inset-[-20px] pointer-events-none"
+              style={{
+                background: `radial-gradient(ellipse at center, ${accentColor}15 0%, transparent 70%)`,
+              }}
+            />
+            <div className={cn(
+              'text-[80px] md:text-[88px] font-bold leading-none tracking-tight animate-[scale-in_0.6s_cubic-bezier(0.34,1.56,0.64,1)]',
+              ui.isLight ? 'text-black' : 'text-white',
+              ui.fontMono && 'font-mono',
+            )}>
+              {displayScore}
+              <span className="text-[26px] md:text-[28px] font-light opacity-30">
                 {' '}/ {total}
               </span>
             </div>
           </div>
 
-          {/* [C] PROGRESS BAR */}
-          <div className="w-full bg-white/10 h-[3px] rounded-full my-5 overflow-hidden">
+          <div className={cn('w-full my-5 overflow-hidden relative', ui.progressTrack)}>
             <div
-              className="h-full rounded-full transition-all duration-700"
+              className="h-full rounded-full transition-all duration-1000 ease-out relative overflow-hidden"
               style={{
-                width: `${percentage}%`,
+                width: `${animatedPercent}%`,
                 backgroundColor: accentColor,
-                boxShadow: `0 0 8px ${accentColor}40, 0 0 20px ${accentColor}15`,
+                boxShadow: `0 0 12px ${accentColor}55`,
               }}
-            />
+            >
+              <div 
+                className="absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent animate-[progressShimmer_2s_infinite]"
+                style={{ backgroundSize: '200% 100%' }}
+              />
+            </div>
           </div>
 
-          {/* [D] STAT CHIPS */}
-          <div className="flex items-center gap-3 mb-7">
+          <div className="flex items-center gap-3 mb-6">
             <div
-              className={`px-3 py-1.5 text-xs font-medium ${
-                isMegaEth ? 'rounded-none' :
-                isInk ? 'rounded-lg' :
-                isSoneium ? 'rounded-full' :
-                isBase ? 'rounded-lg' :
-                isUnichain ? 'rounded-full' :
-                isLitvm ? 'rounded-lg' :
-                isArc ? 'rounded-full' :
-                isSepolia ? 'rounded-md' :
-                'rounded-lg'
-              }`}
+              className={cn('px-3 py-1.5 text-xs font-medium', ui.radiusSm)}
               style={{
-                backgroundColor: `${cfg?.color ?? '#00ff88'}1a`,
-                border: `1px solid ${cfg?.color ?? '#00ff88'}40`,
-                color: cfg?.color ?? '#00ff88',
+                backgroundColor: `${accentColor}1a`,
+                border: `1px solid ${accentColor}33`,
+                color: accentColor,
               }}
             >
               {percentage}% correct
             </div>
-            <div className={`px-3 py-1.5 text-xs font-medium ${
-              isMegaEth ? 'rounded-none bg-black border border-white/15 text-white/45' :
-              isInk ? 'rounded-lg bg-white/[0.04] border border-white/8 text-white/45' :
-              isSoneium ? 'rounded-full bg-white/[0.04] border border-white/8 text-white/45' :
-              isBase ? 'rounded-lg bg-black/5 border border-black/5 text-black/40' :
-              isUnichain ? 'rounded-full bg-white/[0.04] border border-white/8 text-white/45' :
-              isLitvm ? 'rounded-lg bg-[#0B192C] border border-[#00F2FE]/10 text-[#00F2FE]/40' :
-              isArc ? 'rounded-full bg-white/[0.04] border border-white/8 text-white/45' :
-              isSepolia ? 'rounded-md bg-white/[0.04] border border-white/8 text-white/45' :
-              'rounded-lg bg-white/[0.04] border border-white/8 text-white/45'
-            }`}>
+            <div className={cn('px-3 py-1.5 text-xs font-medium', ui.statCard, 'py-1.5')}>
               {score} pts earned
             </div>
           </div>
 
-          {/* [E] HEADLINE */}
-          <h2 className={`text-center text-white mb-1.5 ${
-            isMegaEth ? 'font-mono font-bold text-[14px] uppercase tracking-wide' :
-            isInk ? 'font-sans font-semibold text-[15px]' :
-            isSoneium ? 'font-sans font-semibold text-[15px]' :
-            isBase ? 'font-sans font-bold text-[15px]' :
-            isUnichain ? 'font-sans font-bold text-[15px]' :
-            isLitvm ? 'font-sans font-semibold text-[14px]' :
-            isArc ? 'font-sans font-semibold text-[15px]' :
-            isSepolia ? 'font-sans font-medium text-[14px]' :
-            'font-sans font-semibold text-[15px]'
-          }`}>
+          <h2 className={cn('text-center mb-1.5 font-semibold text-[15px]', ui.isLight ? 'text-black' : 'text-white')}>
             {getMessage()}
           </h2>
-
-          {/* [F] SUBLINE */}
-          <p className={`text-center mb-7 ${
-            isMegaEth ? 'font-mono text-[11px] tracking-widest lowercase text-white/38' :
-            isInk ? 'font-sans text-[12px] text-white/38' :
-            isSoneium ? 'font-sans text-[12px] text-white/38' :
-            isBase ? 'font-sans text-[12px] text-white/38' :
-            isUnichain ? 'font-sans text-[12px] text-white/38' :
-            isLitvm ? 'font-sans text-[12px] text-white/38' :
-            isArc ? 'font-sans text-[12px] text-white/38' :
-            isSepolia ? 'font-sans text-[11px] text-white/35' :
-            'font-sans text-[12px] text-white/38'
-          }`}>
+          <p className={cn('text-center mb-6 text-xs', ui.bodyMuted)}>
             Points are added to the global leaderboard.
           </p>
 
-          <div className="flex flex-col gap-3">
-          {/* [G] PRIMARY BUTTON */}
-          <Button
-            size="lg"
-            onClick={handleAction}
-            disabled={txState === "pending" || isCooldownActive || hasSubmittedThisSession || isCheckingCooldown}
-            className={`w-full transition-all duration-300 relative overflow-hidden group hover:scale-[1.02] active:scale-[0.98] ${
-              isMegaEth ? 'font-mono font-bold text-[12px] tracking-[0.1em] uppercase rounded-none py-[14px] text-black' :
-              isInk ? 'font-sans font-semibold text-[13px] rounded-xl py-[14px] text-white' :
-              isSoneium ? 'font-sans font-medium text-[13px] rounded-full py-[14px] text-white' :
-              isBase ? 'font-sans font-bold text-[13px] rounded-xl py-[14px] text-white' :
-              isUnichain ? 'font-sans font-bold text-[13px] rounded-full py-[14px] text-white' :
-              isLitvm ? 'font-sans font-semibold text-[13px] rounded-xl py-[14px] text-black' :
-              isArc ? 'font-sans font-semibold text-[13px] rounded-2xl py-[14px] text-black' :
-              isSepolia ? 'font-sans font-medium text-[13px] rounded-xl py-[14px] text-white' :
-              'font-sans font-semibold text-[13px] rounded-xl py-[14px] text-white'
-            }`}
-            style={{ backgroundColor: cfg?.color ?? '#0047FF' }}
-          >
-            {txState === "pending" ? (
-              <div className="flex items-center gap-2">
-                <div className="size-4 animate-spin rounded-full border-2 border-white/30 border-t-white" />
-                <span>Submitting Score...</span>
+          {/* NFT Unlock status card */}
+          {isConnected && !loadingNft && NFT_CONTRACTS[chainId] && (
+            <div 
+              className={cn('w-full mb-6 p-4 border rounded-xl flex flex-col text-left gap-2.5 animate-slide-up relative overflow-hidden', ui.card)}
+              style={{
+                borderColor: totalPoints !== null && totalPoints >= 100 ? `${accentColor}55` : `${accentColor}22`,
+                boxShadow: totalPoints !== null && totalPoints >= 100 ? `0 0 24px ${accentColor}22` : 'none',
+              }}
+            >
+              <div className="absolute inset-0 bg-gradient-to-br from-white/[0.01] to-white/[0.03] pointer-events-none" />
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-2">
+                  <Trophy className={cn("size-4", totalPoints !== null && totalPoints >= 100 ? "text-yellow-400 animate-[float_4s_infinite]" : "opacity-40")} />
+                  <span className={cn('text-xs font-bold tracking-wider', ui.isLight ? 'text-black' : 'text-white')}>
+                    {totalPoints !== null && totalPoints >= 100 ? "NFT BADGE UNLOCKED!" : "MASTER NFT BADGE"}
+                  </span>
+                </div>
+                {totalPoints !== null && (
+                  <span className="text-[10px] opacity-60 font-semibold uppercase tracking-wider">
+                    {totalPoints >= 100 ? "100 / 100 pts" : `${totalPoints} / 100 pts`}
+                  </span>
+                )}
               </div>
-            ) : isWrongNetwork ? (
-              "Switch to " + chainName
-            ) : isCooldownActive ? (
-              `Wait ${formatCooldown(cooldownRemaining)}`
-            ) : hasSubmittedThisSession ? (
-              <div className="flex items-center gap-2">
-                <CheckCircle className="size-5 text-success" />
-                <span>Score Submitted!</span>
-              </div>
-            ) : (
-              "Submit Score On-Chain"
-            )}
-          </Button>
 
-          {/* [H] SECONDARY BUTTON */}
-          <Button
-            variant="outline"
-            size="lg"
-            onClick={onRestart}
-            className={`w-full bg-transparent text-white/50 transition-all duration-300 hover:text-white/80 hover:border-white/20 ${
-              isMegaEth ? 'font-mono text-[11px] uppercase rounded-none py-[13px]' :
-              isInk ? 'font-sans text-[12px] rounded-xl py-[13px]' :
-              isSoneium ? 'font-sans text-[12px] rounded-full py-[13px]' :
-              isBase ? 'font-sans text-[12px] rounded-xl py-[13px]' :
-              isUnichain ? 'font-sans text-[12px] rounded-full py-[13px]' :
-              isLitvm ? 'font-sans text-[12px] rounded-xl py-[13px]' :
-              isArc ? 'font-sans text-[12px] rounded-2xl py-[13px]' :
-              isSepolia ? 'font-sans text-[12px] rounded-xl py-[13px]' :
-              'font-sans text-[12px] rounded-xl py-[13px]'
-            }`}
-            style={{ border: '1px solid rgba(255,255,255,0.12)' }}
-          >
-            Play Again
-          </Button>
+              {totalPoints !== null && totalPoints >= 100 ? (
+                <div>
+                  <p className="text-[11px] opacity-70 leading-normal mb-2.5">
+                    Congratulations! You reached {totalPoints} points on the leaderboard. You are eligible to claim your exclusive Master NFT badge.
+                  </p>
+                  {!hasMinted ? (
+                    <button
+                      onClick={() => setShowNftModal(true)}
+                      className={cn(
+                        "w-full cursor-pointer py-2 px-3 text-xs font-bold flex items-center justify-center gap-1.5 transition-all duration-300 hover:scale-[1.02] active:scale-[0.98] rounded-lg text-white",
+                        ui.btnPrimary
+                      )}
+                      style={{
+                        background: `linear-gradient(135deg, ${accentColor}, ${accentColor}cc)`,
+                        boxShadow: `0 0 15px ${accentColor}40`,
+                      }}
+                    >
+                      <Sparkles className="size-3.5" />
+                      Claim Master NFT Now
+                    </button>
+                  ) : (
+                    <div className="flex items-center gap-1.5 text-emerald-500 bg-emerald-500/10 border border-emerald-500/20 py-2 px-3 rounded-lg text-xs font-semibold justify-center">
+                      <CheckCircle className="size-4" />
+                      NFT Claimed successfully!
+                    </div>
+                  )}
+                </div>
+              ) : (
+                <div>
+                  <div className="w-full h-1.5 bg-white/10 rounded-full overflow-hidden mt-1 mb-1.5">
+                    <div 
+                      className="h-full rounded-full transition-all duration-1000 ease-out"
+                      style={{ 
+                        width: `${Math.min(100, totalPoints ?? 0)}%`, 
+                        backgroundColor: accentColor,
+                        boxShadow: `0 0 8px ${accentColor}`
+                      }}
+                    />
+                  </div>
+                  <p className="text-[10px] opacity-50 leading-normal">
+                    {totalPoints !== null ? (
+                      <>You have <strong>{totalPoints}/100</strong> pts. Earn <strong>{Math.max(0, 100 - totalPoints)}</strong> more to unlock the Master NFT badge!</>
+                    ) : (
+                      <>Loading your on-chain points progress...</>
+                    )}
+                  </p>
+                </div>
+              )}
+            </div>
+          )}
+
+          <div className="flex flex-col gap-3 w-full">
+            <Button
+              size="lg"
+              onClick={handleAction}
+              disabled={txState === "pending" || isCooldownActive || hasSubmittedThisSession || isCheckingCooldown}
+              className={cn(
+                'w-full transition-all duration-300 hover:scale-[1.02] active:scale-[0.98] shadow-md hover:shadow-lg disabled:hover:scale-100 disabled:opacity-50 relative overflow-hidden group', 
+                ui.btnPrimary
+              )}
+              style={{ 
+                backgroundColor: accentColor,
+                boxShadow: txState !== "pending" && !isCooldownActive && !hasSubmittedThisSession ? `0 4px 20px ${accentColor}33` : undefined
+              }}
+            >
+              {txState === "pending" ? (
+                <div className="flex items-center gap-2">
+                  <div className="size-4 animate-spin rounded-full border-2 border-white/30 border-t-white" />
+                  <span>Submitting Score...</span>
+                </div>
+              ) : isWrongNetwork ? (
+                "Switch to " + chainName
+              ) : isCooldownActive ? (
+                `Wait ${formatCooldown(cooldownRemaining)}`
+              ) : hasSubmittedThisSession ? (
+                <div className="flex items-center gap-2">
+                  <CheckCircle className="size-5 text-success" />
+                  <span>Score Submitted!</span>
+                </div>
+              ) : (
+                "Submit Score On-Chain"
+              )}
+            </Button>
+
+            <Button
+              variant="outline"
+              size="lg"
+              onClick={onRestart}
+              className={cn('w-full hover:scale-[1.02] active:scale-[0.98] transition-all duration-300', ui.btnOutline)}
+            >
+              Play Again
+            </Button>
           </div>
         </div>
       </div>
 
       {wrongNetwork ? (
-        <div className={`mt-6 p-4 border backdrop-blur-sm animate-slide-up ${isMegaEth ? 'rounded-none border-amber-500 bg-black' : isLitvm ? 'rounded-xl border-amber-500/30 bg-[#0B192C] font-mono text-xs' : isInk ? 'rounded-2xl border-amber-500/30 bg-amber-500/10 backdrop-blur-md' : isBase ? 'rounded-xl border-amber-500/20 bg-amber-500/5' : isUnichain ? 'rounded-2xl border-amber-500/30 bg-amber-500/10' : 'rounded-xl border-amber-500/30 bg-amber-500/10 backdrop-blur-md'}`}>
-          <p className={`text-sm mb-2 ${isMegaEth ? 'text-amber-500 uppercase' : isLitvm ? 'text-amber-500' : 'text-amber-300'}`}>Wrong Network. Please switch to {chain.name}.</p>
+        <div className={cn('mt-6 p-4 animate-slide-up w-full max-w-sm', ui.warning)}>
+          <p className="text-sm mb-2">Wrong Network. Please switch to {chain.name}.</p>
           <Button
             size="sm"
             variant="outline"
-            className={`w-full transition-all duration-200 hover:scale-[1.02] ${isMegaEth ? 'rounded-none border-white/20 text-white uppercase hover:bg-white/10' : isLitvm ? 'border-[#00F2FE]/30 bg-[#0B192C] text-[#00F2FE] hover:bg-[#00F2FE]/10' : ''}`}
+            className={cn('w-full', ui.btnOutline)}
             onClick={async () => {
               try {
                 await switchChainAsync({ chainId })
@@ -548,82 +580,47 @@ export function ResultsScreen({
       ) : null}
 
       {txState === "failed" ? (
-        <div className={`mt-6 w-full max-w-sm p-4 border backdrop-blur-sm animate-slide-up ${
-          isMegaEth ? 'rounded-none border-red-500/50 bg-black' :
-          isLitvm ? 'rounded-xl border-[#ef4444]/30 bg-[#0B192C]' :
-          'rounded-xl border-destructive/40 bg-destructive/10'
-        }`}>
+        <div className={cn('mt-6 w-full max-w-sm p-4 animate-slide-up', ui.error)}>
           <div className="flex items-center gap-2 mb-2">
-            <XCircle className={`size-5 shrink-0 ${isMegaEth ? 'text-red-500' : 'text-destructive'}`} />
+            <XCircle className="size-5 shrink-0 text-destructive" />
             <h3 className="text-sm font-medium text-foreground">Transaction Failed</h3>
           </div>
           <p className="text-xs text-muted-foreground mb-2">{txError}</p>
-          <Button
-            size="sm"
-            variant="outline"
-            onClick={handleRetry}
-            className={`w-full transition-all duration-200 hover:scale-[1.02] ${
-              isMegaEth ? 'rounded-none border-white/20 text-white uppercase hover:bg-white/10' :
-              isLitvm ? 'border-[#00F2FE]/30 text-[#00F2FE] hover:bg-[#00F2FE]/10' : ''
-            }`}
-          >
+          <Button size="sm" variant="outline" onClick={handleRetry} className={cn('w-full', ui.btnOutline)}>
             Try Again
           </Button>
         </div>
       ) : null}
 
       {txPendingWarning ? (
-        <div className={`mt-4 px-4 py-2 backdrop-blur-sm animate-slide-up ${
-          isMegaEth ? 'border border-amber-500/30 bg-black rounded-none' :
-          isLitvm ? 'rounded-xl border border-[#00F2FE]/20 bg-[#0B192C]' :
-          'rounded-xl border border-amber-500/20 bg-amber-500/10'
-        }`}>
-          <p className={`text-xs ${isMegaEth ? 'text-amber-500 uppercase tracking-wider font-mono' : isLitvm ? 'text-[#00F2FE] font-mono' : 'text-amber-400'}`}>{txPendingWarning}</p>
+        <div className={cn('mt-4 px-4 py-2 animate-slide-up w-full max-w-sm', ui.warning)}>
+          <p className="text-xs">{txPendingWarning}</p>
         </div>
       ) : null}
 
       {showConfirmModal ? (
         <div className="fixed inset-0 z-[60] flex items-center justify-center bg-black/80 p-4 backdrop-blur-md">
-          <div className={`w-full max-w-md p-6 text-left shadow-2xl border animate-scale-in ${isMegaEth ? 'border-[#00ff88] bg-black rounded-none text-white' : isInk ? 'rounded-3xl border-[#8b5cf6]/20 bg-[#0A0A0F] text-white shadow-[0_0_40px_rgba(139,92,246,0.08)]' : isUnichain ? 'rounded-2xl border-[#FF007A]/20 bg-[#0A0A0F] text-white shadow-[0_0_40px_rgba(255,0,122,0.08)]' : isBase ? 'rounded-2xl border-[#0052FF]/20 bg-white text-black shadow-[0_0_40px_rgba(0,82,255,0.08)]' : isSoneium ? 'rounded-2xl border-[#0047FF]/20 bg-[#0A0A0F] text-white shadow-[0_0_40px_rgba(0,71,255,0.08)]' : isArc ? 'rounded-2xl border-[#4D8EE9]/25 bg-[#0A0A0F] text-white shadow-[0_0_40px_rgba(77,142,233,0.08)]' : isLitvm ? 'rounded-2xl border-[#00F2FE]/25 bg-[#0B192C] text-white font-mono shadow-[0_0_40px_rgba(0,242,254,0.08)]' : 'rounded-2xl border border-white/10 bg-[#161923] text-white'}`}>
-            <h3 className={`mb-4 text-xl font-bold ${isMegaEth ? 'uppercase font-mono text-[#00ff88]' : isUnichain ? 'font-serif italic' : isBase ? 'text-black' : isLitvm ? 'text-[#00F2FE]' : ''}`}>
-              {isMegaEth ? '// CONFIRM TRANSACTION' : isLitvm ? 'Confirm Transaction' : 'Confirm Transaction'}
+          <div className={cn('w-full max-w-md p-6 text-left shadow-2xl border animate-scale-in', ui.cardStrong)}>
+            <h3 className={cn('mb-4 text-xl font-bold', ui.accentClass)}>
+              {ui.key === 'megaeth' ? '// CONFIRM TRANSACTION' : 'Confirm Transaction'}
             </h3>
-            <div className={`space-y-3 text-sm ${isMegaEth ? 'font-mono uppercase text-white/70' : isInk || isUnichain ? 'text-white/70' : isBase ? 'text-black/60' : isLitvm ? 'text-white/70' : 'text-white/85'}`}>
-              <p><span className={isMegaEth ? 'text-[#00ff88]' : isInk ? 'text-[#7B61FF]' : isUnichain ? 'text-[#FF007A]' : isBase ? 'text-[#0052FF]' : isSoneium ? 'text-[#0047FF]' : isArc ? 'text-[#4D8EE9]' : isLitvm ? 'text-[#00F2FE]' : 'text-white/60'}>Chain:</span> {chain.name} ({chainId})</p>
+            <div className={cn('space-y-3 text-sm', ui.bodyMuted)}>
+              <p><span className={ui.accentClass}>Chain:</span> {chain.name} ({chainId})</p>
               <p>
-                <span className={isMegaEth ? 'text-[#00ff88]' : isInk ? 'text-[#7B61FF]' : isUnichain ? 'text-[#FF007A]' : isBase ? 'text-[#0052FF]' : isSoneium ? 'text-[#0047FF]' : isArc ? 'text-[#4D8EE9]' : isLitvm ? 'text-[#00F2FE]' : 'text-white/60'}>Contract:</span>{" "}
+                <span className={ui.accentClass}>Contract:</span>{" "}
                 {contractAddress ? `${contractAddress.slice(0, 6)}...${contractAddress.slice(-4)}` : "Not configured"}
               </p>
-              <p><span className={isMegaEth ? 'text-[#00ff88]' : isInk ? 'text-[#7B61FF]' : isUnichain ? 'text-[#FF007A]' : isBase ? 'text-[#0052FF]' : isSoneium ? 'text-[#0047FF]' : isArc ? 'text-[#4D8EE9]' : isLitvm ? 'text-[#00F2FE]' : 'text-white/60'}>Score:</span> {score}/{total}</p>
-              <p><span className={isMegaEth ? 'text-[#00ff88]' : isInk ? 'text-[#7B61FF]' : isUnichain ? 'text-[#FF007A]' : isBase ? 'text-[#0052FF]' : isSoneium ? 'text-[#0047FF]' : isArc ? 'text-[#4D8EE9]' : isLitvm ? 'text-[#00F2FE]' : 'text-white/60'}>Estimated gas:</span> {estimatedGas ? estimatedGas.toString() : "Estimating..."}</p>
-              <p><span className={isMegaEth ? 'text-[#00ff88]' : isInk ? 'text-[#7B61FF]' : isUnichain ? 'text-[#FF007A]' : isBase ? 'text-[#0052FF]' : isSoneium ? 'text-[#0047FF]' : isArc ? 'text-[#4D8EE9]' : isLitvm ? 'text-[#00F2FE]' : 'text-white/60'}>From:</span> {address ? `${address.slice(0, 6)}...${address.slice(-4)}` : "Not connected"}</p>
+              <p><span className={ui.accentClass}>Score:</span> {score}/{total}</p>
+              <p><span className={ui.accentClass}>Estimated gas:</span> {estimatedGas ? estimatedGas.toString() : "Estimating..."}</p>
+              <p><span className={ui.accentClass}>From:</span> {address ? `${address.slice(0, 6)}...${address.slice(-4)}` : "Not connected"}</p>
             </div>
             <div className="mt-8 flex gap-3">
-              <Button
-                variant="outline"
-                className={`flex-1 ${isMegaEth ? 'rounded-none border-white/20 text-white uppercase' : isInk ? 'rounded-full' : isUnichain ? 'rounded-2xl' : isBase ? 'rounded-full border-black/10 text-black hover:bg-black/5' : isSoneium ? 'rounded-2xl border-[#0047FF]/20 text-white' : isArc ? 'rounded-2xl border-[#4D8EE9]/20 text-white' : isLitvm ? 'rounded-2xl border-[#00F2FE]/20 text-[#00F2FE] hover:bg-[#00F2FE]/10' : ''}`}
-                onClick={() => setShowConfirmModal(false)}
-              >
+              <Button variant="outline" className={cn('flex-1', ui.btnOutline)} onClick={() => setShowConfirmModal(false)}>
                 Cancel
               </Button>
               <Button
-                className={`flex-1 transition-all duration-300 hover:scale-[1.02] active:scale-[0.98] ${
-                  isMegaEth 
-                    ? 'rounded-none bg-[#00ff88] text-black hover:bg-[#00ff88]/80 font-mono uppercase font-bold' 
-                  : isInk
-                    ? 'rounded-full bg-[#7B61FF] hover:bg-[#6c54e6] text-white font-bold hover:shadow-[0_0_25px_rgba(139,92,246,0.5)]'
-                  : isUnichain
-                    ? 'rounded-2xl bg-[#FF007A] hover:bg-[#d60066] text-white font-bold hover:shadow-[0_0_25px_rgba(255,0,122,0.5)]'
-                  : isBase
-                    ? 'rounded-full bg-[#0052FF] hover:bg-[#0047FF] text-white font-bold hover:shadow-[0_0_25px_rgba(0,82,255,0.4)]'
-                  : isSoneium
-                    ? 'rounded-2xl bg-[#0047FF] hover:bg-[#003bd9] text-white font-bold hover:shadow-[0_0_25px_rgba(0,71,255,0.5)]'
-                  : isArc
-                    ? 'rounded-2xl bg-[#4D8EE9] hover:bg-[#3A7BD6] text-white font-bold hover:shadow-[0_0_25px_rgba(77,142,233,0.5)]'
-                  : isLitvm
-                    ? 'rounded-2xl bg-[#00F2FE] hover:bg-[#00C9DB] text-[#0B192C] font-bold hover:shadow-[0_0_25px_rgba(0,242,254,0.6)]'
-                    : 'bg-[#0047FF] hover:bg-[#0047FF]/90'
-                }`}
+                className={cn('flex-1', ui.btnPrimary)}
+                style={{ backgroundColor: accentColor }}
                 onClick={handleConfirmedSubmitScore}
                 disabled={!isConnected || !contractAddress}
               >
@@ -633,6 +630,13 @@ export function ResultsScreen({
           </div>
         </div>
       ) : null}
+      {showNftModal && (
+        <NftMintModal 
+          defaultOpen 
+          showTrigger={false} 
+          onClose={() => setShowNftModal(false)} 
+        />
+      )}
     </div>
   )
 }

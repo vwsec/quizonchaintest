@@ -499,18 +499,21 @@ export function NftMintModal({ defaultOpen = false, showTrigger = true, onClose 
                 {/* ── Stats row ──────────────────────────────────── */}
                 <div className="mt-4 flex gap-1.5 md:gap-2">
                   <StatBox
-                    value={nftState.loading ? "\u2026" : nftState.points.toString()}
+                    value={nftState.points.toString()}
                     label="Your Points"
                     accent={accent}
+                    loading={nftState.loading}
                   />
                   <StatBox
-                    value={nftState.loading ? "\u2026" : nftState.totalMinted.toString()}
+                    value={nftState.totalMinted.toString()}
                     label="Total Minted"
+                    loading={nftState.loading}
                   />
                   <StatBox
                     value={chainName}
                     label="Network"
                     accent={accent}
+                    loading={false}
                   />
                 </div>
 
@@ -616,20 +619,28 @@ function StatBox({
   value,
   label,
   accent,
+  loading = false,
 }: {
   value: string
   label: string
   accent?: string
+  loading?: boolean
 }) {
   return (
-    <div className="flex flex-1 flex-col items-center rounded-xl border border-white/[0.07] bg-white/[0.04] py-3">
-      <span
-        className="text-xl font-bold"
-        style={{ color: accent ?? "inherit" }}
-      >
-        {value}
+    <div className="flex flex-1 flex-col items-center rounded-xl border border-white/[0.07] bg-white/[0.04] py-3 px-1 transition-all">
+      {loading ? (
+        <div className="h-7 w-12 bg-white/10 rounded animate-pulse mb-1" />
+      ) : (
+        <span
+          className="text-xl font-bold tracking-tight truncate max-w-full text-center"
+          style={{ color: accent ?? "#fff" }}
+        >
+          {value}
+        </span>
+      )}
+      <span className="text-[10px] uppercase tracking-wider text-white/40 mt-0.5">
+        {label}
       </span>
-      <span className="text-xs text-white/45">{label}</span>
     </div>
   )
 }
@@ -813,10 +824,11 @@ export function NftProgressCard({ refreshKey = 0 }: NftProgressCardProps) {
       <style>{keyframes}</style>
 
       <div
-        className={`relative mt-6 w-full max-w-4xl overflow-hidden transition-all ${getContainerBorderRadius(cfg?.name)}`}
+        className={`relative mt-6 w-full max-w-4xl overflow-hidden transition-all duration-300 border backdrop-blur-xl ${getContainerBorderRadius(cfg?.name)}`}
         style={{
-          border: `1px solid ${accent}22`,
+          borderColor: `${accent}22`,
           background: `${accent}04`,
+          boxShadow: `inset 0 1px 0 rgba(255,255,255,0.02), 0 4px 20px rgba(0,0,0,0.15)`,
         }}
       >
         <div
@@ -824,18 +836,18 @@ export function NftProgressCard({ refreshKey = 0 }: NftProgressCardProps) {
           style={{ background: accent }}
         />
 
-        <div className="px-5 py-4">
-          {/* Loading */}
+        <div className="px-5 py-4.5">
+          {/* Loading Skeleton */}
           {loading && (
-            <div className="flex items-center gap-3">
-              <div
-                className="size-4 animate-spin rounded-full border-2"
-                style={{
-                  borderColor: "rgba(255,255,255,0.1)",
-                  borderTopColor: accent,
-                }}
-              />
-              <span className="text-xs text-foreground/40">Checking NFT progress\u2026</span>
+            <div className="flex flex-col gap-3 w-full py-1 animate-pulse">
+              <div className="flex justify-between items-center">
+                <div className="flex items-center gap-2">
+                  <div className="size-4 bg-white/10 rounded-full" />
+                  <div className="h-3.5 bg-white/10 w-36 rounded" />
+                </div>
+                <div className="h-3.5 bg-white/10 w-12 rounded" />
+              </div>
+              <div className="h-2 w-full bg-white/5 rounded-full" />
             </div>
           )}
 
@@ -845,15 +857,15 @@ export function NftProgressCard({ refreshKey = 0 }: NftProgressCardProps) {
               <div className="flex min-w-0 items-center gap-2.5">
                 <Award className="size-5 shrink-0" style={{ color: accent }} />
                 <div className="min-w-0">
-                  <p className="truncate text-sm font-semibold text-foreground">NFT Holder</p>
-                  <p className="truncate text-xs text-foreground/45">You own Quiz On Chain NFT</p>
+                  <p className="truncate text-sm font-bold text-foreground">NFT Badge Claimed</p>
+                  <p className="truncate text-xs text-foreground/45">You own the Quiz On Chain Master NFT</p>
                 </div>
               </div>
               <span
                 className="flex shrink-0 items-center gap-1.5 rounded-full border px-3 py-1.5 text-xs font-bold"
                 style={{
                   color: accent,
-                  borderColor: `${accent}55`,
+                  borderColor: `${accent}44`,
                   background: `${accent}11`,
                   animation: "holderPulse 3s ease-in-out infinite",
                 }}
@@ -870,31 +882,35 @@ export function NftProgressCard({ refreshKey = 0 }: NftProgressCardProps) {
               <div className="mb-2.5 flex items-center justify-between gap-2">
                 <div className="flex min-w-0 items-center gap-2">
                   <Trophy className="size-4 shrink-0" style={{ color: accent }} />
-                  <span className="truncate text-sm font-medium text-foreground">Progress to NFT</span>
+                  <span className="truncate text-sm font-semibold text-foreground">Progress to NFT Badge</span>
                 </div>
-                <span className="shrink-0 text-xs font-semibold" style={{ color: accent }}>
+                <span className="shrink-0 text-xs font-bold" style={{ color: accent }}>
                   {progress} / 100 pts
                 </span>
               </div>
 
-              <div className="relative h-2.5 w-full overflow-hidden rounded-full bg-foreground/10">
+              <div className="relative h-2 w-full overflow-hidden rounded-full bg-white/10">
                 <div
-                  className="h-full rounded-full transition-all duration-700"
+                  className="h-full rounded-full transition-all duration-1000 ease-out relative overflow-hidden"
                   style={{
                     width: `${progress}%`,
                     minWidth: progress > 0 ? "8px" : "0",
                     background: accent,
-                    boxShadow: `0 0 8px ${accent}44`,
-                    transition: "width 0.8s cubic-bezier(0.34,1.56,0.64,1)",
+                    boxShadow: `0 0 10px ${accent}66`,
                   }}
-                />
+                >
+                  <div 
+                    className="absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent animate-[progressShimmer_2s_infinite]"
+                    style={{ backgroundSize: '200% 100%' }}
+                  />
+                </div>
               </div>
 
-              <div className="mt-1.5 flex items-center justify-between">
-                <p className="text-[11px] text-foreground/35">
-                  Each correct answer earns points — keep playing!
+              <div className="mt-2 flex items-center justify-between">
+                <p className="text-[11px] text-foreground/40">
+                  Earn 100 total points on the leaderboard to claim your Master NFT badge!
                 </p>
-                <span className="text-[11px] text-foreground/35">{progress}%</span>
+                <span className="text-[11px] text-foreground/45">{progress}%</span>
               </div>
             </div>
           )}
@@ -905,18 +921,17 @@ export function NftProgressCard({ refreshKey = 0 }: NftProgressCardProps) {
               <div className="flex items-center gap-2.5">
                 <Award className="size-5 shrink-0" style={{ color: accent }} />
                 <div className="min-w-0">
-                  <p className="text-sm font-semibold text-foreground">
-                    You&apos;ve reached{" "}
-                    <span style={{ color: accent }}>{points.toString()} pts</span>!
+                  <p className="text-sm font-bold text-foreground">
+                    You&apos;ve reached <span style={{ color: accent }}>{points.toString()} pts</span>!
                   </p>
                   <p className="text-xs text-foreground/45">
-                    You&apos;re eligible to claim your exclusive NFT
+                    You are eligible to claim your exclusive Master NFT badge
                   </p>
                 </div>
               </div>
               <button
                 onClick={() => setModalOpen(true)}
-                className={`flex shrink-0 cursor-pointer items-center gap-1.5 self-start px-4 py-2 text-sm font-bold transition-all duration-200 hover:scale-105 active:scale-95 focus-visible:ring-2 focus-visible:ring-[#FBBF24] focus-visible:outline-none sm:self-auto ${getButtonBorderRadius(cfg?.name)} ${getChainFontClass(cfg?.name)}`}
+                className={`flex shrink-0 cursor-pointer items-center gap-1.5 self-start px-4.5 py-2.5 text-sm font-bold transition-all duration-300 hover:scale-105 active:scale-95 focus-visible:ring-2 focus-visible:ring-[#FBBF24] focus-visible:outline-none sm:self-auto ${getButtonBorderRadius(cfg?.name)} ${getChainFontClass(cfg?.name)}`}
                 style={{
                   background: getButtonGradient(),
                   color: "#fff",
@@ -924,7 +939,7 @@ export function NftProgressCard({ refreshKey = 0 }: NftProgressCardProps) {
                   textShadow: "0 1px 2px rgba(0,0,0,0.3)",
                 }}
               >
-                <Gem className="size-4" />
+                <Gem className="size-4 animate-pulse" />
                 {cfg?.name === "MegaETH" ? "CLAIM NFT" : "Claim NFT"}
               </button>
             </div>

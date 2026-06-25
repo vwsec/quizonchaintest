@@ -1,50 +1,54 @@
 @import url('https://fonts.googleapis.com/css2?family=Rajdhani:wght@400;500;600;700&family=Outfit:wght@100..900&display=swap');
 @import url('https://fonts.googleapis.com/css2?family=Exo+2:wght@300;400;500;600;700&family=Orbitron:wght@400;500;600;700&display=swap');
+/* QuizOnChain design system — Orbitron + Exo 2, OLED dark */
 @import 'tailwindcss';
 @import 'tw-animate-css';
 
 @custom-variant dark (&:is(.dark *));
 
 :root {
-  /* Soneium Brand Colors */
-  --background: #0a0a0a;
-  --foreground: #ffffff;
-  --card: rgba(255, 255, 255, 0.05);
-  --card-foreground: #ffffff;
-  --popover: #0a0a0a;
-  --popover-foreground: #ffffff;
-  --primary: #0047FF;
-  --primary-foreground: #ffffff;
-  --secondary: rgba(255, 255, 255, 0.1);
-  --secondary-foreground: #ffffff;
-  --muted: rgba(255, 255, 255, 0.1);
-  --muted-foreground: rgba(255, 255, 255, 0.6);
-  --accent: #0047FF;
-  --accent-foreground: #ffffff;
+  /* QuizOnChain default — Dark OLED design system */
+  --background: #0F0F23;
+  --foreground: #E2E8F0;
+  --card: rgba(255, 255, 255, 0.04);
+  --card-foreground: #E2E8F0;
+  --popover: #000000;
+  --popover-foreground: #FFFFFF;
+  --primary: #FFFFFF;
+  --primary-foreground: #000000;
+  --secondary: rgba(255, 255, 255, 0.12);
+  --secondary-foreground: #FFFFFF;
+  --muted: rgba(255, 255, 255, 0.08);
+  --muted-foreground: #94A3B8;
+  --accent: #FFFFFF;
+  --accent-foreground: #000000;
+  --cta: #FFFFFF;
+  --cta-foreground: #000000;
   --destructive: #ef4444;
   --destructive-foreground: #ffffff;
   --success: #22c55e;
   --success-foreground: #ffffff;
   --border: rgba(255, 255, 255, 0.1);
-  --input: rgba(255, 255, 255, 0.1);
-  --ring: #0047FF;
-  --chart-1: #0047FF;
+  --input: rgba(255, 255, 255, 0.08);
+  --ring: #FFFFFF;
+  --chart-1: #FFFFFF;
   --chart-2: oklch(0.6 0.118 184.704);
   --chart-3: oklch(0.398 0.07 227.392);
   --chart-4: oklch(0.828 0.189 84.429);
   --chart-5: oklch(0.769 0.188 70.08);
   --radius: 0.75rem;
-  --sidebar: #0a0a0a;
-  --sidebar-foreground: #ffffff;
-  --sidebar-primary: #0047FF;
-  --sidebar-primary-foreground: #ffffff;
-  --sidebar-accent: rgba(255, 255, 255, 0.1);
-  --sidebar-accent-foreground: #ffffff;
+  --sidebar: #000000;
+  --sidebar-foreground: #FFFFFF;
+  --sidebar-primary: #FFFFFF;
+  --sidebar-primary-foreground: #000000;
+  --sidebar-accent: rgba(255, 255, 255, 0.12);
+  --sidebar-accent-foreground: #FFFFFF;
   --sidebar-border: rgba(255, 255, 255, 0.1);
-  --sidebar-ring: #0047FF;
-  --hero-gradient-from: #0047FF;
-  --hero-gradient-to: #0033cc;
-  --progress-fill: #0047FF;
+  --sidebar-ring: #FFFFFF;
+  --hero-gradient-from: #FFFFFF;
+  --hero-gradient-to: #888888;
+  --progress-fill: #FFFFFF;
+  --glow-color: rgba(255, 255, 255, 0.15);
 }
 
 /* Dark mode not needed - Soneium theme is already dark */
@@ -99,11 +103,14 @@
     @apply border-border outline-ring/50;
   }
   body {
-    @apply text-foreground;
+    @apply text-foreground font-body;
     min-height: 100vh;
-    background: #080810;
+    background: #0F0F23;
     position: relative;
     overflow-x: hidden;
+  }
+  h1, h2, h3, h4 {
+    @apply font-display;
   }
 }
 
@@ -187,7 +194,31 @@
 }
 
 .glow-text {
-  text-shadow: 0 0 20px var(--glow-color, currentColor);
+  text-shadow: 0 0 10px var(--glow-color, rgba(124, 58, 237, 0.4));
+}
+
+/* Default disconnected theme */
+.theme-default {
+  --background: #000000;
+  --foreground: #FFFFFF;
+  --primary: #FFFFFF;
+  --primary-foreground: #000000;
+  --accent: #FFFFFF;
+  --cta: #FFFFFF;
+  --card: rgba(255, 255, 255, 0.04);
+  --border: rgba(255, 255, 255, 0.1);
+  --hero-gradient-from: #FFFFFF;
+  --hero-gradient-to: #888888;
+  --progress-fill: #FFFFFF;
+  --glow-color: rgba(255, 255, 255, 0.15);
+}
+
+.theme-default body {
+  background: #000000 !important;
+  background-image:
+    radial-gradient(ellipse at 20% 0%, rgba(255, 255, 255, 0.05) 0%, transparent 50%),
+    radial-gradient(ellipse at 80% 100%, rgba(255, 255, 255, 0.03) 0%, transparent 50%),
+    linear-gradient(160deg, #000000 0%, #0a0a0a 50%, #000000 100%) !important;
 }
 
 /* Hover Lift Effect */

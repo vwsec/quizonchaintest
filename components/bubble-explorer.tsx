@@ -486,7 +486,10 @@ export default function BubbleExplorer({ chain, initialAddress, initialTxHash }:
         monitorTransactions(newTxs)
       }
     } catch (err) {
-      console.error(err)
+      const msg = err instanceof Error ? err.message.split('\n')[0] : String(err)
+      if (process.env.NODE_ENV === 'development') {
+        console.warn(`[Explorer] ${config.name} API unavailable:`, msg)
+      }
       setError(true)
     } finally {
       isFetchingRef.current = false
@@ -2017,7 +2020,7 @@ export default function BubbleExplorer({ chain, initialAddress, initialTxHash }:
       </div>
 
       {/* Mini-map Overlay */}
-      <div className="absolute bottom-20 left-8 z-20 pointer-events-none">
+      <div className="absolute bottom-24 left-8 z-20 pointer-events-none">
           <canvas
             ref={miniMapCanvasRef}
             width={140}
@@ -2037,8 +2040,61 @@ export default function BubbleExplorer({ chain, initialAddress, initialTxHash }:
           </span>
         </div>
 
+      {/* Live Ticker Marquee */}
+      {!loading && bubblesRef.current.size > 0 && (
+        <div
+          className={`absolute bottom-0 inset-x-0 z-20 overflow-hidden border-t pointer-events-none select-none ${
+            isMegaEth
+              ? 'bg-black/80 border-[#00ff88]/15 text-[#00ff88]/60 font-mono'
+              : isBase
+                ? 'bg-white/80 border-black/5 text-black/30 backdrop-blur-md'
+                : isLitvm
+                  ? 'bg-[#0B192C]/70 border-[#00F2FE]/15 text-[#00F2FE]/40 font-mono'
+                  : 'bg-black/40 border-white/[0.06] text-white/25 backdrop-blur-md'
+          }`}
+          style={{ height: 24 }}
+        >
+          <style>{`
+            @keyframes ticker-scroll {
+              0%   { transform: translateX(0); }
+              100% { transform: translateX(-50%); }
+            }
+          `}</style>
+          <div
+            className="flex items-center gap-6 whitespace-nowrap text-[9px] font-bold uppercase tracking-[0.18em] h-full"
+            style={{ animation: 'ticker-scroll 40s linear infinite', width: 'max-content' }}
+          >
+            {/* Duplicate for seamless loop */}
+            {[...Array(2)].flatMap((_, pass) =>
+              Array.from(bubblesRef.current.values()).map((b, i) => {
+                const type = getTxPrimaryType(b.tx)
+                const typeLabel =
+                  type === 'coin_transfer'    ? 'TRANSFER' :
+                  type === 'contract_call'    ? 'CONTRACT' :
+                  type === 'token_transfer'   ? 'TOKEN'    :
+                  type === 'nft_transfer'     ? 'NFT'      : 'TX'
+                return (
+                  <span
+                    key={`${pass}-${b.id}-${i}`}
+                    className="flex items-center gap-2 shrink-0"
+                  >
+                    <span
+                      className="inline-block w-1.5 h-1.5 rounded-full"
+                      style={{ backgroundColor: b.color + 'cc' }}
+                    />
+                    <span>{typeLabel}</span>
+                    <span className="opacity-60 font-mono">{b.id.slice(0, 6)}…{b.id.slice(-4)}</span>
+                    <span className="opacity-20 mx-1">|</span>
+                  </span>
+                )
+              })
+            )}
+          </div>
+        </div>
+      )}
+
       {/* Legend */}
-      <div className={`absolute bottom-6 right-8 z-20 flex gap-4 p-3 border shadow-lg pointer-events-none ${
+      <div className={`absolute bottom-8 right-8 z-20 flex gap-4 p-3 border shadow-lg pointer-events-none ${
         isMegaEth 
           ? 'bg-black border-white/10 rounded-none' 
           : isBase 

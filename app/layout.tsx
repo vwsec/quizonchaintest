@@ -86,8 +86,8 @@ export default function RootLayout({
   children: React.ReactNode
 }>) {
   return (
-    <html lang="en" style={{ backgroundColor: '#0f1117' }}>
-      <body className="font-sans antialiased">
+    <html lang="en" className="theme-default" style={{ backgroundColor: '#0F0F23' }}>
+      <body className="font-body antialiased">
         <Providers>
           <ThemeUpdater />
           <WalletProvider>
