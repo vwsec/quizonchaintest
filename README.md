@@ -80,7 +80,7 @@ to mint an exclusive NFT.
 - **Framework**: Next.js 15 (App Router), React 19
 - **Wallet**: RainbowKit 2.2.11, wagmi v3, viem 2.49.0
 - **Smart Contracts**: Solidity ^0.8.20, OpenZeppelin ^5.6.1, Hardhat ^2.28
-- **Quiz Generation**: Groq SDK (llama-3.3-70b-versatile), Jina Reader
+- **Quiz Generation**: Gemini SDK (gemini-3.1-flash-lite), Jina Reader
 - **Answer Security**: JWT (jose) — correct answers stored in signed token
 - **Score Security**: ECDSA trusted signer pattern
 - **Styling**: Tailwind CSS v4, shadcn/ui, Lucide React
@@ -102,7 +102,7 @@ to mint an exclusive NFT.
 ## Environment Variables
 ```env
 # AI & Quiz
-GROQ_API_KEY=                        # Groq SDK API key (llama-3.3-70b-versatile)
+GEMINI_API_KEY=                     # Google AI Studio API key (gemini-3.1-flash-lite)
 QUIZ_JWT_SECRET=                     # HMAC secret for signing quiz JWT tokens (jose)
 QUIZ_SIGNER_PRIVATE_KEY=             # ECDSA private key for on-chain score signatures
 SIGNER_PRIVATE_KEY=                  # Fallback for QUIZ_SIGNER_PRIVATE_KEY
@@ -165,7 +165,7 @@ NVIDIA_API_KEY=
 ## How It Works
 
 1. **Connect wallet** — User connects any wallet (RainbowKit). The app detects the connected chain ID and loads the corresponding contract addresses, RPC endpoints, and theme.
-2. **Quiz generation** — Groq fetches docs via Jina Reader, generates 5 questions, returns a signed JWT containing correct answers (prevents client-side cheating)
+2. **Quiz generation** — Gemini fetches docs via Jina Reader, generates 5 questions, returns a signed JWT containing correct answers (prevents client-side cheating)
 3. **Answer verification** — `/api/verify-quiz` verifies the JWT and returns the score
 4. **Score signing** — `/api/sign-score` signs the score with `QUIZ_SIGNER_PRIVATE_KEY` using ECDSA
 5. **On-chain submission** — User submits score + signature to `QuizScores.sol` which verifies cooldown (1hr), score bounds, and signature via `ECDSA.recover`

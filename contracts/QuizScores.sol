@@ -1,12 +1,13 @@
 // SPDX-License-Identifier: MIT
-pragma solidity ^0.8.20;
+pragma solidity ^0.8.27;
 
 import "@openzeppelin/contracts/utils/ReentrancyGuard.sol";
 import "@openzeppelin/contracts/access/Ownable.sol";
 import "@openzeppelin/contracts/utils/cryptography/ECDSA.sol";
 import "@openzeppelin/contracts/utils/cryptography/MessageHashUtils.sol";
+import "@openzeppelin/contracts/utils/Pausable.sol";
 
-contract QuizScores is ReentrancyGuard, Ownable {
+contract QuizScores is ReentrancyGuard, Ownable, Pausable {
     using ECDSA for bytes32;
     using MessageHashUtils for bytes32;
 
@@ -28,6 +29,8 @@ contract QuizScores is ReentrancyGuard, Ownable {
     mapping(address => uint256) public totalPoints;
     mapping(address => uint256) public totalGames;
 
+    bytes32 public DOMAIN_SEPARATOR;
+
     event ScoreSubmitted(
         address indexed player,
         uint8 score,
@@ -47,10 +50,11 @@ contract QuizScores is ReentrancyGuard, Ownable {
     constructor(address initialTrustedSigner) Ownable(msg.sender) {
         require(initialTrustedSigner != address(0), "Signer cannot be zero");
         trustedSigner = initialTrustedSigner;
+        DOMAIN_SEPARATOR = keccak256(abi.encode("QuizScores", "1", block.chainid, address(this)));
         emit TrustedSignerUpdated(address(0), initialTrustedSigner);
     }
 
-    function submitScore(uint8 score, uint8 total, bytes calldata sig) external nonReentrant {
+    function submitScore(uint8 score, uint8 total, bytes calldata sig) external nonReentrant whenNotPaused {
         uint256 previousSubmissionAt = lastSubmissionAt[msg.sender];
         require(
             block.timestamp >= previousSubmissionAt + cooldownPeriod,
@@ -59,7 +63,7 @@ contract QuizScores is ReentrancyGuard, Ownable {
 
         require(total == maxTotal, "Total must equal max total");
         require(score <= total, "Score cannot exceed total");
-        require(_isValidSignature(msg.sender, score, total, sig), "Invalid signature");
+        require(_isValidSignature(msg.sender, score, total, sig, nonces[msg.sender]), "Invalid signature");
 
         scores[msg.sender] = Score(score, total, block.timestamp);
         lastSubmissionAt[msg.sender] = block.timestamp;
@@ -81,7 +85,6 @@ contract QuizScores is ReentrancyGuard, Ownable {
     }
 
     function setCooldownPeriod(uint256 newCooldown) external onlyOwner {
-        require(newCooldown >= 5 minutes, "Cooldown too short");
         require(newCooldown <= 24 hours, "Cooldown too long");
         uint256 previousCooldown = cooldownPeriod;
         cooldownPeriod = newCooldown;
@@ -136,14 +139,33 @@ contract QuizScores is ReentrancyGuard, Ownable {
         return nextAllowed - block.timestamp;
     }
 
+    function pause() external onlyOwner {
+        _pause();
+        emit Paused(msg.sender);
+    }
+
+    function unpause() external onlyOwner {
+        _unpause();
+        emit Unpaused(msg.sender);
+    }
+
     function _isValidSignature(
         address player,
         uint8 score,
         uint8 total,
-        bytes calldata sig
+        bytes calldata sig,
+        uint256 nonce
     ) internal view returns (bool) {
         bytes32 digest = keccak256(
-            abi.encode(player, score, total, nonces[player], block.chainid, address(this))
+            abi.encode(
+                DOMAIN_SEPARATOR,
+                player,
+                score,
+                total,
+                nonce,
+                block.chainid,
+                address(this)
+            )
         ).toEthSignedMessageHash();
         return digest.recover(sig) == trustedSigner;
     }

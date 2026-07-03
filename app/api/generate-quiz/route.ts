@@ -1,7 +1,7 @@
 export const dynamic = 'force-dynamic'
 export const maxDuration = 60
 
-import Groq from "groq-sdk"
+import { GoogleGenerativeAI } from "@google/generative-ai"
 import { NextResponse } from "next/server"
 import { SignJWT } from "jose"
 import {
@@ -26,9 +26,9 @@ const MAX_URLS_TO_TRY = 6
 const JINA_PREFIX = "https://r.jina.ai/"
 const FETCH_TIMEOUT_MS = 8_000
 const FETCH_DELAY_MS = 300
-const GROQ_MODEL = "llama-3.3-70b-versatile"
-const GROQ_RETRY_COUNT = 2
-const GROQ_INITIAL_BACKOFF_MS = 1000
+const GEMINI_MODEL = "gemini-3.1-flash-lite"
+const GEMINI_RETRY_COUNT = 2
+const GEMINI_INITIAL_BACKOFF_MS = 1000
 
 const TOPIC_ANGLES = [
   "consensus mechanisms",
@@ -91,10 +91,10 @@ function buildCorsHeaders(origin?: string) {
   } as const
 }
 
-function ensureGroqApiKey() {
-  const apiKey = process.env.GROQ_API_KEY?.trim()
+function ensureGeminiApiKey() {
+  const apiKey = process.env.GEMINI_API_KEY?.trim()
   if (!apiKey) {
-    throw new Error("GROQ_API_KEY is missing. Set it in your environment variables.")
+    throw new Error("GEMINI_API_KEY is missing. Set it in your environment variables.")
   }
   return apiKey
 }
@@ -158,6 +158,14 @@ function fisherYatesShuffle<T>(items: T[]): T[] {
     ;[arr[i], arr[j]] = [arr[j], arr[i]]
   }
   return arr
+}
+
+/** Randomize option order so the correct answer isn't always at index 0. */
+function shuffleOptions<T extends { options: readonly string[]; correctIndex: number }>(question: T): T {
+  const correctAnswer = question.options[question.correctIndex]
+  const shuffled = fisherYatesShuffle([...question.options])
+  const newCorrectIndex = shuffled.indexOf(correctAnswer)
+  return { ...question, options: shuffled, correctIndex: newCorrectIndex }
 }
 
 function sleep(ms: number) {
@@ -305,13 +313,14 @@ async function buildQuizResponse(
   headers: Record<string, string>,
   ecosystem: string,
 ) {
-  const questions: PublicQuestion[] = items.map((q, i) => ({
+  const randomized = items.map(shuffleOptions)
+  const questions: PublicQuestion[] = randomized.map((q, i) => ({
     id: i + 1,
     question: q.question.trim(),
     options: q.options.map((o) => o.trim()),
     correctIndex: q.correctIndex,
   }))
-  const answers = items.map((q) => q.correctIndex)
+  const answers = randomized.map((q) => q.correctIndex)
   const quizToken = await signQuizToken(chainId, answers)
   return NextResponse.json(
     {
@@ -530,20 +539,12 @@ function getFallbackQuestions(ecosystemName: "Ink" | "Soneium" | "Base" | "Unich
   ]
 }
 
-async function generateWithGroq(prompt: string, topicAngle: string): Promise<string> {
-  const apiKey = ensureGroqApiKey()
-  const groq = new Groq({ apiKey })
-
-  let lastError: Error | unknown = null
-
-  for (let attempt = 1; attempt <= GROQ_RETRY_COUNT; attempt++) {
-    try {
-      const completion = await groq.chat.completions.create({
-        model: GROQ_MODEL,
-        messages: [
-          {
-            role: "system",
-            content: `You are a blockchain quiz generator v2. Focus this quiz on: ${topicAngle}. Each time you must produce a completely different set of questions — vary the topics, difficulty angles, and technical depth. Never repeat the same question format or subject across generations.
+async function generateWithGemini(prompt: string, topicAngle: string): Promise<string> {
+  const apiKey = ensureGeminiApiKey()
+  const genAI = new GoogleGenerativeAI(apiKey)
+  const model = genAI.getGenerativeModel({
+    model: GEMINI_MODEL,
+    systemInstruction: `You are a blockchain quiz generator v2. Focus this quiz on: ${topicAngle}. Each time you must produce a completely different set of questions — vary the topics, difficulty angles, and technical depth. Never repeat the same question format or subject across generations.
 
 HARD RULES — These override all other instructions:
 a) Generate questions and answers ONLY from facts explicitly stated in the documentation provided below. Do NOT use your training knowledge to fill gaps.
@@ -551,30 +552,38 @@ b) NEVER infer technical properties from token names, chain names, currency symb
 c) Your training data may be outdated. Do NOT rely on it for facts about consensus mechanisms, proof systems, protocol versions, or network upgrades. Use ONLY the provided documentation.
 d) If the provided documentation does not contain enough factual content to generate a question with 4 verifiable answer options, skip that topic entirely. Do not guess.
 e) Every answer option must be traceable to a specific sentence in the provided documentation. If you cannot trace it, do not include it.`,
-          },
-          { role: "user", content: prompt },
+  })
+
+  let lastError: Error | unknown = null
+
+  for (let attempt = 1; attempt <= GEMINI_RETRY_COUNT; attempt++) {
+    try {
+      const result = await model.generateContent({
+        contents: [
+          { role: "user", parts: [{ text: prompt }] },
         ],
-        temperature: 1.0,
-        max_tokens: 2048,
-        seed: Date.now() + Math.floor(Math.random() * 100000) + attempt,
+        generationConfig: {
+          temperature: 1.0,
+          maxOutputTokens: 2048,
+        },
       }, {
-        timeout: 25_000,
+        signal: AbortSignal.timeout(25_000),
       })
 
-      const text = completion.choices[0]?.message?.content ?? ""
+      const text = result.response.text()
       const cleaned = text.replace(/<[^>]*>/g, "").replace(/```json|```/g, "").trim()
       return cleaned
     } catch (err) {
       lastError = err
-      console.warn(`[generate-quiz] Groq attempt ${attempt} failed:`, err)
-      if (attempt < GROQ_RETRY_COUNT) {
-        const backoff = GROQ_INITIAL_BACKOFF_MS * Math.pow(2, attempt - 1)
+      console.warn(`[generate-quiz] Gemini attempt ${attempt} failed:`, err)
+      if (attempt < GEMINI_RETRY_COUNT) {
+        const backoff = GEMINI_INITIAL_BACKOFF_MS * Math.pow(2, attempt - 1)
         await sleep(backoff)
       }
     }
   }
 
-  throw lastError || new Error("Failed to generate quiz with Groq after retries")
+  throw lastError || new Error("Failed to generate quiz with Gemini after retries")
 }
 
 async function handleGenerateQuiz(
@@ -715,7 +724,8 @@ Bad examples — NEVER generate:
 - 'What is the result of visiting the documentation page?'
 
 Format:
-[{"question": "...", "options": ["A", "B", "C", "D"], "correctIndex": 0}]
+[{"question": "...", "options": ["A", "B", "C", "D"], "correctIndex": 2}]
+IMPORTANT: Randomize which option is correct. Use correctIndex 0, 1, 2, or 3 evenly — never default to 0.
 
 Documentation:
 ${scrapedText}
@@ -726,7 +736,7 @@ ${scrapedText}
     
     for (let attempt = 1; attempt <= 2; attempt++) {
       try {
-        let raw = await generateWithGroq(prompt, topicAngle)
+        let raw = await generateWithGemini(prompt, topicAngle)
         let parsed = parseModelJson(raw)
         let candidateItems = validateQuestions(toValidatedQuizArray(parsed))
         
@@ -759,7 +769,7 @@ ${scrapedText}
     }
 
     if (!items) {
-      console.error(`[generate-quiz] FALLBACK TRIGGERED reason=groq_quality_fail chain=${ecosystemName}`)
+      console.error(`[generate-quiz] FALLBACK TRIGGERED reason=gemini_quality_fail chain=${ecosystemName}`)
       return await buildQuizResponse(
         selectedChainId,
         getFallbackQuestions(ecosystemName),
@@ -786,7 +796,7 @@ ${scrapedText}
   } catch (err) {
     console.error("[generate-quiz]", err)
     const msg = err instanceof Error ? err.message : String(err)
-    if (msg.includes("GROQ_API_KEY is missing")) {
+    if (msg.includes("GEMINI_API_KEY is missing")) {
       return NextResponse.json({ error: msg }, { status: 500, headers })
     }
     return await buildQuizResponse(
