@@ -360,7 +360,7 @@ export function ResultsScreen({
   const accentColor = ui.accent
 
   return (
-    <div className={cn('flex min-h-screen flex-col items-center justify-center px-4 py-12 pt-28', ui.page)}>
+    <div className={cn('flex min-h-dvh flex-col items-center justify-center px-4 py-6 pt-16 sm:py-12 sm:pt-28', ui.page)}>
       <div className="flex w-full flex-col items-center text-center">
         <div
           className={cn('max-w-sm mx-auto w-full flex flex-col items-center px-8 py-9 transition-colors duration-300 animate-scale-in', ui.cardStrong)}
@@ -378,12 +378,12 @@ export function ResultsScreen({
               }}
             />
             <div className={cn(
-              'text-[80px] md:text-[88px] font-bold leading-none tracking-tight animate-[scale-in_0.6s_cubic-bezier(0.34,1.56,0.64,1)]',
+              'text-[clamp(2.5rem,13vw,5.5rem)] md:text-[88px] font-bold leading-none tracking-tight animate-[scale-in_0.6s_cubic-bezier(0.34,1.56,0.64,1)]',
               ui.isLight ? 'text-black' : 'text-white',
               ui.fontMono && 'font-mono',
             )}>
               {displayScore}
-              <span className="text-[26px] md:text-[28px] font-light opacity-30">
+              <span className="text-[clamp(0.875rem,4vw,1.75rem)] md:text-[28px] font-light opacity-30">
                 {' '}/ {total}
               </span>
             </div>
@@ -599,8 +599,8 @@ export function ResultsScreen({
       ) : null}
 
       {showConfirmModal ? (
-        <div className="fixed inset-0 z-[60] flex items-center justify-center bg-black/80 p-4 backdrop-blur-md">
-          <div className={cn('w-full max-w-md p-6 text-left shadow-2xl border animate-scale-in', ui.cardStrong)}>
+        <div className="fixed inset-0 z-[60] flex items-center justify-center bg-black/80 p-4 safe-top safe-bottom backdrop-blur-md">
+          <div className={cn('w-full max-w-md p-6 text-left shadow-2xl border animate-scale-in max-h-[85dvh] overflow-y-auto', ui.cardStrong)}>
             <h3 className={cn('mb-4 text-xl font-bold', ui.accentClass)}>
               {ui.key === 'megaeth' ? '// CONFIRM TRANSACTION' : 'Confirm Transaction'}
             </h3>

@@ -53,7 +53,7 @@ export function Header() {
 
   return (
     <header className={ui.headerFloating}>
-      <div className="flex items-center justify-between px-4 py-3 md:px-6">
+      <div className="flex items-center justify-between px-3 py-2 md:px-6 md:py-3">
         <Link href="/" className="flex items-center gap-2.5 shrink-0 cursor-pointer">
           {ui.key !== 'megaeth' && (
             <Image
@@ -87,7 +87,7 @@ export function Header() {
                   key={nav.href}
                   href={nav.href}
                   className={cn(
-                    'px-3 py-1.5 text-sm transition-colors duration-200 text-center min-w-[80px]',
+                    'px-4 py-2.5 text-sm transition-colors duration-200 text-center min-w-[88px] touch-target',
                     ui.fontMono && 'font-mono uppercase font-medium',
                     active ? ui.navActive : ui.navInactive,
                   )}
@@ -102,14 +102,12 @@ export function Header() {
         </div>
 
         {/* Mobile Controls */}
-        <div className="flex md:hidden items-center gap-1">
-          <NftMintModal />
-          <ConnectButton showBalance={false} />
+        <div className="flex md:hidden items-center gap-0.5">
           <Sheet>
             <SheetTrigger asChild>
               <button
                 className={cn(
-                  'p-2 transition-colors duration-200 cursor-pointer rounded-lg',
+                  'p-3 transition-colors duration-200 cursor-pointer rounded-lg touch-target-lg',
                   ui.isLight
                     ? 'text-black hover:bg-black/5'
                     : 'text-white hover:bg-white/10',
@@ -119,9 +117,9 @@ export function Header() {
                 <Menu className="size-6" />
               </button>
             </SheetTrigger>
-            <SheetContent side="right" className={cn('w-[280px] sm:w-[320px] border-l p-0', ui.sheet)}>
-              <div className="flex flex-col h-full">
-                <div className={cn('px-6 py-6 border-b', ui.isLight ? 'border-black/5' : 'border-white/10')}>
+            <SheetContent side="right" className={cn('w-[280px] sm:w-[320px] max-w-[90vw] border-l p-0 max-h-dvh overflow-y-auto', ui.sheet)}>
+              <div className="flex flex-col h-full safe-top safe-bottom">
+                <div className={cn('px-6 py-4 border-b', ui.isLight ? 'border-black/5' : 'border-white/10')}>
                   <span className={titleClass}>
                     Quiz On <span className={ui.accentClass}>{chainName}</span>
                   </span>
@@ -134,7 +132,7 @@ export function Header() {
                         <Link
                           href={nav.href}
                           className={cn(
-                            'flex items-center px-4 py-3 text-base font-medium transition-colors duration-200 rounded-lg cursor-pointer',
+                            'flex items-center px-4 py-3.5 text-base font-medium transition-colors duration-200 rounded-lg cursor-pointer touch-target-lg',
                             active
                               ? cn(ui.navActive, 'w-full')
                               : ui.navInactive,
@@ -152,6 +150,14 @@ export function Header() {
               </div>
             </SheetContent>
           </Sheet>
+          <NftMintModal />
+          <div className="flex-1 min-w-0 overflow-hidden">
+            <div className="flex justify-end">
+              <div className="scale-[0.85] origin-right [&_button]:!min-h-[40px] [&_button]:!max-w-[140px]">
+                <ConnectButton showBalance={false} />
+              </div>
+            </div>
+          </div>
         </div>
       </div>
     </header>

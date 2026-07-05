@@ -77,24 +77,24 @@ export function QuizScreen({ questions, onComplete }: QuizScreenProps) {
   }
 
   return (
-    <div className={cn('flex min-h-screen flex-col items-center justify-center px-4 py-12 pt-28', ui.page)}>
+    <div className={cn('flex min-h-dvh flex-col items-center justify-center px-4 py-6 pt-16 sm:py-12 sm:pt-28', ui.page)}>
       <div
         className="relative z-10 w-full max-w-2xl"
         style={{ '--chain-accent': ui.accent } as React.CSSProperties}
       >
         {/* Progress */}
         <div className="mb-8">
-          <div className="flex items-center justify-between mb-3">
-            <span className={cn('text-sm font-medium', ui.bodyMuted)}>
+          <div className="flex items-center justify-between mb-2 sm:mb-3 flex-wrap gap-1">
+            <span className={cn('text-xs sm:text-sm font-medium', ui.bodyMuted)}>
               Question {currentQuestion + 1} of {questions.length}
             </span>
             {isAnswered && (
-              <span className={cn('text-sm font-medium', ui.accentClass)}>
+              <span className={cn('text-xs sm:text-sm font-medium', ui.accentClass)}>
                 Answer recorded
               </span>
             )}
           </div>
-          <div className={cn("relative overflow-hidden", ui.progressTrack)}>
+          <div className={cn("relative overflow-hidden h-3 sm:h-2", ui.progressTrack)}>
             <div
               className={cn('h-full transition-all duration-500 ease-out relative overflow-hidden', ui.radiusSm === 'rounded-none' ? 'rounded-none' : 'rounded-full')}
               style={{
@@ -141,14 +141,14 @@ export function QuizScreen({ questions, onComplete }: QuizScreenProps) {
                 onClick={() => handleSelectAnswer(index)}
                 disabled={isAnswered}
                 className={cn(
-                  'w-full text-left px-4 md:px-5 py-3.5 md:py-4 transition-all duration-300 flex items-center justify-between gap-3 md:gap-4 cursor-pointer group',
+                  'w-full text-left px-3 md:px-5 py-4 md:py-4 min-h-[48px] transition-all duration-300 flex items-center justify-between gap-2 md:gap-4 cursor-pointer group',
                   ui.radiusSm,
                   getOptionStyles(index),
                 )}
               >
                 <div className="flex items-center gap-4">
                   <span className={cn(
-                    'flex items-center justify-center size-8 text-sm font-bold border transition-all duration-300',
+                    'flex items-center justify-center size-10 md:size-8 text-sm font-bold border transition-all duration-300 shrink-0',
                     ui.radiusSm === 'rounded-full' ? 'rounded-full' : ui.radiusSm,
                     isAnswered && isCorrect && 'bg-[#22c55e]/20 border-[#22c55e]/50 text-[#22c55e]',
                     isAnswered && isSelected && !isCorrect && 'bg-[#ef4444]/20 border-[#ef4444]/50 text-[#ef4444]',
@@ -172,7 +172,7 @@ export function QuizScreen({ questions, onComplete }: QuizScreenProps) {
         {/* Feedback */}
         {isAnswered && question.correctIndex !== undefined && (
           <div className={cn(
-            'mb-8 p-4 border flex items-center gap-3 animate-slide-up',
+            'mb-8 p-3 sm:p-4 border flex items-center gap-2 sm:gap-3 animate-slide-up',
             ui.radiusSm,
             selectedAnswer === question.correctIndex
               ? 'bg-[rgba(34,197,94,0.15)] border-[#22c55e] text-[#22c55e]'
@@ -181,15 +181,16 @@ export function QuizScreen({ questions, onComplete }: QuizScreenProps) {
             {selectedAnswer === question.correctIndex ? (
               <>
                 <CheckCircle className="size-5 shrink-0" />
-                <span className="font-medium">Correct!</span>
+                <span className="font-bold text-sm sm:text-base">Correct!</span>
               </>
             ) : (
               <>
                 <XCircle className="size-5 shrink-0" />
-                <span className="font-medium">
-                  Incorrect — the correct answer was{' '}
+                <div className="text-xs sm:text-sm leading-snug">
+                  <span className="font-bold">Incorrect.</span>{' '}
+                  <span className="opacity-90">The correct answer was{' '}</span>
                   <span className="font-bold underline">{question.options[question.correctIndex]}</span>
-                </span>
+                </div>
               </>
             )}
           </div>
@@ -197,11 +198,11 @@ export function QuizScreen({ questions, onComplete }: QuizScreenProps) {
 
         {isAnswered && (
           <div className="flex justify-end">
-            <Button size="lg" onClick={handleNext} className={cn('px-8', ui.btnPrimary)}>
+            <Button size="lg" onClick={handleNext} className={cn('px-6 md:px-8 h-12', ui.btnPrimary)}>
               {currentQuestion < questions.length - 1 ? (
                 <>
-                  Next Question
-                  <ChevronRight className="size-5" />
+                  <span className="hidden sm:inline">Next Question</span><span className="sm:hidden">Next</span>
+                  <ChevronRight className="size-4 md:size-5" />
                 </>
               ) : (
                 "See Results"

@@ -115,12 +115,12 @@ export function HomeScreen({
   const ChainLogo = cfg?.name ? CHAIN_LOGOS[cfg.name] : null
 
   return (
-    <div className={cn("relative z-10 flex min-h-screen items-center justify-center px-4 pt-28 pb-10", ui.page)}>
+    <div className={cn("relative z-10 flex min-h-dvh items-center justify-center px-4 pt-20 pb-10 safe-x", ui.page)}>
       <div className="relative mx-auto flex w-full max-w-5xl flex-col items-center text-center">
 
         {/* Disconnected — hero + connect */}
         {!safeIsConnected && (
-          <div className="flex flex-col items-center justify-center min-h-[55vh] gap-8 relative z-10 animate-slide-up">
+          <div className="flex flex-col items-center justify-center min-h-dvh gap-6 relative z-10 animate-slide-up">
             <QuizOnChainLogo />
             <div className="space-y-3">
               <p className={ui.label}>Web3 Knowledge</p>
@@ -174,15 +174,15 @@ export function HomeScreen({
             </div>
 
             {/* Feature highlights — disconnected */}
-            <div className="mt-4 grid w-full max-w-3xl grid-cols-1 sm:grid-cols-3 gap-3">
+            <div className="mt-4 grid w-full max-w-3xl grid-cols-1 sm:grid-cols-3 gap-2 md:gap-3">
               {[
                 { value: '5', label: 'Questions' },
                 { value: 'On-Chain', label: 'Results' },
                 { value: 'Free', label: 'To Play' },
               ].map((item) => (
-                <div key={item.label} className={ui.statCard}>
-                  <div className={cn('text-2xl font-bold', ui.accentClass)}>{item.value}</div>
-                  <div className={cn('text-sm mt-1', ui.bodyMuted)}>{item.label}</div>
+                <div key={item.label} className={cn(ui.statCard, 'py-3 md:py-5')}>
+                  <div className={cn('text-xl md:text-2xl font-bold', ui.accentClass)}>{item.value}</div>
+                  <div className={cn('text-xs md:text-sm mt-0.5', ui.bodyMuted)}>{item.label}</div>
                 </div>
               ))}
             </div>
@@ -256,8 +256,8 @@ export function HomeScreen({
                 disabled={quizLoading || !safeIsConnected || isCooldownActive}
                 className={cn('h-12 w-full', ui.btnSecondary)}
               >
-                <Shuffle className="size-5" />
-                Shuffle Questions
+                <Shuffle className="size-4 md:size-5" />
+                <span className="hidden sm:inline">Shuffle Questions</span><span className="sm:hidden">Shuffle</span>
               </Button>
 
               <Button
@@ -292,17 +292,17 @@ export function HomeScreen({
               </div>
             </div>
 
-            <div className="mt-14 grid w-full max-w-4xl grid-cols-1 sm:grid-cols-3 gap-3 sm:gap-4">
+            <div className="mt-8 grid w-full max-w-4xl grid-cols-1 sm:grid-cols-3 gap-2 md:gap-4">
               {[
                 { value: '5', label: 'Questions' },
                 { value: 'On-Chain', label: 'Results' },
                 { value: 'Free', label: 'To Play' },
               ].map((item) => (
-                <div key={item.label} className={ui.statCard}>
-                  <div className={cn('text-2xl font-bold', ui.isLight ? 'text-black' : ui.accentClass)}>
+                <div key={item.label} className={cn(ui.statCard, 'py-3 md:py-5')}>
+                  <div className={cn('text-xl md:text-2xl font-bold', ui.isLight ? 'text-black' : ui.accentClass)}>
                     {item.value}
                   </div>
-                  <div className={cn('text-sm mt-1', ui.bodyMuted)}>{item.label}</div>
+                  <div className={cn('text-xs md:text-sm mt-0.5', ui.bodyMuted)}>{item.label}</div>
                 </div>
               ))}
             </div>

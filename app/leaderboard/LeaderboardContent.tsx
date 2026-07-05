@@ -39,8 +39,8 @@ export default function LeaderboardContent() {
 
   return (
     <main className={cn(ui.pageMain, ui.page, 'flex flex-col items-center')}>
-      <div className="w-full max-w-[90vw] overflow-x-auto scrollbar-none mb-8">
-        <div className={cn('flex items-center justify-start md:justify-center gap-2 p-1 w-fit mx-auto', ui.tabBar)}>
+      <div className="w-full max-w-full md:max-w-[90vw] overflow-x-auto scrollbar-none mb-6 md:mb-8">
+        <div className={cn('flex items-center justify-start md:justify-center gap-1.5 md:gap-2 p-1 w-fit mx-auto', ui.tabBar)}>
           {TABS.map((tab) => {
             const isActive = activeTab === tab.id
             const accent = getTabAccent(tab.id)
@@ -50,7 +50,7 @@ export default function LeaderboardContent() {
                 key={tab.id}
                 onClick={() => setActiveTab(tab.id)}
                 className={cn(
-                  'flex items-center gap-2 px-4 py-2 text-sm font-medium transition-colors duration-200 whitespace-nowrap cursor-pointer',
+                  'flex items-center gap-1.5 md:gap-2 px-2.5 md:px-4 py-1.5 md:py-2 text-xs md:text-sm font-medium transition-colors duration-200 whitespace-nowrap cursor-pointer',
                   ui.radiusSm,
                   isActive
                     ? isNeutralTab

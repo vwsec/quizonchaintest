@@ -385,7 +385,7 @@ export function NftMintModal({ defaultOpen = false, showTrigger = true, onClose 
 
       <Dialog open={open} onOpenChange={(v) => { if (!v) handleClose() }}>
         <DialogContent
-          className={`w-full max-w-md border-0 p-0 text-white bg-transparent ${getContainerBorderRadius(cfg?.name)} overflow-hidden`}
+          className={`w-full max-w-[90vw] sm:max-w-md border-0 p-0 text-white bg-transparent ${getContainerBorderRadius(cfg?.name)} max-h-[85dvh] overflow-y-auto`}
           style={{
             background: `radial-gradient(120% 100% at 50% 0%, #171738 0%, #090914 100%)`,
             boxShadow: `0 0 0 1px ${accent}33, 0 32px 100px rgba(0,0,0,0.8), inset 0 1px 0 rgba(255,255,255,0.1)`,
@@ -412,11 +412,11 @@ export function NftMintModal({ defaultOpen = false, showTrigger = true, onClose 
           style={{ background: "linear-gradient(90deg, rgba(139,92,246,0.3), transparent)" }}
         />
 
-          <div className="px-6 pb-8 pt-6">
+          <div className="px-5 sm:px-6 pb-6 sm:pb-8 pt-5 sm:pt-6 safe-bottom">
             {/* NFT Image */}
-            <div className="mb-6 flex justify-center relative z-10">
+            <div className="mb-4 md:mb-6 flex justify-center relative z-10">
               <div
-                className={`relative h-48 w-48 overflow-hidden ${getContainerBorderRadius(cfg?.name)} group`}
+                className={`relative h-36 w-36 md:h-48 md:w-48 overflow-hidden ${getContainerBorderRadius(cfg?.name)} group`}
                 style={{
                   border: `1px solid ${accent}66`,
                   boxShadow: `0 0 40px ${accent}33, 0 0 80px rgba(139,92,246,0.15), inset 0 0 20px ${accent}22`,
@@ -460,13 +460,13 @@ export function NftMintModal({ defaultOpen = false, showTrigger = true, onClose 
                   NFT is now on-chain.
                 </DialogDescription>
 
-                <div className="flex gap-2">
+                <div className="flex flex-col sm:flex-row gap-2 sm:gap-2">
                   {txHash && (
                     <a
                       href={getExplorerTxUrl(chainId, txHash)}
                       target="_blank"
                       rel="noopener noreferrer"
-                      className="flex flex-1 cursor-pointer items-center justify-center gap-1.5 rounded-xl border border-white/10 py-2.5 text-sm font-medium text-white/80 transition-colors duration-200 hover:bg-white/5"
+                      className="flex flex-1 cursor-pointer items-center justify-center gap-1.5 rounded-xl border border-white/10 py-3 sm:py-2.5 text-sm font-medium text-white/80 transition-colors duration-200 hover:bg-white/5"
                     >
                       <ExternalLink className="size-4" />
                       View TX
@@ -477,7 +477,7 @@ export function NftMintModal({ defaultOpen = false, showTrigger = true, onClose 
                       href={getOpenSeaUrl(chainId, nftContract, mintedTokenId)}
                       target="_blank"
                       rel="noopener noreferrer"
-                      className="flex flex-1 cursor-pointer items-center justify-center gap-1.5 rounded-xl py-2.5 text-sm font-bold transition-colors duration-200"
+                      className="flex flex-1 cursor-pointer items-center justify-center gap-1.5 rounded-xl py-3 sm:py-2.5 text-sm font-bold transition-colors duration-200"
                       style={{
                         border: `1px solid ${accent}44`,
                         color: accent,
@@ -533,7 +533,7 @@ export function NftMintModal({ defaultOpen = false, showTrigger = true, onClose 
                       <span>Progress to NFT</span>
                       <span style={{ color: accent }}>{progress} / 100 pts</span>
                     </div>
-                    <div className="h-2 w-full overflow-hidden rounded-full bg-white/10">
+                    <div className="h-3 w-full overflow-hidden rounded-full bg-white/10">
                       <div
                         className="h-full rounded-full transition-all duration-700"
                         style={{

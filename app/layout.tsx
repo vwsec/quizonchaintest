@@ -87,17 +87,20 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en" className="theme-default" style={{ backgroundColor: '#0F0F23' }}>
-      <body className="font-body antialiased">
+      <head>
+        <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+      </head>
+      <body className="font-body antialiased safe-top safe-bottom min-h-dvh">
         <Providers>
           <ThemeUpdater />
           <WalletProvider>
             <ThemeBackground />
             <Header />
-            {children}
+            <main className="safe-x pb-safe-bottom">{children}</main>
           </WalletProvider>
           <FeedbackButton />
         </Providers>
-        <Toaster theme="dark" position="top-center" richColors />
+        <Toaster theme="dark" position="top-right" richColors />
         {process.env.NODE_ENV === 'production' && <Analytics />}
       </body>
     </html>

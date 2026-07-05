@@ -1,0 +1,1196 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>LLM API Comparison — Gemini vs Groq vs OpenRouter</title>
+<style>
+  :root {
+    --bg: #0a0a10;
+    --surface: #12121a;
+    --surface2: #1a1a28;
+    --surface3: #222;
+    --border: #2a2a3e;
+    --text: #e0e0f0;
+    --text2: #888;
+    --accent-gemini: #4285f4;
+    --accent-groq: #f97316;
+    --accent-openrouter: #8b5cf6;
+    --green: #22c55e;
+    --red: #ef4444;
+    --yellow: #eab308;
+    --orange: #f97316;
+    --cyan: #06b6d4;
+  }
+  * { margin:0; padding:0; box-sizing:border-box; }
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Inter', system-ui, sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    padding: 2rem 1.5rem 4rem;
+    line-height: 1.6;
+  }
+  .container { max-width: 1400px; margin:0 auto; }
+
+  /* Header */
+  .header {
+    text-align: center;
+    padding: 3rem 0 2rem;
+    border-bottom: 1px solid var(--border);
+    margin-bottom: 2.5rem;
+  }
+  .header h1 {
+    font-size: 2.5rem;
+    font-weight: 800;
+    background: linear-gradient(135deg, #4285f4, #f97316, #8b5cf6);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    margin-bottom: 0.5rem;
+  }
+  .header p { color: var(--text2); font-size: 1.05rem; max-width: 640px; margin:0 auto; }
+  .header .badge {
+    display: inline-block;
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    padding: 0.3rem 1rem;
+    border-radius: 100px;
+    font-size: 0.8rem;
+    color: var(--text2);
+    margin-top: 0.8rem;
+  }
+
+  /* Tab Navigation */
+  .tabs {
+    display: flex;
+    gap: 0.5rem;
+    margin-bottom: 2rem;
+    flex-wrap: wrap;
+    border-bottom: 1px solid var(--border);
+    padding-bottom: 0;
+  }
+  .tab-btn {
+    padding: 0.7rem 1.4rem;
+    border: 1px solid transparent;
+    border-bottom: none;
+    background: transparent;
+    color: var(--text2);
+    cursor: pointer;
+    font-size: 0.9rem;
+    border-radius: 8px 8px 0 0;
+    transition: all 0.2s;
+    font-weight: 500;
+  }
+  .tab-btn:hover { color: var(--text); background: var(--surface); }
+  .tab-btn.active {
+    color: var(--text);
+    background: var(--surface);
+    border-color: var(--border);
+    position: relative;
+  }
+  .tab-btn.active::after {
+    content: '';
+    position: absolute;
+    bottom: -1px;
+    left: 0;
+    right: 0;
+    height: 2px;
+    background: var(--accent-gemini);
+  }
+  .tab-content { display: none; }
+  .tab-content.active { display: block; }
+
+  /* Cards */
+  .cards-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+    gap: 1.2rem;
+    margin-bottom: 2.5rem;
+  }
+  .provider-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 1.5rem;
+    position: relative;
+    overflow: hidden;
+  }
+  .provider-card::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 3px;
+  }
+  .provider-card.gemini::before { background: linear-gradient(90deg, #4285f4, #34a853); }
+  .provider-card.groq::before { background: linear-gradient(90deg, #f97316, #ef4444); }
+  .provider-card.openrouter::before { background: linear-gradient(90deg, #8b5cf6, #a855f7); }
+  .provider-card h3 { font-size: 1.2rem; margin-bottom: 0.3rem; }
+  .provider-card .tier-label { font-size: 0.75rem; color: var(--text2); margin-bottom: 0.8rem; }
+  .provider-card .price {
+    font-size: 1.8rem;
+    font-weight: 800;
+    margin-bottom: 0.2rem;
+  }
+  .provider-card .price-note { font-size: 0.8rem; color: var(--text2); }
+  .provider-card ul { list-style: none; margin-top: 1rem; }
+  .provider-card ul li {
+    padding: 0.3rem 0;
+    font-size: 0.85rem;
+    color: var(--text2);
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+  }
+  .provider-card ul li strong { color: var(--text); }
+
+  /* Tables */
+  .table-wrap {
+    overflow-x: auto;
+    margin-bottom: 2rem;
+    border-radius: 12px;
+    border: 1px solid var(--border);
+  }
+  table {
+    width: 100%;
+    border-collapse: collapse;
+    background: var(--surface);
+    font-size: 0.85rem;
+  }
+  thead th {
+    background: var(--surface2);
+    padding: 0.8rem 1rem;
+    text-align: left;
+    font-weight: 600;
+    white-space: nowrap;
+    border-bottom: 1px solid var(--border);
+    position: sticky;
+    top: 0;
+  }
+  thead th:first-child { border-radius: 12px 0 0 0; }
+  thead th:last-child { border-radius: 0 12px 0 0; }
+  tbody td {
+    padding: 0.7rem 1rem;
+    border-bottom: 1px solid var(--border);
+    vertical-align: middle;
+  }
+  tbody tr:hover { background: var(--surface2); }
+  tbody tr:last-child td { border-bottom: none; }
+
+  .provider-tag {
+    display: inline-block;
+    padding: 0.15rem 0.5rem;
+    border-radius: 4px;
+    font-size: 0.7rem;
+    font-weight: 600;
+    text-transform: uppercase;
+  }
+  .tag-gemini { background: #4285f422; color: #4285f4; }
+  .tag-groq { background: #f9731622; color: #f97316; }
+  .tag-or { background: #8b5cf622; color: #8b5cf6; }
+
+  .pill {
+    display: inline-block;
+    padding: 0.15rem 0.5rem;
+    border-radius: 100px;
+    font-size: 0.7rem;
+    font-weight: 600;
+  }
+  .pill-free { background: #22c55e22; color: var(--green); }
+  .pill-paid { background: #eab30822; color: var(--yellow); }
+  .pill-limited { background: #ef444422; color: var(--red); }
+
+  .star { color: var(--yellow); }
+  .check { color: var(--green); }
+  .cross { color: var(--red); }
+
+  /* Verdict section */
+  .verdict-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(340px, 1fr));
+    gap: 1.2rem;
+    margin: 2rem 0;
+  }
+  .verdict-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 1.5rem;
+  }
+  .verdict-card h4 {
+    font-size: 1rem;
+    margin-bottom: 0.8rem;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+  }
+  .verdict-card p, .verdict-card li {
+    font-size: 0.85rem;
+    color: var(--text2);
+    line-height: 1.7;
+  }
+  .verdict-card ul { list-style: none; padding: 0; }
+  .verdict-card ul li { padding: 0.3rem 0; padding-left: 1.2rem; position: relative; }
+  .verdict-card ul li::before { content: '→'; position: absolute; left: 0; color: var(--accent-gemini); }
+
+  /* Recommendation box */
+  .rec-box {
+    background: linear-gradient(135deg, #4285f408, #8b5cf608);
+    border: 1px solid #4285f433;
+    border-radius: 12px;
+    padding: 1.8rem 2rem;
+    margin: 2rem 0;
+    text-align: center;
+  }
+  .rec-box h3 { font-size: 1.3rem; margin-bottom: 0.5rem; }
+  .rec-box p { color: var(--text2); max-width: 700px; margin:0 auto 1rem; line-height: 1.7; }
+  .rec-tag {
+    display: inline-block;
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    padding: 0.4rem 1rem;
+    border-radius: 100px;
+    font-size: 0.8rem;
+    margin: 0.2rem;
+  }
+
+  /* Cost calculator */
+  .calc-section {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 1.8rem;
+    margin: 2rem 0;
+  }
+  .calc-section h3 { margin-bottom: 1rem; }
+  .calc-row {
+    display: grid;
+    grid-template-columns: 1fr 1fr 1fr;
+    gap: 1rem;
+    margin-bottom: 1rem;
+    padding: 0.8rem 0;
+    border-bottom: 1px solid var(--border);
+  }
+  .calc-row:last-child { border-bottom: none; }
+  .calc-row .calc-model { font-weight: 600; }
+  .calc-row .calc-cost { font-variant-numeric: tabular-nums; }
+  .calc-row .calc-cost.free { color: var(--green); }
+  .calc-row.header-row {
+    color: var(--text2);
+    font-size: 0.75rem;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    border-bottom: 2px solid var(--border);
+    padding-bottom: 0.5rem;
+  }
+
+  .cost-high { color: var(--red); }
+  .cost-med { color: var(--yellow); }
+  .cost-low { color: var(--green); }
+
+  /* Context window bar */
+  .ctx-bar-wrap { display: flex; align-items: center; gap: 0.5rem; }
+  .ctx-bar {
+    height: 6px;
+    border-radius: 3px;
+    flex: 1;
+    background: var(--surface3);
+    overflow: hidden;
+    min-width: 60px;
+  }
+  .ctx-bar-fill {
+    height: 100%;
+    border-radius: 3px;
+  }
+
+  /* Section title */
+  .section-title {
+    font-size: 1.3rem;
+    font-weight: 700;
+    margin: 2rem 0 1rem;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+  }
+  .section-title .emoji { font-size: 1.3rem; }
+
+  /* Responsive */
+  @media (max-width: 768px) {
+    body { padding: 1rem 0.8rem 3rem; }
+    .header h1 { font-size: 1.6rem; }
+    .cards-grid { grid-template-columns: 1fr; }
+    .verdict-grid { grid-template-columns: 1fr; }
+    .calc-row { grid-template-columns: 1fr; }
+    .tab-btn { padding: 0.5rem 0.8rem; font-size: 0.8rem; }
+    .table-wrap { font-size: 0.75rem; }
+    thead th, tbody td { padding: 0.5rem 0.6rem; }
+  }
+
+  /* DOT indicator */
+  .dot { display: inline-block; width: 8px; height: 8px; border-radius: 50%; margin-right: 4px; }
+  .dot-green { background: var(--green); }
+  .dot-yellow { background: var(--yellow); }
+  .dot-red { background: var(--red); }
+  .dot-blue { background: var(--accent-gemini); }
+
+  /* Status indicator */
+  .status { font-size: 0.75rem; }
+  .status-working { color: var(--green); }
+  .status-capped { color: var(--red); }
+  .status-ok { color: var(--green); }
+
+  /* Footer */
+  .footer {
+    text-align: center;
+    color: var(--text2);
+    font-size: 0.75rem;
+    padding: 2rem 0 1rem;
+    border-top: 1px solid var(--border);
+    margin-top: 2rem;
+  }
+  .footer a { color: var(--accent-gemini); }
+</style>
+</head>
+<body>
+<div class="container">
+
+<!-- HEADER -->
+<div class="header">
+  <h1>⚡ LLM API Comparison</h1>
+  <p>Deep-dive comparison of Gemini, Groq, and OpenRouter free tiers, pricing, rate limits, and model availability — tailored for your Web3 quiz generation app.</p>
+  <div class="badge">📅 Data sourced July 2026 · Official docs &amp; API endpoints</div>
+</div>
+
+<!-- STATUS OVERVIEW CARDS -->
+<div class="cards-grid">
+  <div class="provider-card gemini">
+    <h3>🔵 Gemini API</h3>
+    <div class="tier-label">Google AI Studio · Direct API</div>
+    <div class="price">Free Tier</div>
+    <div class="price-note">$0.00 · then pay-as-you-go</div>
+    <ul>
+      <li><span class="dot dot-green"></span> <strong>gemini-2.5-flash-lite</strong> — <span class="status status-working">✅ WORKING (new key)</span></li>
+      <li><span class="dot dot-green"></span> <strong>1,500 RPD</strong> on flash models</li>
+      <li><span class="dot dot-green"></span> <strong>4,000 TPM</strong> input tokens</li>
+      <li><span class="dot dot-red"></span> Easy to burn through on free tier</li>
+      <li><span class="dot dot-blue"></span> Paid tier: $0.10–$0.30/1M input</li>
+    </ul>
+  </div>
+
+  <div class="provider-card groq">
+    <h3>🟠 Groq</h3>
+    <div class="tier-label">LPU Inference · Free &amp; Developer Plans</div>
+    <div class="price">100% Free</div>
+    <div class="price-note">No paid tier required · blazing fast</div>
+    <ul>
+      <li><span class="dot dot-green"></span> <strong>30–60 RPM</strong> depending on model</li>
+      <li><span class="dot dot-green"></span> <strong>12K TPM</strong> on llama-3.3-70b</li>
+      <li><span class="dot dot-green"></span> <strong>500K TPD</strong> on small models</li>
+      <li><span class="dot dot-green"></span> 1K RPD on versatile models</li>
+      <li><span class="dot dot-green"></span> ✅ Already working in your stack</li>
+    </ul>
+  </div>
+
+  <div class="provider-card openrouter">
+    <h3>🟣 OpenRouter</h3>
+    <div class="tier-label">Multi-provider Gateway · Pay-per-token</div>
+    <div class="price">$0.00–$0.15/1M</div>
+    <div class="price-note">$1 free credits · then from $0.06/1M tok</div>
+    <ul>
+      <li><span class="dot dot-green"></span> <strong>Cheapest</strong> hosted Gemini rates</li>
+      <li><span class="dot dot-green"></span> <strong>Free models</strong> gemma-4, :free variants</li>
+      <li><span class="dot dot-green"></span> 200 RPM default (credit-based)</li>
+      <li><span class="dot dot-yellow"></span> No hard rate limits per model</li>
+      <li><span class="dot dot-green"></span> Unified API for 400+ models</li>
+    </ul>
+  </div>
+</div>
+
+<!-- TABS -->
+<div class="tabs">
+  <button class="tab-btn active" onclick="switchTab(event,'rate-limits')">📊 Rate Limits</button>
+  <button class="tab-btn" onclick="switchTab(event,'pricing')">💰 Pricing</button>
+  <button class="tab-btn" onclick="switchTab(event,'models')">🤖 Model Comparison</button>
+  <button class="tab-btn" onclick="switchTab(event,'verdict')">🏆 Verdict</button>
+  <button class="tab-btn" onclick="switchTab(event,'cost-calc')">🧮 Cost Calculator</button>
+</div>
+
+<!-- TAB 1: RATE LIMITS -->
+<div id="rate-limits" class="tab-content active">
+  <div class="section-title"><span class="emoji">📊</span> Rate Limits — Free Tier</div>
+  <div class="table-wrap">
+    <table>
+      <thead>
+        <tr>
+          <th>Provider</th>
+          <th>Model</th>
+          <th>RPM</th>
+          <th>RPD</th>
+          <th>TPM (input)</th>
+          <th>TPD</th>
+          <th>Context</th>
+          <th>Status</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr style="background:#4285f408">
+          <td><span class="provider-tag tag-gemini">Gemini</span></td>
+          <td><strong>gemini-2.5-flash-lite</strong> ← switched</td>
+          <td>30</td>
+          <td class="cost-high">1,500</td>
+          <td>4,000</td>
+          <td>1,000,000</td>
+          <td>1M</td>
+          <td><span class="pill pill-limited">🔥 EXHAUSTED</span></td>
+        </tr>
+        <tr style="background:#4285f408">
+          <td><span class="provider-tag tag-gemini">Gemini</span></td>
+          <td>gemini-2.0-flash-lite</td>
+          <td>30</td>
+          <td>1,500</td>
+          <td>4,000</td>
+          <td>1,000,000</td>
+          <td>1M</td>
+          <td><span class="pill pill-free">Free</span></td>
+        </tr>
+        <tr style="background:#4285f408">
+          <td><span class="provider-tag tag-gemini">Gemini</span></td>
+          <td>gemini-1.5-flash</td>
+          <td>30</td>
+          <td>1,500</td>
+          <td>4,000</td>
+          <td>1,000,000</td>
+          <td>1M</td>
+          <td><span class="pill pill-free">Free</span></td>
+        </tr>
+        <tr style="background:#4285f408">
+          <td><span class="provider-tag tag-gemini">Gemini</span></td>
+          <td>gemini-2.5-flash</td>
+          <td>10</td>
+          <td>1,500</td>
+          <td>4,000</td>
+          <td>1,000,000</td>
+          <td>1M</td>
+          <td><span class="pill pill-free">Free</span></td>
+        </tr>
+        <tr style="background:#4285f408">
+          <td><span class="provider-tag tag-gemini">Gemini</span></td>
+          <td>gemini-1.5-pro</td>
+          <td>2</td>
+          <td>50</td>
+          <td>32,000</td>
+          <td>—</td>
+          <td>2M</td>
+          <td><span class="pill pill-free">Free</span></td>
+        </tr>
+        <tr style="background:#f9731608">
+          <td><span class="provider-tag tag-groq">Groq</span></td>
+          <td><strong>llama-3.3-70b-versatile</strong> ← your fallback</td>
+          <td>30</td>
+          <td>1,000</td>
+          <td>12,000</td>
+          <td>100,000</td>
+          <td>128K</td>
+          <td><span class="pill pill-free">✅ Working</span></td>
+        </tr>
+        <tr style="background:#f9731608">
+          <td><span class="provider-tag tag-groq">Groq</span></td>
+          <td>llama-3.1-8b-instant</td>
+          <td>30</td>
+          <td>14,400</td>
+          <td>6,000</td>
+          <td>500,000</td>
+          <td>128K</td>
+          <td><span class="pill pill-free">Free</span></td>
+        </tr>
+        <tr style="background:#f9731608">
+          <td><span class="provider-tag tag-groq">Groq</span></td>
+          <td>qwen/qwen3-32b</td>
+          <td>60 🚀</td>
+          <td>1,000</td>
+          <td>6,000</td>
+          <td>500,000</td>
+          <td>32K</td>
+          <td><span class="pill pill-free">Free</span></td>
+        </tr>
+        <tr style="background:#f9731608">
+          <td><span class="provider-tag tag-groq">Groq</span></td>
+          <td>mixtral-8x7b-32768</td>
+          <td>30</td>
+          <td>14,400</td>
+          <td>6,000</td>
+          <td>500,000</td>
+          <td>32K</td>
+          <td><span class="pill pill-free">Free</span></td>
+        </tr>
+        <tr style="background:#f9731608">
+          <td><span class="provider-tag tag-groq">Groq</span></td>
+          <td>llama-4-scout-17b-16e</td>
+          <td>30</td>
+          <td>1,000</td>
+          <td>30,000</td>
+          <td>500,000</td>
+          <td>256K</td>
+          <td><span class="pill pill-free">Free</span></td>
+        </tr>
+        <tr style="background:#8b5cf608">
+          <td><span class="provider-tag tag-or">OpenRouter</span></td>
+          <td>Any :free model (gemma-4, etc.)</td>
+          <td>20</td>
+          <td>50–1,000</td>
+          <td>varies</td>
+          <td>varies</td>
+          <td>varies</td>
+          <td><span class="pill pill-free">Free</span></td>
+        </tr>
+        <tr style="background:#8b5cf608">
+          <td><span class="provider-tag tag-or">OpenRouter</span></td>
+          <td>Paid models (gemini, gpt-4o-mini, etc.)</td>
+          <td>200+</td>
+          <td>Credit-based</td>
+          <td>—</td>
+          <td>—</td>
+          <td>varies</td>
+          <td><span class="pill pill-paid">Pay-go</span></td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <div style="background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:1.5rem;margin:1.5rem 0;">
+    <div style="display:flex;align-items:flex-start;gap:0.8rem;">
+      <span style="font-size:1.5rem;line-height:1;">✅</span>
+      <div>
+        <strong>Your situation: Fixed</strong>
+        <p style="color:var(--text2);font-size:0.85rem;margin-top:0.3rem;">
+          Switched from the exhausted <strong>gemini-2.0-flash</strong> to <strong>gemini-2.5-flash-lite</strong> (new API key). 
+          1.5-flash has been removed from the API — 2.5-flash-lite is the closest drop-in replacement with fresh free tier quota.
+          <strong style="color:var(--text);">Groq fallback remains active</strong> (llama-3.3-70b-versatile) for redundancy.
+        </p>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- TAB 2: PRICING -->
+<div id="pricing" class="tab-content">
+  <div class="section-title"><span class="emoji">💰</span> Pricing Comparison</div>
+
+  <div class="table-wrap">
+    <table>
+      <thead>
+        <tr>
+          <th>Provider</th>
+          <th>Plan</th>
+          <th>Model Class</th>
+          <th>Input / 1M tok</th>
+          <th>Output / 1M tok</th>
+          <th>Cost per quiz (est.)</th>
+          <th>Value</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><span class="provider-tag tag-gemini">Gemini</span></td>
+          <td><span class="pill pill-free">Free</span></td>
+          <td>2.0 Flash / 1.5 Flash</td>
+          <td class="cost-low">$0.00</td>
+          <td class="cost-low">$0.00</td>
+          <td>$0.00</td>
+          <td>⭐⭐⭐⭐⭐</td>
+        </tr>
+        <tr>
+          <td><span class="provider-tag tag-gemini">Gemini</span></td>
+          <td><span class="pill pill-paid">Paid</span></td>
+          <td>2.5 Flash</td>
+          <td class="cost-low">$0.30</td>
+          <td class="cost-med">$2.50</td>
+          <td>≈ $0.0008</td>
+          <td>⭐⭐⭐⭐</td>
+        </tr>
+        <tr>
+          <td><span class="provider-tag tag-gemini">Gemini</span></td>
+          <td><span class="pill pill-paid">Paid</span></td>
+          <td>2.5 Flash Lite</td>
+          <td class="cost-low">$0.10</td>
+          <td class="cost-low">$0.40</td>
+          <td>≈ $0.0002</td>
+          <td>⭐⭐⭐⭐⭐</td>
+        </tr>
+        <tr>
+          <td><span class="provider-tag tag-groq">Groq</span></td>
+          <td><span class="pill pill-free">Free</span></td>
+          <td>All models</td>
+          <td class="cost-low">$0.00</td>
+          <td class="cost-low">$0.00</td>
+          <td>$0.00</td>
+          <td>⭐⭐⭐⭐⭐</td>
+        </tr>
+        <tr>
+          <td><span class="provider-tag tag-or">OpenRouter</span></td>
+          <td><span class="pill pill-free">Free</span></td>
+          <td>gemma-4 :free</td>
+          <td class="cost-low">$0.00</td>
+          <td class="cost-low">$0.00</td>
+          <td>$0.00</td>
+          <td>⭐⭐⭐</td>
+        </tr>
+        <tr>
+          <td><span class="provider-tag tag-or">OpenRouter</span></td>
+          <td><span class="pill pill-paid">Pay-go</span></td>
+          <td>gemini-2.5-flash-lite</td>
+          <td class="cost-low">$0.10</td>
+          <td class="cost-low">$0.40</td>
+          <td>≈ $0.0002</td>
+          <td>⭐⭐⭐⭐⭐</td>
+        </tr>
+        <tr>
+          <td><span class="provider-tag tag-or">OpenRouter</span></td>
+          <td><span class="pill pill-paid">Pay-go</span></td>
+          <td>gpt-4o-mini</td>
+          <td class="cost-low">$0.15</td>
+          <td class="cost-low">$0.60</td>
+          <td>≈ $0.0003</td>
+          <td>⭐⭐⭐⭐</td>
+        </tr>
+        <tr>
+          <td><span class="provider-tag tag-or">OpenRouter</span></td>
+          <td><span class="pill pill-paid">Pay-go</span></td>
+          <td>deepseek-v3.2</td>
+          <td class="cost-low">$0.23</td>
+          <td class="cost-low">$0.34</td>
+          <td>≈ $0.0003</td>
+          <td>⭐⭐⭐⭐⭐</td>
+        </tr>
+        <tr>
+          <td><span class="provider-tag tag-or">OpenRouter</span></td>
+          <td><span class="pill pill-paid">Pay-go</span></td>
+          <td>qwen3.6-flash</td>
+          <td class="cost-low">$0.19</td>
+          <td class="cost-low">$1.13</td>
+          <td>≈ $0.0005</td>
+          <td>⭐⭐⭐⭐</td>
+        </tr>
+        <tr>
+          <td><span class="provider-tag tag-or">OpenRouter</span></td>
+          <td><span class="pill pill-paid">Pay-go</span></td>
+          <td>gemini-2.5-flash</td>
+          <td class="cost-low">$0.30</td>
+          <td class="cost-med">$2.50</td>
+          <td>≈ $0.0008</td>
+          <td>⭐⭐⭐⭐</td>
+        </tr>
+        <tr>
+          <td><span class="provider-tag tag-or">OpenRouter</span></td>
+          <td><span class="pill pill-paid">Pay-go</span></td>
+          <td>mistral-small-2603</td>
+          <td class="cost-low">$0.15</td>
+          <td class="cost-low">$0.60</td>
+          <td>≈ $0.0003</td>
+          <td>⭐⭐⭐⭐</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <div class="rec-box">
+    <h3>💡 Cheapest Production Path</h3>
+    <p>
+      <strong>OpenRouter → gemini-2.5-flash-lite</strong> at $0.10/$0.40 per 1M tokens.
+      A typical quiz (≈2K tokens) costs <strong>$0.0002</strong> — that's <strong>5,000 quizzes for $1</strong>.
+      Or stay on <strong>Groq free tier</strong> for zero cost with slightly lower rate caps.
+    </p>
+    <span class="rec-tag">🥇 OpenRouter + gemini-2.5-flash-lite</span>
+    <span class="rec-tag">🥈 Groq + llama-3.3-70b (free)</span>
+    <span class="rec-tag">🥉 Gemini paid tier direct</span>
+  </div>
+</div>
+
+<!-- TAB 3: MODEL COMPARISON -->
+<div id="models" class="tab-content">
+  <div class="section-title"><span class="emoji">🤖</span> Model Suitability for Quiz Generation</div>
+
+  <div class="table-wrap">
+    <table>
+      <thead>
+        <tr>
+          <th>Model</th>
+          <th>Provider</th>
+          <th>Cost</th>
+          <th>Quality</th>
+          <th>Speed</th>
+          <th>Context</th>
+          <th>Best For</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><strong>gemini-2.0-flash</strong></td>
+          <td><span class="provider-tag tag-gemini">Gemini</span></td>
+          <td class="cost-low">Free tier</td>
+          <td>⭐⭐⭐⭐</td>
+          <td>⚡ Fast</td>
+          <td>1M</td>
+          <td>General purpose—but you exhausted it</td>
+        </tr>
+        <tr>
+          <td><strong>gemini-2.5-flash</strong></td>
+          <td><span class="provider-tag tag-gemini">Gemini</span></td>
+          <td class="cost-low">Free / $0.30</td>
+          <td>⭐⭐⭐⭐⭐</td>
+          <td>⚡ Fast</td>
+          <td>1M</td>
+          <td>Best Gemini for quiz gen (paid if needed)</td>
+        </tr>
+        <tr>
+          <td><strong>gemini-2.5-flash-lite</strong></td>
+          <td><span class="provider-tag tag-gemini">Gemini</span></td>
+          <td class="cost-low">$0.10</td>
+          <td>⭐⭐⭐½</td>
+          <td>⚡⚡ Fastest</td>
+          <td>1M</td>
+          <td><strong>Best cost/value for production</strong></td>
+        </tr>
+        <tr>
+          <td><strong>llama-3.3-70b-versatile</strong></td>
+          <td><span class="provider-tag tag-groq">Groq</span></td>
+          <td>Free</td>
+          <td>⭐⭐⭐⭐</td>
+          <td>🚀 Blazing</td>
+          <td>128K</td>
+          <td>Your current fallback — great quality</td>
+        </tr>
+        <tr>
+          <td><strong>qwen/qwen3-32b</strong></td>
+          <td><span class="provider-tag tag-groq">Groq</span></td>
+          <td>Free</td>
+          <td>⭐⭐⭐⭐</td>
+          <td>🚀 60 RPM max</td>
+          <td>32K</td>
+          <td>Highest throughput on Groq (60 RPM)</td>
+        </tr>
+        <tr>
+          <td><strong>llama-3.1-8b-instant</strong></td>
+          <td><span class="provider-tag tag-groq">Groq</span></td>
+          <td>Free</td>
+          <td>⭐⭐⭐</td>
+          <td>🚀 14K RPD</td>
+          <td>128K</td>
+          <td>Highest daily quota on Groq</td>
+        </tr>
+        <tr>
+          <td><strong>gemma-4-31b-it:free</strong></td>
+          <td><span class="provider-tag tag-or">OpenRouter</span></td>
+          <td>Free</td>
+          <td>⭐⭐⭐⭐</td>
+          <td>🔄 Moderate</td>
+          <td>262K</td>
+          <td>Best free OpenRouter model for quiz gen</td>
+        </tr>
+        <tr>
+          <td><strong>gemini-2.5-flash-lite</strong></td>
+          <td><span class="provider-tag tag-or">OpenRouter</span></td>
+          <td>$0.10/$0.40</td>
+          <td>⭐⭐⭐½</td>
+          <td>⚡⚡ Fast</td>
+          <td>1M</td>
+          <td><strong>Cheapest production path</strong></td>
+        </tr>
+        <tr>
+          <td><strong>deepseek-v3.2</strong></td>
+          <td><span class="provider-tag tag-or">OpenRouter</span></td>
+          <td>$0.23/$0.34</td>
+          <td>⭐⭐⭐⭐⭐</td>
+          <td>🔄 Moderate</td>
+          <td>131K</td>
+          <td>Best price/quality on OpenRouter</td>
+        </tr>
+        <tr>
+          <td><strong>gpt-4o-mini</strong></td>
+          <td><span class="provider-tag tag-or">OpenRouter</span></td>
+          <td>$0.15/$0.60</td>
+          <td>⭐⭐⭐⭐</td>
+          <td>⚡ Fast</td>
+          <td>128K</td>
+          <td>Solid fallback via OpenRouter</td>
+        </tr>
+        <tr>
+          <td><strong>qwen3.6-flash</strong></td>
+          <td><span class="provider-tag tag-or">OpenRouter</span></td>
+          <td>$0.19/$1.13</td>
+          <td>⭐⭐⭐⭐</td>
+          <td>⚡ Fast</td>
+          <td>1M</td>
+          <td>1M context, cheap input</td>
+        </tr>
+        <tr>
+          <td><strong>mistral-small-2603</strong></td>
+          <td><span class="provider-tag tag-or">OpenRouter</span></td>
+          <td>$0.15/$0.60</td>
+          <td>⭐⭐⭐⭐</td>
+          <td>⚡ Fast</td>
+          <td>262K</td>
+          <td>Great value alternative</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(250px,1fr));gap:1rem;margin:1.5rem 0;">
+    <div style="background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:1.2rem;">
+      <div style="font-size:1.2rem;margin-bottom:0.3rem;">🚀 Speed Ranking</div>
+      <ol style="color:var(--text2);font-size:0.85rem;padding-left:1.2rem;">
+        <li style="padding:0.2rem 0;"><strong style="color:var(--text);">Groq</strong> — LPU hardware, sub-100ms</li>
+        <li style="padding:0.2rem 0;"><strong style="color:var(--text);">Gemini Flash</strong> — 200-500ms</li>
+        <li style="padding:0.2rem 0;"><strong style="color:var(--text);">OpenRouter</strong> — depends on upstream</li>
+      </ol>
+    </div>
+    <div style="background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:1.2rem;">
+      <div style="font-size:1.2rem;margin-bottom:0.3rem;">🎯 Quality Ranking</div>
+      <ol style="color:var(--text2);font-size:0.85rem;padding-left:1.2rem;">
+        <li style="padding:0.2rem 0;"><strong style="color:var(--text);">Gemini 2.5 Flash</strong> — best overall</li>
+        <li style="padding:0.2rem 0;"><strong style="color:var(--text);">DeepSeek V3.2</strong> — close second</li>
+        <li style="padding:0.2rem 0;"><strong style="color:var(--text);">Llama 3.3 70B</strong> — solid open-source</li>
+      </ol>
+    </div>
+    <div style="background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:1.2rem;">
+      <div style="font-size:1.2rem;margin-bottom:0.3rem;">💰 Value Ranking</div>
+      <ol style="color:var(--text2);font-size:0.85rem;padding-left:1.2rem;">
+        <li style="padding:0.2rem 0;"><strong style="color:var(--text);">Groq</strong> — completely free</li>
+        <li style="padding:0.2rem 0;"><strong style="color:var(--text);">Gemini Free Tier</strong> — free but capped</li>
+        <li style="padding:0.2rem 0;"><strong style="color:var(--text);">OpenRouter</strong> — pennies per 1M tok</li>
+      </ol>
+    </div>
+  </div>
+</div>
+
+<!-- TAB 4: VERDICT -->
+<div id="verdict" class="tab-content">
+  <div class="section-title"><span class="emoji">🏆</span> Verdict — What Should You Do?</div>
+
+  <div class="verdict-grid">
+    <div class="verdict-card">
+      <h4>🟢 Short-term (Today)</h4>
+      <p><strong>You already fixed the outage.</strong> Groq fallback is live and working. No urgent changes needed.</p>
+      <ul>
+        <li>Keep Gemini 2.0 Flash as primary</li>
+        <li>Keep Groq llama-3.3-70b as fallback</li>
+        <li>Monitor rate limit headers (X-RateLimit-Remaining)</li>
+        <li>Add a quota gauge to your dashboard</li>
+      </ul>
+    </div>
+
+    <div class="verdict-card">
+      <h4>🟡 Medium-term (This Week)</h4>
+      <p><strong>Upgrade to paid Gemini or switch primary to OpenRouter.</strong></p>
+      <ul>
+        <li><strong>Option A:</strong> Enable billing on Gemini (Tier 1) — $10 spend limit, massive rate increase</li>
+        <li><strong>Option B:</strong> Route primary through <strong>OpenRouter → gemini-2.5-flash-lite</strong> at $0.10/1M input</li>
+        <li><strong>Option C:</strong> Make Groq the primary and use Gemini as fallback</li>
+        <li>Implement smart model selection based on remaining quota</li>
+      </ul>
+    </div>
+
+    <div class="verdict-card">
+      <h4>🔵 Long-term (Scaling)</h4>
+      <p><strong>Multi-provider routing for maximum uptime + cost optimization.</strong></p>
+      <ul>
+        <li>If avg quiz = 2K tokens: <strong>5,000 quizzes = $1</strong> on flash-lite</li>
+        <li>Use Groq free tier as primary for zero-cost operations</li>
+        <li>Use OpenRouter for overflow (no hard RPD caps)</li>
+        <li>Keep Gemini direct as tertiary (cheapest direct rate)</li>
+        <li>Add a fallback chain: Groq → OpenRouter → Gemini → Hardcoded</li>
+      </ul>
+    </div>
+  </div>
+
+  <!-- Comparison Checkboxes -->
+  <div class="table-wrap" style="margin-top:1.5rem;">
+    <table>
+      <thead>
+        <tr>
+          <th>Feature</th>
+          <th style="color:#4285f4;">Gemini Free</th>
+          <th style="color:#f97316;">Groq Free</th>
+          <th style="color:#8b5cf6;">OpenRouter Free</th>
+          <th style="color:#4285f4;">Gemini Paid</th>
+          <th style="color:#8b5cf6;">OpenRouter Paid</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td>Cost</td>
+          <td><span class="cost-low">$0</span></td>
+          <td><span class="cost-low">$0</span></td>
+          <td><span class="cost-low">$0</span></td>
+          <td class="cost-med">Pay-go</td>
+          <td class="cost-low">Pay-go</td>
+        </tr>
+        <tr>
+          <td>Max RPM</td>
+          <td>30</td>
+          <td>30-60</td>
+          <td>20</td>
+          <td>2,000+</td>
+          <td>200+</td>
+        </tr>
+        <tr>
+          <td>Max RPD</td>
+          <td>1,500</td>
+          <td>1,000–14,400</td>
+          <td>50–1,000</td>
+          <td>Unlimited</td>
+          <td>Credit-based</td>
+        </tr>
+        <tr>
+          <td>Rate limit reset</td>
+          <td>Midnight PT</td>
+          <td>Unknown (rolling)</td>
+          <td>Credit-based</td>
+          <td>Rolling 10min</td>
+          <td>Per-billing cycle</td>
+        </tr>
+        <tr>
+          <td>Best model quality</td>
+          <td>⭐⭐⭐⭐⭐</td>
+          <td>⭐⭐⭐⭐</td>
+          <td>⭐⭐⭐⭐</td>
+          <td>⭐⭐⭐⭐⭐</td>
+          <td>⭐⭐⭐⭐⭐</td>
+        </tr>
+        <tr>
+          <td>Overflow safety</td>
+          <td><span class="cross">✗</span> Hard 429</td>
+          <td><span class="check">✓</span> Soft limits</td>
+          <td><span class="check">✓</span> Credit-based</td>
+          <td><span class="check">✓</span> Spend limit</td>
+          <td><span class="check">✓</span> Add credits</td>
+        </tr>
+        <tr>
+          <td>Web3 quiz suitability</td>
+          <td><span class="star">★</span><span class="star">★</span><span class="star">★</span><span class="star">★</span><span class="star">★</span></td>
+          <td><span class="star">★</span><span class="star">★</span><span class="star">★</span><span class="star">★</span></td>
+          <td><span class="star">★</span><span class="star">★</span><span class="star">★</span></td>
+          <td><span class="star">★</span><span class="star">★</span><span class="star">★</span><span class="star">★</span><span class="star">★</span></td>
+          <td><span class="star">★</span><span class="star">★</span><span class="star">★</span><span class="star">★</span><span class="star">★</span></td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <div class="rec-box">
+    <h3>🥇 Our Recommendation</h3>
+    <p>
+      <strong>Immediate:</strong> Keep Groq as active fallback (already working).<br>
+      <strong>Next step:</strong> Add OpenRouter as a second fallback with <strong>gemini-2.5-flash-lite</strong> ($0.10/$0.40 per 1M).<br>
+      <strong>Production:</strong> Multi-provider fallback chain: Groq (free) → OpenRouter (cheap) → Gemini direct (reliable) → Hardcoded (last resort).
+    </p>
+    <span class="rec-tag">🔹 5,000 quizzes for $1 on flash-lite</span>
+    <span class="rec-tag">🔹 Zero-cost operation with Groq</span>
+    <span class="rec-tag">🔹 No more 429 errors</span>
+  </div>
+</div>
+
+<!-- TAB 5: COST CALCULATOR -->
+<div id="cost-calc" class="tab-content">
+  <div class="section-title"><span class="emoji">🧮</span> Cost Calculator — Quiz Generation</div>
+
+  <div style="background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:1.5rem;margin-bottom:1.5rem;">
+    <p style="color:var(--text2);margin-bottom:1rem;">Based on <strong style="color:var(--text);">~2,000 tokens per quiz</strong> (1,500 input prompt + 500 output). Your actual usage may vary — adjust the slider below.</p>
+    <div style="display:flex;align-items:center;gap:1rem;flex-wrap:wrap;">
+      <label style="color:var(--text2);font-size:0.85rem;">Tokens per quiz:</label>
+      <input type="range" id="tokensPerQuiz" min="500" max="5000" value="2000" step="100" style="flex:1;max-width:300px;accent-color:var(--accent-gemini);" oninput="updateCalc()">
+      <span id="tokensPerQuizDisplay" style="font-weight:600;min-width:60px;">2,000</span>
+      <span style="color:var(--text2);font-size:0.85rem;">Quizzes per month:</span>
+      <input type="range" id="quizzesPerMonth" min="100" max="50000" value="5000" step="100" style="flex:1;max-width:300px;accent-color:var(--accent-gemini);" oninput="updateCalc()">
+      <span id="quizzesPerMonthDisplay" style="font-weight:600;min-width:60px;">5,000</span>
+    </div>
+  </div>
+
+  <div class="table-wrap">
+    <table>
+      <thead>
+        <tr>
+          <th>Provider</th>
+          <th>Model</th>
+          <th>Cost / 1M input tok</th>
+          <th>Cost / 1M output tok</th>
+          <th>Cost per quiz</th>
+          <th>Monthly cost (5K quizzes)</th>
+          <th>10K quizzes</th>
+          <th>50K quizzes</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><span class="provider-tag tag-gemini">Gemini</span></td>
+          <td>2.0 Flash (Free)</td>
+          <td class="cost-low">$0.00</td>
+          <td class="cost-low">$0.00</td>
+          <td class="cost-low" id="p-gemini-free-each">$0.00000</td>
+          <td class="cost-low" id="p-gemini-free-5k">$0.00</td>
+          <td class="cost-low" id="p-gemini-free-10k">$0.00</td>
+          <td class="cost-low" id="p-gemini-free-50k">$0.00</td>
+        </tr>
+        <tr>
+          <td><span class="provider-tag tag-gemini">Gemini</span></td>
+          <td>2.5 Flash Lite (Paid)</td>
+          <td class="cost-low">$0.10</td>
+          <td class="cost-low">$0.40</td>
+          <td class="cost-low" id="p-gemini-flash-lite-each">$0.00035</td>
+          <td class="cost-low" id="p-gemini-flash-lite-5k">$1.75</td>
+          <td class="cost-med" id="p-gemini-flash-lite-10k">$3.50</td>
+          <td class="cost-med" id="p-gemini-flash-lite-50k">$17.50</td>
+        </tr>
+        <tr>
+          <td><span class="provider-tag tag-gemini">Gemini</span></td>
+          <td>2.5 Flash (Paid)</td>
+          <td class="cost-low">$0.30</td>
+          <td class="cost-med">$2.50</td>
+          <td class="cost-low" id="p-gemini-flash-each">$0.00095</td>
+          <td class="cost-low" id="p-gemini-flash-5k">$4.75</td>
+          <td class="cost-med" id="p-gemini-flash-10k">$9.50</td>
+          <td class="cost-med" id="p-gemini-flash-50k">$47.50</td>
+        </tr>
+        <tr>
+          <td><span class="provider-tag tag-groq">Groq</span></td>
+          <td>llama-3.3-70b (Free)</td>
+          <td class="cost-low">$0.00</td>
+          <td class="cost-low">$0.00</td>
+          <td class="cost-low" id="p-groq-free-each">$0.00000</td>
+          <td class="cost-low" id="p-groq-free-5k">$0.00</td>
+          <td class="cost-low" id="p-groq-free-10k">$0.00</td>
+          <td class="cost-low" id="p-groq-free-50k">$0.00</td>
+        </tr>
+        <tr>
+          <td><span class="provider-tag tag-or">OpenRouter</span></td>
+          <td>gemini-2.5-flash-lite</td>
+          <td class="cost-low">$0.10</td>
+          <td class="cost-low">$0.40</td>
+          <td class="cost-low" id="p-or-flash-lite-each">$0.00035</td>
+          <td class="cost-low" id="p-or-flash-lite-5k">$1.75</td>
+          <td class="cost-med" id="p-or-flash-lite-10k">$3.50</td>
+          <td class="cost-med" id="p-or-flash-lite-50k">$17.50</td>
+        </tr>
+        <tr>
+          <td><span class="provider-tag tag-or">OpenRouter</span></td>
+          <td>gpt-4o-mini</td>
+          <td class="cost-low">$0.15</td>
+          <td class="cost-low">$0.60</td>
+          <td class="cost-low" id="p-or-gpt4o-mini-each">$0.00053</td>
+          <td class="cost-low" id="p-or-gpt4o-mini-5k">$2.63</td>
+          <td class="cost-med" id="p-or-gpt4o-mini-10k">$5.25</td>
+          <td class="cost-med" id="p-or-gpt4o-mini-50k">$26.25</td>
+        </tr>
+        <tr>
+          <td><span class="provider-tag tag-or">OpenRouter</span></td>
+          <td>deepseek-v3.2</td>
+          <td class="cost-low">$0.23</td>
+          <td class="cost-low">$0.34</td>
+          <td class="cost-low" id="p-or-deepseek-each">$0.00029</td>
+          <td class="cost-low" id="p-or-deepseek-5k">$1.43</td>
+          <td class="cost-low" id="p-or-deepseek-10k">$2.85</td>
+          <td class="cost-med" id="p-or-deepseek-50k">$14.25</td>
+        </tr>
+        <tr>
+          <td><span class="provider-tag tag-or">OpenRouter</span></td>
+          <td>mistral-small-2603</td>
+          <td class="cost-low">$0.15</td>
+          <td class="cost-low">$0.60</td>
+          <td class="cost-low" id="p-or-mistral-each">$0.00053</td>
+          <td class="cost-low" id="p-or-mistral-5k">$2.63</td>
+          <td class="cost-med" id="p-or-mistral-10k">$5.25</td>
+          <td class="cost-med" id="p-or-mistral-50k">$26.25</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <div class="rec-box">
+    <h3>📊 Bottom Line</h3>
+    <p id="bottomLine">
+      At <strong>5,000 quizzes/month</strong> with <strong>2,000 tokens/quiz</strong>:
+      Groq = <strong>$0</strong> · flash-lite via OpenRouter = <strong>$1.75</strong> · deepseek-v3.2 = <strong>$1.43</strong>.
+      Even at 50K quizzes/month you're paying less than <strong>$18</strong> on the cheapest paid models.
+    </p>
+  </div>
+</div>
+
+<div class="footer">
+  <p>
+    Data sourced from <a href="https://ai.google.dev/gemini-api/docs/rate-limits" target="_blank">Google Gemini docs</a>,
+    <a href="https://console.groq.com/docs/rate-limits" target="_blank">Groq docs</a>,
+    <a href="https://openrouter.ai/docs/limits" target="_blank">OpenRouter docs</a>,
+    and <a href="https://openrouter.ai/api/v1/models" target="_blank">OpenRouter API</a>.
+    Prices and limits may change. Last updated: July 2026.
+  </p>
+  <p style="margin-top:0.5rem;">
+    Built for <strong>QuizOnChain</strong> — Web3 quiz app on LitVM testnet
+  </p>
+</div>
+
+</div><!-- /container -->
+
+<script>
+// Tab switching
+function switchTab(e, tabId) {
+  document.querySelectorAll('.tab-content').forEach(t => t.classList.remove('active'));
+  document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+  document.getElementById(tabId).classList.add('active');
+  e.target.classList.add('active');
+}
+
+// Cost Calculator
+function updateCalc() {
+  const tokensQuiz = parseInt(document.getElementById('tokensPerQuiz').value);
+  const quizzesMonth = parseInt(document.getElementById('quizzesPerMonth').value);
+  document.getElementById('tokensPerQuizDisplay').textContent = tokensQuiz.toLocaleString();
+  document.getElementById('quizzesPerMonthDisplay').textContent = quizzesMonth.toLocaleString();
+
+  // Assume 75% input tokens, 25% output tokens
+  const inputPerQuiz = Math.round(tokensQuiz * 0.75);
+  const outputPerQuiz = tokensQuiz - inputPerQuiz;
+
+  const models = [
+    { prefix: 'gemini-free', inputRate: 0, outputRate: 0 },
+    { prefix: 'gemini-flash-lite', inputRate: 0.10, outputRate: 0.40 },
+    { prefix: 'gemini-flash', inputRate: 0.30, outputRate: 2.50 },
+    { prefix: 'groq-free', inputRate: 0, outputRate: 0 },
+    { prefix: 'or-flash-lite', inputRate: 0.10, outputRate: 0.40 },
+    { prefix: 'or-gpt4o-mini', inputRate: 0.15, outputRate: 0.60 },
+    { prefix: 'or-deepseek', inputRate: 0.23, outputRate: 0.34 },
+    { prefix: 'or-mistral', inputRate: 0.15, outputRate: 0.60 },
+  ];
+
+  for (const m of models) {
+    const costEach = (inputPerQuiz / 1_000_000 * m.inputRate) + (outputPerQuiz / 1_000_000 * m.outputRate);
+    document.getElementById(`p-${m.prefix}-each`).textContent = `$${costEach.toFixed(5)}`;
+    document.getElementById(`p-${m.prefix}-5k`).textContent = `$${(costEach * quizzesMonth).toFixed(2)}`;
+    document.getElementById(`p-${m.prefix}-10k`).textContent = `$${(costEach * quizzesMonth * 2).toFixed(2)}`;
+    document.getElementById(`p-${m.prefix}-50k`).textContent = `$${(costEach * quizzesMonth * 10).toFixed(2)}`;
+
+    // Color code
+    const monthly = costEach * quizzesMonth;
+    const cells = [
+      document.getElementById(`p-${m.prefix}-5k`),
+      document.getElementById(`p-${m.prefix}-10k`),
+      document.getElementById(`p-${m.prefix}-50k`)
+    ];
+    for (const cell of cells) {
+      cell.className = monthly < 1 ? 'cost-low' : monthly < 10 ? 'cost-med' : 'cost-high';
+    }
+  }
+
+  document.getElementById('bottomLine').innerHTML =
+    `At <strong>${quizzesMonth.toLocaleString()} quizzes/month</strong> with <strong>${tokensQuiz.toLocaleString()} tokens/quiz</strong>: ` +
+    `Groq = <strong>$0</strong> · flash-lite via OpenRouter = <strong>$${((inputPerQuiz/1e6*0.10 + outputPerQuiz/1e6*0.40) * quizzesMonth).toFixed(2)}</strong> · ` +
+    `deepseek-v3.2 = <strong>$${((inputPerQuiz/1e6*0.23 + outputPerQuiz/1e6*0.34) * quizzesMonth).toFixed(2)}</strong>. ` +
+    `Even at 10x volume you're paying less than <strong>$${((inputPerQuiz/1e6*0.10 + outputPerQuiz/1e6*0.40) * quizzesMonth * 10).toFixed(2)}</strong> on the cheapest paid models.`;
+}
+
+// Init calculator on load
+updateCalc();
+</script>
+</body>
+</html>

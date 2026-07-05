@@ -380,9 +380,9 @@ export function Leaderboard({ chainFilter = 'Global' }: { chainFilter?: ChainFil
             <Star
               fill={showMastersOnly ? (isBase ? "#fff" : isLitvm ? "#0B192C" : isArc ? "#fff" : "#000") : (isMegaEth ? "#00ff88" : isInk ? "#7B61FF" : isUnichain ? "#FF007A" : isBase ? "#0052FF" : isLitvm ? "#00F2FE" : isArc ? "#4D8EE9" : isSoneium ? "#0047FF" : "#FFD700")}
               color={showMastersOnly ? (isBase ? "#fff" : isLitvm ? "#0B192C" : isArc ? "#fff" : "#000") : (isMegaEth ? "#00ff88" : isInk ? "#7B61FF" : isUnichain ? "#FF007A" : isBase ? "#0052FF" : isLitvm ? "#00F2FE" : isArc ? "#4D8EE9" : isSoneium ? "#0047FF" : "#FFD700")}
-              className="w-3.5 h-3.5"
+              className="w-3.5 h-3.5 shrink-0"
             />
-            {showMastersOnly ? "All Players" : "Show Masters Only"}
+            <span className="whitespace-nowrap">{showMastersOnly ? "All Players" : "Show Masters Only"}</span>
           </button>
         </div>
       )}
@@ -424,18 +424,18 @@ export function Leaderboard({ chainFilter = 'Global' }: { chainFilter?: ChainFil
       )}
 
       {/* ── Table ─────────────────────────────────────────────────────────── */}
-      <div className="overflow-x-auto">
+      <div className="overflow-x-auto -mx-6 px-6 scrollbar-hide">
         <table className="w-full text-left border-collapse">
           <thead>
-            <tr className={`border-b text-sm ${isMegaEth ? 'border-white/15 text-white/40 uppercase' : isBase ? 'border-black/5 text-black/40' : isSoneium ? 'border-[#0047FF]/10 text-white/40' : isLitvm ? 'border-[#00F2FE]/15 text-[#E2E8F0]/40' : 'border-white/10 text-gray-400'}`}>
-              <th className="pb-3 pl-4 font-medium whitespace-nowrap">Rank</th>
+            <tr className={`border-b text-xs sm:text-sm ${isMegaEth ? 'border-white/15 text-white/40 uppercase' : isBase ? 'border-black/5 text-black/40' : isSoneium ? 'border-[#0047FF]/10 text-white/40' : isLitvm ? 'border-[#00F2FE]/15 text-[#E2E8F0]/40' : 'border-white/10 text-gray-400'}`}>
+              <th className="pb-3 pl-4 font-medium sticky left-0 bg-inherit whitespace-nowrap z-10">Rank</th>
               <th className="pb-3 font-medium whitespace-nowrap">Wallet</th>
               {chainFilter === 'Global' && (
                 <th className="pb-3 font-medium whitespace-nowrap">Chains</th>
               )}
               <th className="pb-3 text-right font-medium whitespace-nowrap">Points</th>
-              <th className="pb-3 text-right font-medium whitespace-nowrap">Games</th>
-              <th className="pb-3 pr-4 text-right font-medium whitespace-nowrap">Avg</th>
+              <th className="pb-3 text-right font-medium whitespace-nowrap hidden md:table-cell">Games</th>
+              <th className="pb-3 pr-4 text-right font-medium whitespace-nowrap hidden md:table-cell">Avg</th>
             </tr>
           </thead>
           <tbody>
@@ -471,10 +471,10 @@ export function Leaderboard({ chainFilter = 'Global' }: { chainFilter?: ChainFil
                   <td className="py-4.5">
                     <div className={`w-10 h-4 rounded ml-auto ${isBase ? 'bg-black/10' : 'bg-white/10'}`} />
                   </td>
-                  <td className="py-4.5">
+                  <td className="py-4.5 hidden md:table-cell">
                     <div className={`w-8 h-4 rounded ml-auto ${isBase ? 'bg-black/10' : 'bg-white/10'}`} />
                   </td>
-                  <td className="py-4.5 pr-4">
+                  <td className="py-4.5 pr-4 hidden md:table-cell">
                     <div className={`w-10 h-4 rounded ml-auto ${isBase ? 'bg-black/10' : 'bg-white/10'}`} />
                   </td>
                 </tr>
@@ -622,8 +622,8 @@ export function Leaderboard({ chainFilter = 'Global' }: { chainFilter?: ChainFil
                     )}
 
                     <td className={`py-4 text-right font-bold ${isBase ? 'text-black' : isLitvm ? 'text-[#E2E8F0]' : 'text-white'} ${isMegaEth || isLitvm ? 'font-mono' : ''}`}>{player.points}</td>
-                    <td className={`py-4 text-right ${isBase ? 'text-black/40' : isLitvm ? 'text-[#E2E8F0]/40' : 'text-white/40'}`}>{player.games}</td>
-                    <td className={`py-4 pr-4 text-right font-medium ${isMegaEth ? 'text-[#00ff88]' : isInk ? 'text-[#7B61FF]' : isUnichain ? 'text-[#FF007A]' : isBase ? 'text-[#0052FF]' : isLitvm ? 'text-[#00F2FE]' : isArc ? 'text-[#4D8EE9]' : 'text-[#0047FF]'}`}>
+                    <td className={`py-4 text-right hidden md:table-cell ${isBase ? 'text-black/40' : isLitvm ? 'text-[#E2E8F0]/40' : 'text-white/40'}`}>{player.games}</td>
+                    <td className={`py-4 pr-4 text-right font-medium hidden md:table-cell ${isMegaEth ? 'text-[#00ff88]' : isInk ? 'text-[#7B61FF]' : isUnichain ? 'text-[#FF007A]' : isBase ? 'text-[#0052FF]' : isLitvm ? 'text-[#00F2FE]' : isArc ? 'text-[#4D8EE9]' : 'text-[#0047FF]'}`}>
                       {Math.round(player.avg)}%
                     </td>
                   </tr>

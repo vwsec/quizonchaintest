@@ -26,9 +26,15 @@ const MAX_URLS_TO_TRY = 6
 const JINA_PREFIX = "https://r.jina.ai/"
 const FETCH_TIMEOUT_MS = 8_000
 const FETCH_DELAY_MS = 300
-const GEMINI_MODEL = "gemini-3.1-flash-lite"
+const GEMINI_MODEL = "gemini-2.5-flash-lite"
 const GEMINI_RETRY_COUNT = 2
 const GEMINI_INITIAL_BACKOFF_MS = 1000
+
+// --- Groq fallback config ---
+const GROQ_API_ENDPOINT = "https://api.groq.com/openai/v1/chat/completions"
+const GROQ_MODEL = "llama-3.3-70b-versatile"
+const GROQ_MAX_TOKENS = 2048
+const GROQ_TIMEOUT_MS = 30_000
 
 const TOPIC_ANGLES = [
   "consensus mechanisms",
@@ -586,6 +592,40 @@ e) Every answer option must be traceable to a specific sentence in the provided 
   throw lastError || new Error("Failed to generate quiz with Gemini after retries")
 }
 
+async function generateWithGroq(messages: { role: "system" | "user"; content: string }[]): Promise<string> {
+  const apiKey = process.env.GROQ_API_KEY?.trim()
+  if (!apiKey) {
+    throw new Error("GROQ_API_KEY is missing. Set it in your environment variables.")
+  }
+
+  const response = await fetch(GROQ_API_ENDPOINT, {
+    method: "POST",
+    headers: {
+      "Authorization": `Bearer ${apiKey}`,
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify({
+      model: GROQ_MODEL,
+      messages,
+      max_tokens: GROQ_MAX_TOKENS,
+      temperature: 1.0,
+    }),
+    signal: AbortSignal.timeout(GROQ_TIMEOUT_MS),
+  })
+
+  if (!response.ok) {
+    const errorBody = await response.text().catch(() => "")
+    throw new Error(`Groq API HTTP ${response.status}: ${errorBody}`)
+  }
+
+  const data = await response.json() as { choices: { message: { content: string } }[] }
+  const content = data.choices?.[0]?.message?.content
+  if (!content) {
+    throw new Error("Groq returned empty response")
+  }
+  return content
+}
+
 async function handleGenerateQuiz(
   request: Request,
   selectedChainId: number | null,
@@ -733,7 +773,9 @@ ${scrapedText}
 
     let items: z.infer<typeof quizItemSchema>[] | null = null;
     let lastValid: z.infer<typeof quizItemSchema>[] | null = null;
+    let usedGroq = false;
     
+    // Attempt 1-2: Use Gemini (primary provider)
     for (let attempt = 1; attempt <= 2; attempt++) {
       try {
         let raw = await generateWithGemini(prompt, topicAngle)
@@ -759,7 +801,44 @@ ${scrapedText}
         items = validQuestions;
         break; // Success
       } catch (err) {
-        console.warn(`[generate-quiz] Attempt ${attempt} failed:`, err);
+        console.warn(`[generate-quiz] Gemini attempt ${attempt} failed:`, err);
+      }
+    }
+
+    // Attempt 3: Fall back to Groq if Gemini failed
+    if (!items) {
+      console.warn(`[generate-quiz] Gemini exhausted, trying Groq for ${ecosystemName}`)
+      usedGroq = true;
+      try {
+        const groqMessages = [
+          { role: "system" as const, content: `You are a blockchain quiz generator v2. Focus this quiz on: ${topicAngle}. Each time you must produce a completely different set of questions — vary the topics, difficulty angles, and technical depth. Never repeat the same question format or subject across generations.
+
+HARD RULES — These override all other instructions:
+a) Generate questions and answers ONLY from facts explicitly stated in the documentation provided below. Do NOT use your training knowledge to fill gaps.
+b) NEVER infer technical properties from token names, chain names, currency symbols, or naming conventions.
+c) Your training data may be outdated. Do NOT rely on it for facts about consensus mechanisms, proof systems, protocol versions, or network upgrades. Use ONLY the provided documentation.
+d) If the provided documentation does not contain enough factual content to generate a question with 4 verifiable answer options, skip that topic entirely. Do not guess.
+e) Every answer option must be traceable to a specific sentence in the provided documentation. If you cannot trace it, do not include it.` },
+          { role: "user" as const, content: prompt },
+        ]
+        let raw = await generateWithGroq(groqMessages)
+        let parsed = parseModelJson(raw)
+        let candidateItems = validateQuestions(toValidatedQuizArray(parsed))
+        
+        let validQuestions = candidateItems.filter(q => isValidQuestion(q) && !hasContaminatedOptions(q, ecosystemName));
+        if (validQuestions.length >= 3) {
+          lastValid = validQuestions;
+        }
+        if (validQuestions.length === 5) {
+          items = validQuestions;
+        } else if (validQuestions.length >= 3) {
+          items = validQuestions;
+          console.warn(`[generate-quiz] Groq partial set: ${validQuestions.length} questions for ${ecosystemName}`)
+        } else {
+          throw new Error(`Groq produced only ${validQuestions.length} valid questions`);
+        }
+      } catch (err) {
+        console.warn(`[generate-quiz] Groq fallback also failed:`, err);
       }
     }
 
@@ -769,7 +848,8 @@ ${scrapedText}
     }
 
     if (!items) {
-      console.error(`[generate-quiz] FALLBACK TRIGGERED reason=gemini_quality_fail chain=${ecosystemName}`)
+      const reason = usedGroq ? "all_providers_fail" : "gemini_quality_fail"
+      console.error(`[generate-quiz] FALLBACK TRIGGERED reason=${reason} chain=${ecosystemName}`)
       return await buildQuizResponse(
         selectedChainId,
         getFallbackQuestions(ecosystemName),
