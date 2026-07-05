@@ -53,7 +53,7 @@ export function Header() {
 
   return (
     <header className={ui.headerFloating}>
-      <div className="flex items-center justify-between px-3 py-2 md:px-6 md:py-3">
+      <div className="flex items-center justify-between px-3 py-3 md:px-6 md:py-3">
         <Link href="/" className="flex items-center gap-2.5 shrink-0 cursor-pointer">
           {ui.key !== 'megaeth' && (
             <Image
@@ -87,7 +87,7 @@ export function Header() {
                   key={nav.href}
                   href={nav.href}
                   className={cn(
-                    'px-4 py-2.5 text-sm transition-colors duration-200 text-center min-w-[88px] touch-target',
+                    'px-4 py-2.5 text-sm transition-colors duration-200 text-center min-w-[88px]',
                     ui.fontMono && 'font-mono uppercase font-medium',
                     active ? ui.navActive : ui.navInactive,
                   )}

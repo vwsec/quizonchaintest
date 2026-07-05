@@ -30,11 +30,11 @@ const GEMINI_MODEL = "gemini-2.5-flash-lite"
 const GEMINI_RETRY_COUNT = 2
 const GEMINI_INITIAL_BACKOFF_MS = 1000
 
-// --- Groq fallback config ---
+// --- Groq primary config ---
 const GROQ_API_ENDPOINT = "https://api.groq.com/openai/v1/chat/completions"
 const GROQ_MODEL = "llama-3.3-70b-versatile"
 const GROQ_MAX_TOKENS = 2048
-const GROQ_TIMEOUT_MS = 30_000
+const GROQ_TIMEOUT_MS = 15_000
 
 const TOPIC_ANGLES = [
   "consensus mechanisms",
@@ -593,37 +593,71 @@ e) Every answer option must be traceable to a specific sentence in the provided 
 }
 
 async function generateWithGroq(messages: { role: "system" | "user"; content: string }[]): Promise<string> {
-  const apiKey = process.env.GROQ_API_KEY?.trim()
-  if (!apiKey) {
-    throw new Error("GROQ_API_KEY is missing. Set it in your environment variables.")
+  // Collect all available Groq API keys (support multiple keys for rotation)
+  const keys = [
+    process.env.GROQ_API_KEY_1?.trim(),
+    process.env.GROQ_API_KEY_2?.trim(),
+    process.env.GROQ_API_KEY_3?.trim(),
+  ].filter(Boolean) as string[]
+
+  // Fall back to the legacy single key if no numbered keys are set
+  if (keys.length === 0) {
+    const legacyKey = process.env.GROQ_API_KEY?.trim()
+    if (legacyKey) keys.push(legacyKey)
   }
 
-  const response = await fetch(GROQ_API_ENDPOINT, {
-    method: "POST",
-    headers: {
-      "Authorization": `Bearer ${apiKey}`,
-      "Content-Type": "application/json",
-    },
-    body: JSON.stringify({
-      model: GROQ_MODEL,
-      messages,
-      max_tokens: GROQ_MAX_TOKENS,
-      temperature: 1.0,
-    }),
-    signal: AbortSignal.timeout(GROQ_TIMEOUT_MS),
-  })
-
-  if (!response.ok) {
-    const errorBody = await response.text().catch(() => "")
-    throw new Error(`Groq API HTTP ${response.status}: ${errorBody}`)
+  if (keys.length === 0) {
+    throw new Error("GROQ_API_KEY is missing. Set GROQ_API_KEY_1 in your environment variables.")
   }
 
-  const data = await response.json() as { choices: { message: { content: string } }[] }
-  const content = data.choices?.[0]?.message?.content
-  if (!content) {
-    throw new Error("Groq returned empty response")
+  let lastError: Error | null = null
+
+  for (let i = 0; i < keys.length; i++) {
+    try {
+      const response = await fetch(GROQ_API_ENDPOINT, {
+        method: "POST",
+        headers: {
+          "Authorization": `Bearer ${keys[i]}`,
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          model: GROQ_MODEL,
+          messages,
+          max_tokens: GROQ_MAX_TOKENS,
+          temperature: 1.0,
+        }),
+        signal: AbortSignal.timeout(GROQ_TIMEOUT_MS),
+      })
+
+      if (response.status === 429) {
+        const body = await response.text().catch(() => "")
+        console.warn(`[generate-quiz] Groq key ${i + 1} rate-limited, trying next key`)
+        lastError = new Error(`Groq key ${i + 1} rate-limited: ${body}`)
+        continue // Try next key
+      }
+
+      if (!response.ok) {
+        const errorBody = await response.text().catch(() => "")
+        throw new Error(`Groq API HTTP ${response.status}: ${errorBody}`)
+      }
+
+      const data = await response.json() as { choices: { message: { content: string } }[] }
+      const content = data.choices?.[0]?.message?.content
+      if (!content) {
+        throw new Error("Groq returned empty response")
+      }
+      return content
+    } catch (err) {
+      // Only retry with next key on rate limits; surface other errors immediately
+      if (err instanceof Error && err.message.includes("rate-limited")) {
+        lastError = err
+        continue
+      }
+      throw err
+    }
   }
-  return content
+
+  throw lastError || new Error("All Groq API keys exhausted")
 }
 
 async function handleGenerateQuiz(
@@ -773,42 +807,9 @@ ${scrapedText}
 
     let items: z.infer<typeof quizItemSchema>[] | null = null;
     let lastValid: z.infer<typeof quizItemSchema>[] | null = null;
-    let usedGroq = false;
     
-    // Attempt 1-2: Use Gemini (primary provider)
+    // Attempt 1-2: Use Groq (primary provider)
     for (let attempt = 1; attempt <= 2; attempt++) {
-      try {
-        let raw = await generateWithGemini(prompt, topicAngle)
-        let parsed = parseModelJson(raw)
-        let candidateItems = validateQuestions(toValidatedQuizArray(parsed))
-        
-        let validQuestions = candidateItems.filter(q => isValidQuestion(q) && !hasContaminatedOptions(q, ecosystemName));
-        if (validQuestions.length >= 3) {
-          lastValid = validQuestions;
-        }
-        if (validQuestions.length < 5) {
-          throw new Error(`Generated questions failed quality check, retrying`);
-        }
-
-        const history = questionHistoryCache.get(ecosystemName) || []
-        const newNormalized = validQuestions.map(q => normalizeQuestion(q.question))
-        const overlap = newNormalized.filter(nq => history.includes(nq)).length
-        if (overlap >= 4) {
-          console.warn(`[generate-quiz] High overlap (${overlap}) for ${ecosystemName}, accepting anyway`)
-          // Accept the set despite overlap rather than serving hardcoded fallback
-        }
-
-        items = validQuestions;
-        break; // Success
-      } catch (err) {
-        console.warn(`[generate-quiz] Gemini attempt ${attempt} failed:`, err);
-      }
-    }
-
-    // Attempt 3: Fall back to Groq if Gemini failed
-    if (!items) {
-      console.warn(`[generate-quiz] Gemini exhausted, trying Groq for ${ecosystemName}`)
-      usedGroq = true;
       try {
         const groqMessages = [
           { role: "system" as const, content: `You are a blockchain quiz generator v2. Focus this quiz on: ${topicAngle}. Each time you must produce a completely different set of questions — vary the topics, difficulty angles, and technical depth. Never repeat the same question format or subject across generations.
@@ -829,26 +830,57 @@ e) Every answer option must be traceable to a specific sentence in the provided 
         if (validQuestions.length >= 3) {
           lastValid = validQuestions;
         }
-        if (validQuestions.length === 5) {
+        if (validQuestions.length < 5) {
+          throw new Error(`Generated questions failed quality check, retrying`);
+        }
+
+        const history = questionHistoryCache.get(ecosystemName) || []
+        const newNormalized = validQuestions.map(q => normalizeQuestion(q.question))
+        const overlap = newNormalized.filter(nq => history.includes(nq)).length
+        if (overlap >= 4) {
+          console.warn(`[generate-quiz] High overlap (${overlap}) for ${ecosystemName}, accepting anyway`)
+        }
+
+        items = validQuestions;
+        break; // Success
+      } catch (err) {
+        console.warn(`[generate-quiz] Groq attempt ${attempt} failed:`, err);
+      }
+    }
+
+    // Attempt 3: Use Gemini as fallback
+    if (!items) {
+      console.warn(`[generate-quiz] Groq failed, trying Gemini fallback for ${ecosystemName}`)
+      try {
+        let raw = await generateWithGemini(prompt, topicAngle)
+        let parsed = parseModelJson(raw)
+        let candidateItems = validateQuestions(toValidatedQuizArray(parsed))
+
+        let validQuestions = candidateItems.filter(q => isValidQuestion(q) && !hasContaminatedOptions(q, ecosystemName));
+        if (validQuestions.length >= 3) {
+          lastValid = validQuestions;
+        }
+        if (validQuestions.length >= 5) {
+          const history = questionHistoryCache.get(ecosystemName) || []
+          const newNormalized = validQuestions.map(q => normalizeQuestion(q.question))
+          const overlap = newNormalized.filter(nq => history.includes(nq)).length
+          if (overlap >= 4) {
+            console.warn(`[generate-quiz] High overlap (${overlap}) for ${ecosystemName}, accepting anyway`)
+          }
           items = validQuestions;
-        } else if (validQuestions.length >= 3) {
-          items = validQuestions;
-          console.warn(`[generate-quiz] Groq partial set: ${validQuestions.length} questions for ${ecosystemName}`)
-        } else {
-          throw new Error(`Groq produced only ${validQuestions.length} valid questions`);
         }
       } catch (err) {
-        console.warn(`[generate-quiz] Groq fallback also failed:`, err);
+        console.warn(`[generate-quiz] Gemini fallback failed:`, err);
       }
     }
 
     if (!items && lastValid) {
-      console.warn(`[generate-quiz] Using partial set of ${lastValid.length} valid questions for ${ecosystemName} after failed attempts`)
+      console.warn(`[generate-quiz] Using partial set of ${lastValid.length} valid questions for ${ecosystemName}`)
       items = lastValid;
     }
 
     if (!items) {
-      const reason = usedGroq ? "all_providers_fail" : "gemini_quality_fail"
+      const reason = "all_providers_fail"
       console.error(`[generate-quiz] FALLBACK TRIGGERED reason=${reason} chain=${ecosystemName}`)
       return await buildQuizResponse(
         selectedChainId,
