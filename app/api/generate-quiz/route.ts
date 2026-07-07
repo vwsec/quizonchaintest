@@ -25,11 +25,12 @@ const MAX_URLS_TO_TRY = 6
 const JINA_PREFIX = "https://r.jina.ai/"
 const FETCH_TIMEOUT_MS = 8_000
 const FETCH_DELAY_MS = 300
-// --- OpenRouter config ---
-const OPENROUTER_API_ENDPOINT = "https://openrouter.ai/api/v1/chat/completions"
-const OPENROUTER_MODEL = "tencent/hy3:free"
-const OPENROUTER_MAX_TOKENS = 2048
-const OPENROUTER_TIMEOUT_MS = 25_000
+// --- Groq config ---
+const GROQ_API_ENDPOINT = "https://api.groq.com/openai/v1/chat/completions"
+const GROQ_MODEL = "llama-3.1-8b-instant"
+const GROQ_MAX_TOKENS = 2048
+const GROQ_TIMEOUT_MS = 30_000
+const GROQ_PING_TIMEOUT_MS = 5_000
 
 const TOPIC_ANGLES = [
   "consensus mechanisms",
@@ -532,66 +533,92 @@ function getFallbackQuestions(ecosystemName: "Ink" | "Soneium" | "Base" | "Unich
   ]
 }
 
-async function generateWithOpenRouter(
-  messages: { role: "system" | "user"; content: string }[],
-  model: string = OPENROUTER_MODEL,
-  timeoutMs: number = OPENROUTER_TIMEOUT_MS,
-): Promise<string> {
-  const allKeys = [1, 2, 3, 4, 5]
-    .map(i => process.env[`OPENROUTER_API_KEY_${i}`])
-    .filter((k): k is string => !!k && k.length > 10)
-  if (allKeys.length === 0) {
-    throw new Error("No OpenRouter API keys configured. Set OPENROUTER_API_KEY_1..5 in .env.local")
-  }
-
-  // Try each key sequentially → key1 → key2 → ... → key5 → throw
-  let lastError: Error | null = null
-  for (const apiKey of allKeys) {
-    try {
-      const response = await fetch(OPENROUTER_API_ENDPOINT, {
-        method: "POST",
-        headers: { "Authorization": `Bearer ${apiKey}`, "Content-Type": "application/json" },
-        body: JSON.stringify({
-          model,
-          messages,
-          max_tokens: OPENROUTER_MAX_TOKENS,
-          temperature: 1.0,
-          reasoning: { effort: "none" },
-        }),
-        signal: AbortSignal.timeout(timeoutMs),
-      })
-
-      if (!response.ok) {
-        const errorBody = await response.text().catch(() => "")
-        lastError = new Error(`OpenRouter API HTTP ${response.status}: ${errorBody}`)
-        if (response.status === 429) continue // rate-limited, try next key
-        throw lastError // other HTTP errors, fail fast
-      }
-
-      const data = await response.json() as { choices: { message: { content: string } }[] }
-      const content = data.choices?.[0]?.message?.content
-      if (!content) {
-        lastError = new Error("OpenRouter returned empty response")
-        continue
-      }
-      return content
-    } catch (err) {
-      if (err instanceof DOMException && (err.name === "TimeoutError" || err.name === "AbortError")) {
-        lastError = err as Error
-        console.warn(`[generate-quiz] Key timed out (${timeoutMs}ms), trying next`)
-        continue
-      }
-      const errMsg = err instanceof Error ? err.message : String(err)
-      if (errMsg.includes("HTTP 400") || errMsg.includes("HTTP 401") || errMsg.includes("HTTP 403") || errMsg.includes("HTTP 422")) {
-        throw err instanceof Error ? err : new Error(errMsg)
-      }
-      lastError = err instanceof Error ? err : new Error(errMsg)
-      console.warn(`[generate-quiz] Key failed (${errMsg.slice(0, 80)}), trying next`)
-      continue
+/** Dynamically discover all configured GROQ_API_KEY_{N} env vars (no hardcoded limit). */
+function discoverGroqKeys(): string[] {
+  const keys: string[] = []
+  for (const [name, value] of Object.entries(process.env)) {
+    if (name.startsWith("GROQ_API_KEY_") && value && value.length > 10) {
+      keys.push(value)
     }
   }
+  return keys
+}
 
-  throw lastError || new Error("All OpenRouter API keys exhausted")
+/** Ping a single API key with a tiny request to check it's healthy. */
+async function pingKey(apiKey: string, timeoutMs: number): Promise<boolean> {
+  try {
+    const response = await fetch(GROQ_API_ENDPOINT, {
+      method: "POST",
+      headers: { Authorization: `Bearer ${apiKey}`, "Content-Type": "application/json" },
+      body: JSON.stringify({
+        model: GROQ_MODEL,
+        messages: [{ role: "user", content: "ok" }],
+        max_tokens: 1,
+      }),
+      signal: AbortSignal.timeout(timeoutMs),
+    })
+    return response.ok
+  } catch {
+    return false
+  }
+}
+
+/**
+ * Ping all Groq API keys in parallel (short timeout), pick the first healthy one,
+ * then generate the full response on that key.
+ * Keys are discovered dynamically — add GROQ_API_KEY_4, _5, … with zero code changes.
+ */
+async function generateWithGroq(
+  messages: { role: "system" | "user"; content: string }[],
+  model: string = GROQ_MODEL,
+  timeoutMs: number = GROQ_TIMEOUT_MS,
+): Promise<string> {
+  const allKeys = discoverGroqKeys()
+  if (allKeys.length === 0) {
+    throw new Error("No Groq API keys configured. Add GROQ_API_KEY_1 (or _2, _3, …) to .env.local")
+  }
+
+  // Phase 1 — ping all keys in parallel with short timeout
+  const pingResults = await Promise.all(
+    allKeys.map((key) => pingKey(key, GROQ_PING_TIMEOUT_MS)),
+  )
+
+  const workingKeys = allKeys.filter((_, i) => pingResults[i])
+  if (workingKeys.length === 0) {
+    throw new Error("All Groq API keys failed health check — using fallback questions")
+  }
+
+  console.log(
+    `[generate-quiz] ${workingKeys.length}/${allKeys.length} keys healthy, generating on key #${allKeys.indexOf(workingKeys[0]) + 1}`,
+  )
+
+  // Phase 2 — generate on the first working key
+  const apiKey = workingKeys[0]
+  const response = await fetch(GROQ_API_ENDPOINT, {
+    method: "POST",
+    headers: { Authorization: `Bearer ${apiKey}`, "Content-Type": "application/json" },
+    body: JSON.stringify({
+      model,
+      messages,
+      max_tokens: GROQ_MAX_TOKENS,
+      temperature: 1.0,
+      response_format: { type: "json_object" },
+    }),
+    signal: AbortSignal.timeout(timeoutMs),
+  })
+
+  if (!response.ok) {
+    const errorBody = await response.text().catch(() => "")
+    throw new Error(`Groq API HTTP ${response.status}: ${errorBody}`)
+  }
+
+  const data = (await response.json()) as { choices: { message: { content: string } }[] }
+  const content = data.choices?.[0]?.message?.content
+  if (!content) {
+    throw new Error("Groq returned empty response")
+  }
+
+  return content
 }
 
 async function handleGenerateQuiz(
@@ -698,42 +725,42 @@ async function handleGenerateQuiz(
     const [topicAngle] = fisherYatesPick([...TOPIC_ANGLES], 1)
 
     const prompt = `
-Generate exactly 5 high-quality multiple choice questions based ONLY on the documentation below for ${ecosystemName}.
+Read the ${ecosystemName} documentation below. Extract 5 quiz questions from the facts you find there.
 
-HARD RULES (these override all other instructions):
-- Your training data may be outdated. Answer ONLY from facts explicitly stated in the documentation below.
-- NEVER infer technical properties from token names, chain names, currency symbols, or naming conventions.
-- Every answer option must be traceable to a specific sentence in the provided documentation.
-- If the documentation lacks enough content for 4 verifiable answer options, skip that topic.
+EXTRACTION STEPS:
+1. Read the documentation. Spot specific facts: chain IDs, consensus details, contract addresses, feature behaviors, governance rules, technical parameters.
+2. For each fact, write 1 question. The correct answer comes directly from what the documentation says.
+3. Create 3 wrong answers by changing numbers, feature names, or technical details — still using only ${ecosystemName} content.
+4. If a fact cannot support 4 distinct options from the documentation alone, skip it.
+5. Output exactly 5 questions. If the docs only support fewer, stop there.
 
-STRICT RULES:
-- Focus on this topic area: ${topicAngle}
-- Test real blockchain concepts, technical knowledge, or ecosystem understanding
-- NEVER ask about URLs, page accessibility, 404 errors, or whether a webpage exists
-- NEVER ask about documentation structure or navigation
-- Questions should test: how things work technically, what concepts mean, why decisions were made, what values/parameters are used
-- Mix difficulty: 2 easy, 2 medium, 1 hard
-- Each wrong answer must be plausible — not obviously wrong
-- Return ONLY valid JSON array, no markdown, no backticks
+QUESTION RULES:
+- Topic focus: ${topicAngle}
+- Test how things work, what values mean, why design decisions were made
+- Mix difficulty: 2 easy (basic facts), 2 medium (technical details), 1 hard (nuanced or specific)
+- Wrong answers must be plausible — different values, similar-sounding features, inverted logic
+- Return ONLY valid JSON array — no markdown, no backticks, no extra text before or after
 
-CRITICAL RULES FOR ANSWER OPTIONS:
-- Every answer option (correct AND incorrect) must relate ONLY to the ${ecosystemName} ecosystem
-- Do NOT mention, reference, or allude to any other blockchain, chain, or network in any answer option. This includes but is not limited to: Soneium, Ink, Base, Unichain, MegaETH, LitVM, Ethereum mainnet, Polygon, Arbitrum, Optimism, Solana
-- Incorrect answer options must be plausible wrong answers about ${ecosystemName} specifically (e.g. wrong numbers, wrong names within the same ecosystem, wrong technical details) NOT answers about a completely different blockchain
-- If you cannot generate 3 plausible wrong answers using only ${ecosystemName} knowledge, use variations of the correct answer (e.g. wrong values, inverted facts, close-but-wrong technical details) rather than importing facts from other chains
-
-Good examples:
-- 'What consensus mechanism does Soneium use?'
-- 'What is the Chain ID of Ink mainnet?'
-- 'Which standard does Ink use for account abstraction?'
-
-Bad examples — NEVER generate:
-- 'What happens when you access this URL?'
-- 'What is the result of visiting the documentation page?'
-
-Format:
+JSON FORMAT:
 [{"question": "...", "options": ["A", "B", "C", "D"], "correctIndex": 2}]
-IMPORTANT: Randomize which option is correct. Use correctIndex 0, 1, 2, or 3 evenly — never default to 0.
+Randomize correctIndex evenly: pick 0, 1, 2, or 3 — not always 0.
+
+ANSWER OPTIONS — ${ecosystemName} only:
+- Every option must be about ${ecosystemName} based on the documentation
+- Wrong answers: pick wrong numbers, wrong feature names, or inverted facts from the same docs
+- Prefer: wrong chain ID, wrong block time, wrong gas limit, wrong contract name, wrong parameter value
+- If the docs lack material for 3 wrong answers, use near-miss variations of the correct answer
+- Do NOT reference any other blockchain (no Soneium, Ink, Base, Unichain, Ethereum, Solana, etc.)
+
+WRONG QUESTIONS — skip these:
+- Questions about URLs, pages, or whether a website loads
+- Questions about documentation layout or structure
+- Questions about anything not covered in the provided text
+
+GOOD EXAMPLES (model your questions like these):
+- "What consensus mechanism does ${ecosystemName} use?"
+- "What is the Chain ID of ${ecosystemName} mainnet?"
+- "What is the block time on ${ecosystemName}?"
 
 Documentation:
 ${scrapedText}
@@ -742,20 +769,13 @@ ${scrapedText}
     let items: z.infer<typeof quizItemSchema>[] | null = null;
     let lastValid: z.infer<typeof quizItemSchema>[] | null = null;
     
-    // Try all 4 OpenRouter keys sequentially → key1 → key2 → key3 → key4 → fallback
+    // --- Groq (3 keys, llama-3.1-8b-instant) ---
     try {
       const messages = [
-        { role: "system" as const, content: `You are a blockchain quiz generator v2. Focus this quiz on: ${topicAngle}. Each time you must produce a completely different set of questions — vary the topics, difficulty angles, and technical depth. Never repeat the same question format or subject across generations.
-
-HARD RULES — These override all other instructions:
-a) Generate questions and answers ONLY from facts explicitly stated in the documentation provided below. Do NOT use your training knowledge to fill gaps.
-b) NEVER infer technical properties from token names, chain names, currency symbols, or naming conventions.
-c) Your training data may be outdated. Do NOT rely on it for facts about consensus mechanisms, proof systems, protocol versions, or network upgrades. Use ONLY the provided documentation.
-d) If the provided documentation does not contain enough factual content to generate a question with 4 verifiable answer options, skip that topic entirely. Do not guess.
-e) Every answer option must be traceable to a specific sentence in the provided documentation. If you cannot trace it, do not include it.` },
+        { role: "system" as const, content: `You extract quiz questions from blockchain documentation. Read the text provided by the user and create questions from the facts found there. Follow their extraction steps, question rules, and format instructions precisely.` },
         { role: "user" as const, content: prompt },
       ]
-      let raw = await generateWithOpenRouter(messages, OPENROUTER_MODEL, OPENROUTER_TIMEOUT_MS)
+      let raw = await generateWithGroq(messages, GROQ_MODEL, GROQ_TIMEOUT_MS)
       let parsed = parseModelJson(raw)
       let candidateItems = validateQuestions(toValidatedQuizArray(parsed))
       
@@ -776,7 +796,7 @@ e) Every answer option must be traceable to a specific sentence in the provided 
 
       items = validQuestions;
     } catch (err) {
-      console.warn(`[generate-quiz] All 4 OpenRouter keys exhausted for ${ecosystemName}:`, err);
+      console.warn(`[generate-quiz] Groq keys exhausted for ${ecosystemName}:`, err);
     }
 
     if (!items && lastValid) {
