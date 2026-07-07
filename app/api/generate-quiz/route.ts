@@ -1,7 +1,6 @@
 export const dynamic = 'force-dynamic'
 export const maxDuration = 60
 
-import { GoogleGenerativeAI } from "@google/generative-ai"
 import { NextResponse } from "next/server"
 import { SignJWT } from "jose"
 import {
@@ -26,15 +25,13 @@ const MAX_URLS_TO_TRY = 6
 const JINA_PREFIX = "https://r.jina.ai/"
 const FETCH_TIMEOUT_MS = 8_000
 const FETCH_DELAY_MS = 300
-const GEMINI_MODEL = "gemini-2.5-flash-lite"
-const GEMINI_RETRY_COUNT = 2
-const GEMINI_INITIAL_BACKOFF_MS = 1000
-
-// --- Groq primary config ---
-const GROQ_API_ENDPOINT = "https://api.groq.com/openai/v1/chat/completions"
-const GROQ_MODEL = "llama-3.3-70b-versatile"
-const GROQ_MAX_TOKENS = 2048
-const GROQ_TIMEOUT_MS = 15_000
+// --- OpenRouter config ---
+const OPENROUTER_API_ENDPOINT = "https://openrouter.ai/api/v1/chat/completions"
+const OPENROUTER_MODEL = "tencent/hy3:free"
+const OPENROUTER_FAST_MODEL = "nvidia/nemotron-3-super:free"
+const OPENROUTER_MAX_TOKENS = 2048
+const OPENROUTER_TIMEOUT_MS = 25_000
+const OPENROUTER_FAST_TIMEOUT_MS = 25_000
 
 const TOPIC_ANGLES = [
   "consensus mechanisms",
@@ -95,14 +92,6 @@ function buildCorsHeaders(origin?: string) {
     "Cache-Control": "no-store",
     "Vary": "Origin",
   } as const
-}
-
-function ensureGeminiApiKey() {
-  const apiKey = process.env.GEMINI_API_KEY?.trim()
-  if (!apiKey) {
-    throw new Error("GEMINI_API_KEY is missing. Set it in your environment variables.")
-  }
-  return apiKey
 }
 
 function checkRateLimit(ip: string): boolean {
@@ -545,119 +534,43 @@ function getFallbackQuestions(ecosystemName: "Ink" | "Soneium" | "Base" | "Unich
   ]
 }
 
-async function generateWithGemini(prompt: string, topicAngle: string): Promise<string> {
-  const apiKey = ensureGeminiApiKey()
-  const genAI = new GoogleGenerativeAI(apiKey)
-  const model = genAI.getGenerativeModel({
-    model: GEMINI_MODEL,
-    systemInstruction: `You are a blockchain quiz generator v2. Focus this quiz on: ${topicAngle}. Each time you must produce a completely different set of questions — vary the topics, difficulty angles, and technical depth. Never repeat the same question format or subject across generations.
+async function generateWithOpenRouter(
+  messages: { role: "system" | "user"; content: string }[],
+  model: string = OPENROUTER_MODEL,
+  timeoutMs: number = OPENROUTER_TIMEOUT_MS,
+): Promise<string> {
+  const apiKey = process.env.OPENROUTER_API_KEY?.trim()
+  if (!apiKey) {
+    throw new Error("OPENROUTER_API_KEY is missing. Set it in your environment variables.")
+  }
 
-HARD RULES — These override all other instructions:
-a) Generate questions and answers ONLY from facts explicitly stated in the documentation provided below. Do NOT use your training knowledge to fill gaps.
-b) NEVER infer technical properties from token names, chain names, currency symbols, or naming conventions.
-c) Your training data may be outdated. Do NOT rely on it for facts about consensus mechanisms, proof systems, protocol versions, or network upgrades. Use ONLY the provided documentation.
-d) If the provided documentation does not contain enough factual content to generate a question with 4 verifiable answer options, skip that topic entirely. Do not guess.
-e) Every answer option must be traceable to a specific sentence in the provided documentation. If you cannot trace it, do not include it.`,
+  const response = await fetch(OPENROUTER_API_ENDPOINT, {
+    method: "POST",
+    headers: {
+      "Authorization": `Bearer ${apiKey}`,
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify({
+      model,
+      messages,
+      max_tokens: OPENROUTER_MAX_TOKENS,
+      temperature: 1.0,
+      reasoning: { effort: "none" },
+    }),
+    signal: AbortSignal.timeout(timeoutMs),
   })
 
-  let lastError: Error | unknown = null
-
-  for (let attempt = 1; attempt <= GEMINI_RETRY_COUNT; attempt++) {
-    try {
-      const result = await model.generateContent({
-        contents: [
-          { role: "user", parts: [{ text: prompt }] },
-        ],
-        generationConfig: {
-          temperature: 1.0,
-          maxOutputTokens: 2048,
-        },
-      }, {
-        signal: AbortSignal.timeout(25_000),
-      })
-
-      const text = result.response.text()
-      const cleaned = text.replace(/<[^>]*>/g, "").replace(/```json|```/g, "").trim()
-      return cleaned
-    } catch (err) {
-      lastError = err
-      console.warn(`[generate-quiz] Gemini attempt ${attempt} failed:`, err)
-      if (attempt < GEMINI_RETRY_COUNT) {
-        const backoff = GEMINI_INITIAL_BACKOFF_MS * Math.pow(2, attempt - 1)
-        await sleep(backoff)
-      }
-    }
+  if (!response.ok) {
+    const errorBody = await response.text().catch(() => "")
+    throw new Error(`OpenRouter API HTTP ${response.status}: ${errorBody}`)
   }
 
-  throw lastError || new Error("Failed to generate quiz with Gemini after retries")
-}
-
-async function generateWithGroq(messages: { role: "system" | "user"; content: string }[]): Promise<string> {
-  // Collect all available Groq API keys (support multiple keys for rotation)
-  const keys = [
-    process.env.GROQ_API_KEY_1?.trim(),
-    process.env.GROQ_API_KEY_2?.trim(),
-    process.env.GROQ_API_KEY_3?.trim(),
-  ].filter(Boolean) as string[]
-
-  // Fall back to the legacy single key if no numbered keys are set
-  if (keys.length === 0) {
-    const legacyKey = process.env.GROQ_API_KEY?.trim()
-    if (legacyKey) keys.push(legacyKey)
+  const data = await response.json() as { choices: { message: { content: string } }[] }
+  const content = data.choices?.[0]?.message?.content
+  if (!content) {
+    throw new Error("OpenRouter returned empty response")
   }
-
-  if (keys.length === 0) {
-    throw new Error("GROQ_API_KEY is missing. Set GROQ_API_KEY_1 in your environment variables.")
-  }
-
-  let lastError: Error | null = null
-
-  for (let i = 0; i < keys.length; i++) {
-    try {
-      const response = await fetch(GROQ_API_ENDPOINT, {
-        method: "POST",
-        headers: {
-          "Authorization": `Bearer ${keys[i]}`,
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          model: GROQ_MODEL,
-          messages,
-          max_tokens: GROQ_MAX_TOKENS,
-          temperature: 1.0,
-        }),
-        signal: AbortSignal.timeout(GROQ_TIMEOUT_MS),
-      })
-
-      if (response.status === 429) {
-        const body = await response.text().catch(() => "")
-        console.warn(`[generate-quiz] Groq key ${i + 1} rate-limited, trying next key`)
-        lastError = new Error(`Groq key ${i + 1} rate-limited: ${body}`)
-        continue // Try next key
-      }
-
-      if (!response.ok) {
-        const errorBody = await response.text().catch(() => "")
-        throw new Error(`Groq API HTTP ${response.status}: ${errorBody}`)
-      }
-
-      const data = await response.json() as { choices: { message: { content: string } }[] }
-      const content = data.choices?.[0]?.message?.content
-      if (!content) {
-        throw new Error("Groq returned empty response")
-      }
-      return content
-    } catch (err) {
-      // Only retry with next key on rate limits; surface other errors immediately
-      if (err instanceof Error && err.message.includes("rate-limited")) {
-        lastError = err
-        continue
-      }
-      throw err
-    }
-  }
-
-  throw lastError || new Error("All Groq API keys exhausted")
+  return content
 }
 
 async function handleGenerateQuiz(
@@ -808,10 +721,12 @@ ${scrapedText}
     let items: z.infer<typeof quizItemSchema>[] | null = null;
     let lastValid: z.infer<typeof quizItemSchema>[] | null = null;
     
-    // Attempt 1-2: Use Groq (primary provider)
+    // Attempt 1-2: OpenRouter with model fallback
     for (let attempt = 1; attempt <= 2; attempt++) {
+      const model = attempt === 1 ? OPENROUTER_MODEL : OPENROUTER_FAST_MODEL;
+      const timeoutMs = attempt === 1 ? OPENROUTER_TIMEOUT_MS : OPENROUTER_FAST_TIMEOUT_MS;
       try {
-        const groqMessages = [
+        const messages = [
           { role: "system" as const, content: `You are a blockchain quiz generator v2. Focus this quiz on: ${topicAngle}. Each time you must produce a completely different set of questions — vary the topics, difficulty angles, and technical depth. Never repeat the same question format or subject across generations.
 
 HARD RULES — These override all other instructions:
@@ -822,7 +737,7 @@ d) If the provided documentation does not contain enough factual content to gene
 e) Every answer option must be traceable to a specific sentence in the provided documentation. If you cannot trace it, do not include it.` },
           { role: "user" as const, content: prompt },
         ]
-        let raw = await generateWithGroq(groqMessages)
+        let raw = await generateWithOpenRouter(messages, model, timeoutMs)
         let parsed = parseModelJson(raw)
         let candidateItems = validateQuestions(toValidatedQuizArray(parsed))
         
@@ -844,33 +759,7 @@ e) Every answer option must be traceable to a specific sentence in the provided 
         items = validQuestions;
         break; // Success
       } catch (err) {
-        console.warn(`[generate-quiz] Groq attempt ${attempt} failed:`, err);
-      }
-    }
-
-    // Attempt 3: Use Gemini as fallback
-    if (!items) {
-      console.warn(`[generate-quiz] Groq failed, trying Gemini fallback for ${ecosystemName}`)
-      try {
-        let raw = await generateWithGemini(prompt, topicAngle)
-        let parsed = parseModelJson(raw)
-        let candidateItems = validateQuestions(toValidatedQuizArray(parsed))
-
-        let validQuestions = candidateItems.filter(q => isValidQuestion(q) && !hasContaminatedOptions(q, ecosystemName));
-        if (validQuestions.length >= 3) {
-          lastValid = validQuestions;
-        }
-        if (validQuestions.length >= 5) {
-          const history = questionHistoryCache.get(ecosystemName) || []
-          const newNormalized = validQuestions.map(q => normalizeQuestion(q.question))
-          const overlap = newNormalized.filter(nq => history.includes(nq)).length
-          if (overlap >= 4) {
-            console.warn(`[generate-quiz] High overlap (${overlap}) for ${ecosystemName}, accepting anyway`)
-          }
-          items = validQuestions;
-        }
-      } catch (err) {
-        console.warn(`[generate-quiz] Gemini fallback failed:`, err);
+        console.warn(`[generate-quiz] Attempt ${attempt} (${model}) failed:`, err);
       }
     }
 
@@ -907,10 +796,6 @@ e) Every answer option must be traceable to a specific sentence in the provided 
     )
   } catch (err) {
     console.error("[generate-quiz]", err)
-    const msg = err instanceof Error ? err.message : String(err)
-    if (msg.includes("GEMINI_API_KEY is missing")) {
-      return NextResponse.json({ error: msg }, { status: 500, headers })
-    }
     return await buildQuizResponse(
       selectedChainId,
       getFallbackQuestions(ecosystemName),
