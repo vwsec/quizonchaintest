@@ -537,68 +537,61 @@ async function generateWithOpenRouter(
   model: string = OPENROUTER_MODEL,
   timeoutMs: number = OPENROUTER_TIMEOUT_MS,
 ): Promise<string> {
-  const allKeys = [1, 2, 3, 4]
+  const allKeys = [1, 2, 3, 4, 5]
     .map(i => process.env[`OPENROUTER_API_KEY_${i}`])
     .filter((k): k is string => !!k && k.length > 10)
   if (allKeys.length === 0) {
-    throw new Error("No OpenRouter API keys configured. Set OPENROUTER_API_KEY_1..4 in .env.local")
+    throw new Error("No OpenRouter API keys configured. Set OPENROUTER_API_KEY_1..5 in .env.local")
   }
 
-  // Ping all keys in parallel (~0.4s), collect working ones
-  const pingResults = await Promise.allSettled(
-    allKeys.map(async (apiKey) => {
-      const res = await fetch(OPENROUTER_API_ENDPOINT, {
+  // Try each key sequentially → key1 → key2 → ... → key5 → throw
+  let lastError: Error | null = null
+  for (const apiKey of allKeys) {
+    try {
+      const response = await fetch(OPENROUTER_API_ENDPOINT, {
         method: "POST",
         headers: { "Authorization": `Bearer ${apiKey}`, "Content-Type": "application/json" },
         body: JSON.stringify({
           model,
-          messages: [{ role: "user", content: "ok" }],
-          max_tokens: 1,
-          temperature: 0,
+          messages,
+          max_tokens: OPENROUTER_MAX_TOKENS,
+          temperature: 1.0,
           reasoning: { effort: "none" },
         }),
-        signal: AbortSignal.timeout(5_000),
+        signal: AbortSignal.timeout(timeoutMs),
       })
-      if (!res.ok) throw new Error(`HTTP ${res.status}`)
-      return apiKey
-    })
-  )
 
-  const workingKeys = pingResults
-    .filter((r): r is PromiseFulfilledResult<string> => r.status === "fulfilled")
-    .map(r => r.value)
+      if (!response.ok) {
+        const errorBody = await response.text().catch(() => "")
+        lastError = new Error(`OpenRouter API HTTP ${response.status}: ${errorBody}`)
+        if (response.status === 429) continue // rate-limited, try next key
+        throw lastError // other HTTP errors, fail fast
+      }
 
-  if (workingKeys.length === 0) {
-    console.warn("[generate-quiz] All keys rate-limited on ping, falling back")
-    throw new Error("All OpenRouter keys rate-limited")
+      const data = await response.json() as { choices: { message: { content: string } }[] }
+      const content = data.choices?.[0]?.message?.content
+      if (!content) {
+        lastError = new Error("OpenRouter returned empty response")
+        continue
+      }
+      return content
+    } catch (err) {
+      if (err instanceof DOMException && (err.name === "TimeoutError" || err.name === "AbortError")) {
+        lastError = err as Error
+        console.warn(`[generate-quiz] Key timed out (${timeoutMs}ms), trying next`)
+        continue
+      }
+      const errMsg = err instanceof Error ? err.message : String(err)
+      if (errMsg.includes("HTTP 400") || errMsg.includes("HTTP 401") || errMsg.includes("HTTP 403") || errMsg.includes("HTTP 422")) {
+        throw err instanceof Error ? err : new Error(errMsg)
+      }
+      lastError = err instanceof Error ? err : new Error(errMsg)
+      console.warn(`[generate-quiz] Key failed (${errMsg.slice(0, 80)}), trying next`)
+      continue
+    }
   }
 
-  // Pick a random working key
-  const apiKey = workingKeys[Math.floor(Math.random() * workingKeys.length)]
-
-  // Send the real request to that key
-  const response = await fetch(OPENROUTER_API_ENDPOINT, {
-    method: "POST",
-    headers: { "Authorization": `Bearer ${apiKey}`, "Content-Type": "application/json" },
-    body: JSON.stringify({
-      model,
-      messages,
-      max_tokens: OPENROUTER_MAX_TOKENS,
-      temperature: 1.0,
-      reasoning: { effort: "none" },
-    }),
-    signal: AbortSignal.timeout(timeoutMs),
-  })
-
-  if (!response.ok) {
-    const errorBody = await response.text().catch(() => "")
-    throw new Error(`OpenRouter API HTTP ${response.status}: ${errorBody}`)
-  }
-
-  const data = await response.json() as { choices: { message: { content: string } }[] }
-  const content = data.choices?.[0]?.message?.content
-  if (!content) throw new Error("OpenRouter returned empty response")
-  return content
+  throw lastError || new Error("All OpenRouter API keys exhausted")
 }
 
 async function handleGenerateQuiz(
