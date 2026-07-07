@@ -589,36 +589,56 @@ async function generateWithGroq(
   }
 
   console.log(
-    `[generate-quiz] ${workingKeys.length}/${allKeys.length} keys healthy, generating on key #${allKeys.indexOf(workingKeys[0]) + 1}`,
+    `[generate-quiz] ${workingKeys.length}/${allKeys.length} keys healthy — trying sequentially on failure`,
   )
 
-  // Phase 2 — generate on the first working key
-  const apiKey = workingKeys[0]
-  const response = await fetch(GROQ_API_ENDPOINT, {
-    method: "POST",
-    headers: { Authorization: `Bearer ${apiKey}`, "Content-Type": "application/json" },
-    body: JSON.stringify({
-      model,
-      messages,
-      max_tokens: GROQ_MAX_TOKENS,
-      temperature: 1.0,
-      response_format: { type: "json_object" },
-    }),
-    signal: AbortSignal.timeout(timeoutMs),
-  })
+  // Phase 2 — try each working key sequentially
+  const errors: string[] = []
+  for (const apiKey of workingKeys) {
+    try {
+      const response = await fetch(GROQ_API_ENDPOINT, {
+        method: "POST",
+        headers: { Authorization: `Bearer ${apiKey}`, "Content-Type": "application/json" },
+        body: JSON.stringify({
+          model,
+          messages,
+          max_tokens: GROQ_MAX_TOKENS,
+          temperature: 1.0,
+          response_format: { type: "json_object" },
+        }),
+        signal: AbortSignal.timeout(timeoutMs),
+      })
 
-  if (!response.ok) {
-    const errorBody = await response.text().catch(() => "")
-    throw new Error(`Groq API HTTP ${response.status}: ${errorBody}`)
+      if (!response.ok) {
+        const errorBody = await response.text().catch(() => "")
+        errors.push(`HTTP ${response.status}`)
+        console.warn(`[generate-quiz] Key #${allKeys.indexOf(apiKey) + 1} failed: HTTP ${response.status} ${errorBody.slice(0, 100)}`)
+        continue
+      }
+
+      const data = (await response.json()) as { choices: { message: { content: string } }[] }
+      const content = data.choices?.[0]?.message?.content
+      if (!content) {
+        errors.push("empty response")
+        console.warn(`[generate-quiz] Key #${allKeys.indexOf(apiKey) + 1} returned empty content`)
+        continue
+      }
+
+      console.log(`[generate-quiz] Generated on key #${allKeys.indexOf(apiKey) + 1}`)
+      return content
+    } catch (err) {
+      const msg = err instanceof Error ? err.message : String(err)
+      errors.push(msg)
+      // Timeout of a single key is expected during rotation — don't log loudly
+      if (!msg.toLowerCase().includes("timeout") && !msg.toLowerCase().includes("abort")) {
+        console.warn(`[generate-quiz] Key #${allKeys.indexOf(apiKey) + 1} error: ${msg}`)
+      }
+      continue
+    }
   }
 
-  const data = (await response.json()) as { choices: { message: { content: string } }[] }
-  const content = data.choices?.[0]?.message?.content
-  if (!content) {
-    throw new Error("Groq returned empty response")
-  }
-
-  return content
+  // All working keys exhausted
+  throw new Error(`All ${workingKeys.length} working keys failed: ${errors.join("; ")}`)
 }
 
 async function handleGenerateQuiz(
