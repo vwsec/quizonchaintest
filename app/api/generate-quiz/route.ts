@@ -28,10 +28,8 @@ const FETCH_DELAY_MS = 300
 // --- OpenRouter config ---
 const OPENROUTER_API_ENDPOINT = "https://openrouter.ai/api/v1/chat/completions"
 const OPENROUTER_MODEL = "tencent/hy3:free"
-const OPENROUTER_FAST_MODEL = "nvidia/nemotron-3-super:free"
 const OPENROUTER_MAX_TOKENS = 2048
 const OPENROUTER_TIMEOUT_MS = 25_000
-const OPENROUTER_FAST_TIMEOUT_MS = 25_000
 
 const TOPIC_ANGLES = [
   "consensus mechanisms",
@@ -539,17 +537,49 @@ async function generateWithOpenRouter(
   model: string = OPENROUTER_MODEL,
   timeoutMs: number = OPENROUTER_TIMEOUT_MS,
 ): Promise<string> {
-  const apiKey = process.env.OPENROUTER_API_KEY?.trim()
-  if (!apiKey) {
-    throw new Error("OPENROUTER_API_KEY is missing. Set it in your environment variables.")
+  const allKeys = [1, 2, 3, 4]
+    .map(i => process.env[`OPENROUTER_API_KEY_${i}`])
+    .filter((k): k is string => !!k && k.length > 10)
+  if (allKeys.length === 0) {
+    throw new Error("No OpenRouter API keys configured. Set OPENROUTER_API_KEY_1..4 in .env.local")
   }
 
+  // Ping all keys in parallel (~0.4s), collect working ones
+  const pingResults = await Promise.allSettled(
+    allKeys.map(async (apiKey) => {
+      const res = await fetch(OPENROUTER_API_ENDPOINT, {
+        method: "POST",
+        headers: { "Authorization": `Bearer ${apiKey}`, "Content-Type": "application/json" },
+        body: JSON.stringify({
+          model,
+          messages: [{ role: "user", content: "ok" }],
+          max_tokens: 1,
+          temperature: 0,
+          reasoning: { effort: "none" },
+        }),
+        signal: AbortSignal.timeout(5_000),
+      })
+      if (!res.ok) throw new Error(`HTTP ${res.status}`)
+      return apiKey
+    })
+  )
+
+  const workingKeys = pingResults
+    .filter((r): r is PromiseFulfilledResult<string> => r.status === "fulfilled")
+    .map(r => r.value)
+
+  if (workingKeys.length === 0) {
+    console.warn("[generate-quiz] All keys rate-limited on ping, falling back")
+    throw new Error("All OpenRouter keys rate-limited")
+  }
+
+  // Pick a random working key
+  const apiKey = workingKeys[Math.floor(Math.random() * workingKeys.length)]
+
+  // Send the real request to that key
   const response = await fetch(OPENROUTER_API_ENDPOINT, {
     method: "POST",
-    headers: {
-      "Authorization": `Bearer ${apiKey}`,
-      "Content-Type": "application/json",
-    },
+    headers: { "Authorization": `Bearer ${apiKey}`, "Content-Type": "application/json" },
     body: JSON.stringify({
       model,
       messages,
@@ -567,9 +597,7 @@ async function generateWithOpenRouter(
 
   const data = await response.json() as { choices: { message: { content: string } }[] }
   const content = data.choices?.[0]?.message?.content
-  if (!content) {
-    throw new Error("OpenRouter returned empty response")
-  }
+  if (!content) throw new Error("OpenRouter returned empty response")
   return content
 }
 
@@ -721,13 +749,10 @@ ${scrapedText}
     let items: z.infer<typeof quizItemSchema>[] | null = null;
     let lastValid: z.infer<typeof quizItemSchema>[] | null = null;
     
-    // Attempt 1-2: OpenRouter with model fallback
-    for (let attempt = 1; attempt <= 2; attempt++) {
-      const model = attempt === 1 ? OPENROUTER_MODEL : OPENROUTER_FAST_MODEL;
-      const timeoutMs = attempt === 1 ? OPENROUTER_TIMEOUT_MS : OPENROUTER_FAST_TIMEOUT_MS;
-      try {
-        const messages = [
-          { role: "system" as const, content: `You are a blockchain quiz generator v2. Focus this quiz on: ${topicAngle}. Each time you must produce a completely different set of questions — vary the topics, difficulty angles, and technical depth. Never repeat the same question format or subject across generations.
+    // Try all 4 OpenRouter keys sequentially → key1 → key2 → key3 → key4 → fallback
+    try {
+      const messages = [
+        { role: "system" as const, content: `You are a blockchain quiz generator v2. Focus this quiz on: ${topicAngle}. Each time you must produce a completely different set of questions — vary the topics, difficulty angles, and technical depth. Never repeat the same question format or subject across generations.
 
 HARD RULES — These override all other instructions:
 a) Generate questions and answers ONLY from facts explicitly stated in the documentation provided below. Do NOT use your training knowledge to fill gaps.
@@ -735,32 +760,30 @@ b) NEVER infer technical properties from token names, chain names, currency symb
 c) Your training data may be outdated. Do NOT rely on it for facts about consensus mechanisms, proof systems, protocol versions, or network upgrades. Use ONLY the provided documentation.
 d) If the provided documentation does not contain enough factual content to generate a question with 4 verifiable answer options, skip that topic entirely. Do not guess.
 e) Every answer option must be traceable to a specific sentence in the provided documentation. If you cannot trace it, do not include it.` },
-          { role: "user" as const, content: prompt },
-        ]
-        let raw = await generateWithOpenRouter(messages, model, timeoutMs)
-        let parsed = parseModelJson(raw)
-        let candidateItems = validateQuestions(toValidatedQuizArray(parsed))
-        
-        let validQuestions = candidateItems.filter(q => isValidQuestion(q) && !hasContaminatedOptions(q, ecosystemName));
-        if (validQuestions.length >= 3) {
-          lastValid = validQuestions;
-        }
-        if (validQuestions.length < 5) {
-          throw new Error(`Generated questions failed quality check, retrying`);
-        }
-
-        const history = questionHistoryCache.get(ecosystemName) || []
-        const newNormalized = validQuestions.map(q => normalizeQuestion(q.question))
-        const overlap = newNormalized.filter(nq => history.includes(nq)).length
-        if (overlap >= 4) {
-          console.warn(`[generate-quiz] High overlap (${overlap}) for ${ecosystemName}, accepting anyway`)
-        }
-
-        items = validQuestions;
-        break; // Success
-      } catch (err) {
-        console.warn(`[generate-quiz] Attempt ${attempt} (${model}) failed:`, err);
+        { role: "user" as const, content: prompt },
+      ]
+      let raw = await generateWithOpenRouter(messages, OPENROUTER_MODEL, OPENROUTER_TIMEOUT_MS)
+      let parsed = parseModelJson(raw)
+      let candidateItems = validateQuestions(toValidatedQuizArray(parsed))
+      
+      let validQuestions = candidateItems.filter(q => isValidQuestion(q) && !hasContaminatedOptions(q, ecosystemName));
+      if (validQuestions.length >= 3) {
+        lastValid = validQuestions;
       }
+      if (validQuestions.length < 5) {
+        throw new Error(`Generated questions failed quality check, retrying`);
+      }
+
+      const history = questionHistoryCache.get(ecosystemName) || []
+      const newNormalized = validQuestions.map(q => normalizeQuestion(q.question))
+      const overlap = newNormalized.filter(nq => history.includes(nq)).length
+      if (overlap >= 4) {
+        console.warn(`[generate-quiz] High overlap (${overlap}) for ${ecosystemName}, accepting anyway`)
+      }
+
+      items = validQuestions;
+    } catch (err) {
+      console.warn(`[generate-quiz] All 4 OpenRouter keys exhausted for ${ecosystemName}:`, err);
     }
 
     if (!items && lastValid) {
