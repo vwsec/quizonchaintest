@@ -1,8 +1,8 @@
 import { NextResponse } from "next/server"
 import fs from "fs"
 import path from "path"
+import { getSession } from "@/lib/admin-session"
 
-const ADMIN_PASSWORD = "123456789"
 const ALLOWED_FILES = [
   "quizzes-litvm.json",
   "quizzes-base.json",
@@ -14,13 +14,12 @@ const ALLOWED_FILES = [
 ]
 
 export async function GET(request: Request) {
-  const { searchParams } = new URL(request.url)
-  const password = searchParams.get("password")
-  const file = searchParams.get("file")
-
-  if (password !== ADMIN_PASSWORD) {
+  if (!(await getSession(request))) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 })
   }
+
+  const { searchParams } = new URL(request.url)
+  const file = searchParams.get("file")
 
   if (!file || !ALLOWED_FILES.includes(file)) {
     return NextResponse.json({ error: "Invalid file" }, { status: 400 })

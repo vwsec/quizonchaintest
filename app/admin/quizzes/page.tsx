@@ -1,10 +1,17 @@
 "use client"
 
-import { Suspense, useEffect, useState } from "react"
+import { Suspense, useEffect, useState, useCallback } from "react"
 import { useSearchParams } from "next/navigation"
 
-const ADMIN_PASSWORD = "123456789"
-const POOL_FILES = ["quizzes-litvm.json", "quizzes-base.json", "quizzes-ink.json", "quizzes-unichain.json", "quizzes-soneium.json", "quizzes-megaeth.json", "quizzes-arc.json"]
+const POOL_FILES = [
+  "quizzes-litvm.json",
+  "quizzes-base.json",
+  "quizzes-ink.json",
+  "quizzes-unichain.json",
+  "quizzes-soneium.json",
+  "quizzes-megaeth.json",
+  "quizzes-arc.json",
+]
 
 type RedisWallet = {
   ecosystem: string
@@ -33,9 +40,78 @@ type PoolQuizInfo = { id: number; question: string; options: string[]; correctIn
 
 function Home() {
   const searchParams = useSearchParams()
-  const password = searchParams.get("password")
-  const authed = password === ADMIN_PASSWORD
+  const [authed, setAuthed] = useState<boolean | null>(null) // null = loading
+  const [loginError, setLoginError] = useState("")
+  const [password, setPassword] = useState("")
 
+  // Check session on mount
+  useEffect(() => {
+    fetch("/api/admin/login")
+      .then((r) => r.json())
+      .then((data) => setAuthed(data.authed === true))
+      .catch(() => setAuthed(false))
+  }, [])
+
+  const handleLogin = useCallback(async () => {
+    setLoginError("")
+    const res = await fetch("/api/admin/login", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ password }),
+    })
+    if (res.ok) {
+      setAuthed(true)
+      setPassword("")
+    } else {
+      const data = await res.json().catch(() => ({}))
+      setLoginError(data.error || "Wrong password")
+    }
+  }, [password])
+
+  // ── Login screen ──
+  if (authed === null) {
+    return (
+      <div className="min-h-screen bg-zinc-950 flex items-center justify-center">
+        <div className="w-6 h-6 border-2 border-zinc-600 border-t-blue-400 rounded-full animate-spin" />
+      </div>
+    )
+  }
+
+  if (!authed) {
+    return (
+      <div className="min-h-screen bg-zinc-950 flex items-center justify-center p-4">
+        <div className="w-full max-w-sm">
+          <div className="border border-zinc-800 bg-zinc-900/60 rounded-2xl p-6 space-y-4">
+            <div>
+              <h1 className="text-lg font-semibold tracking-tight text-zinc-100">Admin</h1>
+              <p className="text-xs text-zinc-500 mt-1">QuizonChain dashboard</p>
+            </div>
+            <input
+              type="password"
+              placeholder="Password"
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
+              onKeyDown={(e) => e.key === "Enter" && handleLogin()}
+              className="w-full bg-zinc-950 border border-zinc-800 rounded-lg px-4 py-2.5 text-sm text-zinc-100 placeholder-zinc-600"
+            />
+            {loginError && <p className="text-red-400 text-xs">{loginError}</p>}
+            <button
+              onClick={handleLogin}
+              className="w-full bg-blue-600 hover:bg-blue-500 text-white text-sm font-medium rounded-lg px-4 py-2.5 transition-colors"
+            >
+              Sign in
+            </button>
+          </div>
+        </div>
+      </div>
+    )
+  }
+
+  // ── Main app ──
+  return <AdminApp />
+}
+
+function AdminApp() {
   const [tab, setTab] = useState<"pool" | "stats">("pool")
   const [selectedFile, setSelectedFile] = useState(POOL_FILES[0])
   const [poolMeta, setPoolMeta] = useState<PoolMeta | null>(null)
@@ -48,8 +124,7 @@ function Home() {
 
   // Load pool data
   useEffect(() => {
-    if (!authed) return
-    fetch(`/api/admin/quiz-pool?file=${selectedFile}&password=${ADMIN_PASSWORD}`)
+    fetch(`/api/admin/quiz-pool?file=${selectedFile}`)
       .then((r) => r.json())
       .then((data) => {
         setPoolMeta(data.meta ?? null)
@@ -60,13 +135,13 @@ function Home() {
         setPoolMeta(null)
         setQuestions([])
       })
-  }, [authed, selectedFile])
+  }, [selectedFile])
 
   // Load Redis stats
   useEffect(() => {
-    if (!authed || tab !== "stats") return
+    if (tab !== "stats") return
     setLoadingStats(true)
-    fetch(`/api/admin/redis-stats?password=${ADMIN_PASSWORD}`)
+    fetch("/api/admin/redis-stats")
       .then((r) => r.json())
       .then((data) => setRedisStats(data))
       .catch((e) =>
@@ -80,9 +155,8 @@ function Home() {
         }),
       )
       .finally(() => setLoadingStats(false))
-  }, [authed, tab])
+  }, [tab])
 
-  // Determine alert status
   const nearCompletionWallets = redisStats?.wallets?.filter((w) => w.nearCompletion) ?? []
   const hasNearCompletion = nearCompletionWallets.length > 0
 
@@ -94,13 +168,11 @@ function Home() {
   const pageCount = Math.ceil(filtered.length / itemsPerPage)
   const paged = filtered.slice(currentPage * itemsPerPage, (currentPage + 1) * itemsPerPage)
 
-  // Color helpers
   const progressColor = (pct: number, near: boolean) => {
     if (near) return "bg-red-500"
     if (pct >= 70) return "bg-amber-500"
     return "bg-emerald-500"
   }
-
   const progressBg = (pct: number, near: boolean) => {
     if (near) return "bg-red-900/30"
     if (pct >= 70) return "bg-amber-900/30"
@@ -116,14 +188,6 @@ function Home() {
           className={`h-full rounded-full transition-all duration-500 ${progressColor(display, near)}`}
           style={{ width: `${display}%` }}
         />
-      </div>
-    )
-  }
-
-  if (!authed) {
-    return (
-      <div className="min-h-screen bg-zinc-950 flex items-center justify-center">
-        <div className="text-zinc-400 text-sm">Unauthorized — wrong password</div>
       </div>
     )
   }
@@ -161,10 +225,9 @@ function Home() {
         </div>
       </header>
 
-      {/* ──────────── POOL TAB ──────────── */}
+      {/* ─── POOL TAB ─── */}
       {tab === "pool" && (
         <main className="p-6 space-y-6">
-          {/* Pool Selector */}
           <div className="flex items-center gap-3">
             <label className="text-sm text-zinc-500">Pool file:</label>
             <select
@@ -185,7 +248,6 @@ function Home() {
             )}
           </div>
 
-          {/* Search */}
           <input
             type="text"
             placeholder="Search questions..."
@@ -197,7 +259,6 @@ function Home() {
             className="w-full bg-zinc-900 border border-zinc-800 rounded-lg px-4 py-2 text-sm text-zinc-100 placeholder-zinc-600"
           />
 
-          {/* Question List */}
           <div className="space-y-2">
             {paged.map((q) => (
               <details key={q.id} className="bg-zinc-900/50 border border-zinc-800 rounded-lg group">
@@ -215,7 +276,9 @@ function Home() {
                     >
                       <span className="w-5 text-right font-mono text-xs text-zinc-600">{i}</span>
                       {opt}
-                      {i === q.correctIndex && <span className="ml-auto text-emerald-400 text-[10px] font-mono">CORRECT</span>}
+                      {i === q.correctIndex && (
+                        <span className="ml-auto text-emerald-400 text-[10px] font-mono">CORRECT</span>
+                      )}
                     </div>
                   ))}
                 </div>
@@ -223,7 +286,6 @@ function Home() {
             ))}
           </div>
 
-          {/* Pagination */}
           {pageCount > 1 && (
             <div className="flex items-center justify-center gap-2 text-sm">
               <button
@@ -248,35 +310,34 @@ function Home() {
         </main>
       )}
 
-      {/* ──────────── REDIS STATS TAB ──────────── */}
+      {/* ─── REDIS STATS TAB ─── */}
       {tab === "stats" && (
         <main className="p-6 space-y-6">
-          {/* Alert Banner */}
           {hasNearCompletion && (
             <div className="border border-red-800 bg-red-950/40 rounded-xl px-5 py-4 flex items-start gap-3">
               <span className="text-red-400 text-lg leading-none mt-0.5">&#9650;</span>
               <div>
-                <p className="font-semibold text-red-300 text-sm">
-                  Pool files need attention
-                </p>
+                <p className="font-semibold text-red-300 text-sm">Pool files need attention</p>
                 <p className="text-red-400/80 text-xs mt-1">
-                  {nearCompletionWallets.length} wallet{nearCompletionWallets.length > 1 ? "s" : ""} running out of unique questions.
-                  {nearCompletionWallets.map((w) => (
-                    <span key={w.address} className="block font-mono mt-0.5">
-                      {w.ecosystem} &mdash; {w.address.slice(0, 6)}...{w.address.slice(-4)} &mdash; {w.progressPct}% done
-                    </span>
-                  ))}
-                  Generate a new batch of questions via Hermes Agent.
+                  {nearCompletionWallets.length} wallet{ nearCompletionWallets.length > 1 ? "s" : ""}{" "}
+                  running out of unique questions. Generate a new batch via Hermes Agent.
                 </p>
+                {nearCompletionWallets.map((w) => (
+                  <p key={w.address} className="text-red-400/70 text-xs font-mono mt-0.5">
+                    {w.ecosystem} &mdash; {w.address.slice(0, 6)}...{w.address.slice(-4)} &mdash;{" "}
+                    {w.progressPct}% done
+                  </p>
+                ))}
               </div>
             </div>
           )}
 
-          {/* Not Configured */}
           {redisStats && !redisStats.configured && !redisStats.error && (
             <div className="border border-amber-800 bg-amber-950/40 rounded-xl px-5 py-4">
               <p className="text-amber-300 font-semibold text-sm">Redis not configured</p>
-              <p className="text-amber-400/70 text-xs mt-1">{redisStats.message ?? "Missing KV_REST_API_URL / KV_REST_API_TOKEN env vars."}</p>
+              <p className="text-amber-400/70 text-xs mt-1">
+                {redisStats.message ?? "Missing KV_REST_API_URL / KV_REST_API_TOKEN env vars."}
+              </p>
             </div>
           )}
 
@@ -296,7 +357,6 @@ function Home() {
 
           {redisStats?.configured && !loadingStats && (
             <>
-              {/* Overview Cards */}
               <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
                 <div className="bg-zinc-900/60 border border-zinc-800 rounded-xl px-4 py-3">
                   <p className="text-2xl font-bold tracking-tight">{redisStats.totalWallets}</p>
@@ -308,7 +368,7 @@ function Home() {
                 </div>
                 <div className="bg-zinc-900/60 border border-zinc-800 rounded-xl px-4 py-3">
                   <p className="text-2xl font-bold tracking-tight">
-                    {redisStats.ecosystems.litvm?.nearCompletion ?? 0}
+                    {Object.values(redisStats.ecosystems ?? {}).reduce((s, e) => s + e.nearCompletion, 0)}
                   </p>
                   <p className="text-xs text-zinc-500 mt-1">Near Completion</p>
                 </div>
@@ -320,34 +380,29 @@ function Home() {
                 </div>
               </div>
 
-              {/* Per-Ecosystem */}
               <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3">
-                {Object.entries(redisStats.ecosystems ?? {}).map(([key, eco]) => {
-                  const poolLabel = eco.totalPool > 0 ? `${eco.totalPool} quizzes` : "No pool"
-                  return (
-                    <div
-                      key={key}
-                      className={`border rounded-xl px-4 py-3 ${
-                        eco.nearCompletion > 0 ? "border-red-800 bg-red-950/20" : "border-zinc-800 bg-zinc-900/40"
-                      }`}
-                    >
-                      <p className="font-semibold text-sm capitalize">{key}</p>
-                      <div className="mt-2 space-y-1 text-xs text-zinc-400">
-                        <p>{eco.wallets} wallet{eco.wallets !== 1 ? "s" : ""}</p>
-                        <p>{eco.submittedSessions} submitted</p>
-                        <p className="font-mono text-zinc-500">{poolLabel}</p>
-                        {eco.nearCompletion > 0 && (
-                          <p className="text-red-400 font-semibold">
-                            {eco.nearCompletion} near completion
-                          </p>
-                        )}
-                      </div>
+                {Object.entries(redisStats.ecosystems ?? {}).map(([key, eco]) => (
+                  <div
+                    key={key}
+                    className={`border rounded-xl px-4 py-3 ${
+                      eco.nearCompletion > 0 ? "border-red-800 bg-red-950/20" : "border-zinc-800 bg-zinc-900/40"
+                    }`}
+                  >
+                    <p className="font-semibold text-sm capitalize">{key}</p>
+                    <div className="mt-2 space-y-1 text-xs text-zinc-400">
+                      <p>{eco.wallets} wallet{eco.wallets !== 1 ? "s" : ""}</p>
+                      <p>{eco.submittedSessions} submitted</p>
+                      <p className="font-mono text-zinc-500">
+                        {eco.totalPool > 0 ? `${eco.totalPool} quizzes` : "No pool"}
+                      </p>
+                      {eco.nearCompletion > 0 && (
+                        <p className="text-red-400 font-semibold">{eco.nearCompletion} near completion</p>
+                      )}
                     </div>
-                  )
-                })}
+                  </div>
+                ))}
               </div>
 
-              {/* Wallet Table */}
               {redisStats.wallets.length > 0 ? (
                 <div className="overflow-x-auto">
                   <table className="w-full text-sm">
@@ -361,61 +416,54 @@ function Home() {
                       </tr>
                     </thead>
                     <tbody>
-                      {redisStats.wallets.map((w) => {
-                        const truncated = `${w.address.slice(0, 6)}...${w.address.slice(-4)}`
-                        return (
-                          <tr
-                            key={w.address}
-                            className={`border-b border-zinc-800/50 ${
-                              w.nearCompletion ? "bg-red-950/15" : "hover:bg-zinc-900/30"
-                            }`}
-                          >
-                            <td className="py-3 pr-4 font-mono text-xs text-zinc-300">{truncated}</td>
-                            <td className="py-3 pr-4">
-                              <span className="capitalize text-xs bg-zinc-800 px-2 py-0.5 rounded">
-                                {w.ecosystem}
+                      {redisStats.wallets.map((w) => (
+                        <tr
+                          key={w.address}
+                          className={`border-b border-zinc-800/50 ${
+                            w.nearCompletion ? "bg-red-950/15" : "hover:bg-zinc-900/30"
+                          }`}
+                        >
+                          <td className="py-3 pr-4 font-mono text-xs text-zinc-300">
+                            {w.address.slice(0, 6)}...{w.address.slice(-4)}
+                          </td>
+                          <td className="py-3 pr-4">
+                            <span className="capitalize text-xs bg-zinc-800 px-2 py-0.5 rounded">{w.ecosystem}</span>
+                          </td>
+                          <td className="py-3 pr-4 text-right font-mono text-xs text-zinc-300">
+                            {w.quizzesDone}
+                            {w.totalQuizzes > 0 && (
+                              <span className="text-zinc-600">
+                                {" "}/ {Math.floor(w.totalQuizzes / w.questionsPerSession)}
                               </span>
-                            </td>
-                            <td className="py-3 pr-4 text-right font-mono text-xs text-zinc-300">
-                              {w.quizzesDone}
-                              {w.totalQuizzes > 0 && (
-                                <span className="text-zinc-600">
-                                  {" "}/ {Math.floor(w.totalQuizzes / w.questionsPerSession)}
-                                </span>
-                              )}
-                            </td>
-                            <td className="py-3 pr-4 min-w-[120px]">
-                              <div className="flex items-center gap-2">
-                                <div className="flex-1">
-                                  <ProgressBar pct={w.progressPct} near={w.nearCompletion} totalQuizzes={w.totalQuizzes} />
-                                </div>
-                                <span
-                                  className={`text-xs font-mono ${
-                                    w.nearCompletion ? "text-red-400" : "text-zinc-500"
-                                  }`}
-                                >
-                                  {w.totalQuizzes > 0 ? `${w.progressPct}%` : "\u221E"}
-                                </span>
+                            )}
+                          </td>
+                          <td className="py-3 pr-4 min-w-[120px]">
+                            <div className="flex items-center gap-2">
+                              <div className="flex-1">
+                                <ProgressBar pct={w.progressPct} near={w.nearCompletion} totalQuizzes={w.totalQuizzes} />
                               </div>
-                            </td>
-                            <td className="py-3">
-                              {w.totalQuizzes === 0 ? (
-                                <span className="text-[10px] text-zinc-600 italic">unlimited</span>
-                              ) : w.nearCompletion ? (
-                                <span className="flex items-center gap-1 text-[10px] text-red-400 font-semibold">
-                                  <span className="inline-block w-1.5 h-1.5 rounded-full bg-red-500" />
-                                  NEED POOL
-                                </span>
-                              ) : (
-                                <span className="flex items-center gap-1 text-[10px] text-emerald-400">
-                                  <span className="inline-block w-1.5 h-1.5 rounded-full bg-emerald-500" />
-                                  OK
-                                </span>
-                              )}
-                            </td>
-                          </tr>
-                        )
-                      })}
+                              <span className={`text-xs font-mono ${w.nearCompletion ? "text-red-400" : "text-zinc-500"}`}>
+                                {w.totalQuizzes > 0 ? `${w.progressPct}%` : "\u221E"}
+                              </span>
+                            </div>
+                          </td>
+                          <td className="py-3">
+                            {w.totalQuizzes === 0 ? (
+                              <span className="text-[10px] text-zinc-600 italic">unlimited</span>
+                            ) : w.nearCompletion ? (
+                              <span className="flex items-center gap-1 text-[10px] text-red-400 font-semibold">
+                                <span className="inline-block w-1.5 h-1.5 rounded-full bg-red-500" />
+                                NEED POOL
+                              </span>
+                            ) : (
+                              <span className="flex items-center gap-1 text-[10px] text-emerald-400">
+                                <span className="inline-block w-1.5 h-1.5 rounded-full bg-emerald-500" />
+                                OK
+                              </span>
+                            )}
+                          </td>
+                        </tr>
+                      ))}
                     </tbody>
                   </table>
                 </div>

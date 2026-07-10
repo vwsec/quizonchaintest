@@ -2,8 +2,7 @@ import { NextResponse } from "next/server"
 import { getRedis } from "@/lib/redis"
 import fs from "fs"
 import path from "path"
-
-const ADMIN_PASSWORD = "123456789"
+import { getSession } from "@/lib/admin-session"
 
 const ECOSYSTEMS = [
   { key: "litvm", name: "LitVM" },
@@ -33,10 +32,7 @@ function getPoolSize(ecosystemKey: string): { totalQuizzes: number; questionsPer
 
 export async function GET(request: Request) {
   try {
-    const { searchParams } = new URL(request.url)
-    const password = searchParams.get("password")
-
-    if (password !== ADMIN_PASSWORD) {
+    if (!(await getSession(request))) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 })
     }
 
