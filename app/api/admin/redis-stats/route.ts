@@ -1,6 +1,9 @@
 import { NextResponse } from "next/server"
+import { getRedis } from "@/lib/redis"
 
 const ADMIN_PASSWORD = "123456789"
+
+const ECOSYSTEMS = ["litvm", "base", "ink", "unichain", "soneium", "megaeth", "arc"]
 
 export async function GET(request: Request) {
   try {
@@ -11,25 +14,11 @@ export async function GET(request: Request) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 })
     }
 
-    // Try to import Redis dynamically (catches module-level errors)
-    let r: import("@upstash/redis").Redis | null = null
-    try {
-      const { getRedis } = await import("@/lib/redis")
-      r = getRedis()
-    } catch (importErr) {
-      return NextResponse.json({
-        configured: false,
-        message: "Redis module error: " + String(importErr),
-        totalWallets: 0,
-        totalSubmitted: 0,
-        ecosystems: {},
-      })
-    }
-
+    const r = getRedis()
     if (!r) {
       return NextResponse.json({
         configured: false,
-        message: "KV_URL / KV_REST_API_TOKEN not set.",
+        message: "KV_REST_API_URL / KV_REST_API_TOKEN not set.",
         totalWallets: 0,
         totalSubmitted: 0,
         ecosystems: {},
@@ -44,11 +33,11 @@ export async function GET(request: Request) {
     const progressArr = Array.isArray(progressKeys) ? progressKeys : []
     const submittedArr = Array.isArray(submittedKeys) ? submittedKeys : []
 
-    const byEco = (keys: string[], idx: number): Record<string, number> => {
+    const byEco = (keys: string[], minParts: number): Record<string, number> => {
       const out: Record<string, number> = {}
       for (const key of keys) {
         const parts = key.split(":")
-        if (parts.length > idx) {
+        if (parts.length >= minParts) {
           const eco = parts[1].toLowerCase()
           out[eco] = (out[eco] || 0) + 1
         }
@@ -56,11 +45,11 @@ export async function GET(request: Request) {
       return out
     }
 
-    const progressByEco = byEco(progressArr, 2)
-    const submittedByEco = byEco(submittedArr, 3)
+    const progressByEco = byEco(progressArr, 3)
+    const submittedByEco = byEco(submittedArr, 4)
 
     const ecosystems: Record<string, { wallets: number; submittedSessions: number }> = {}
-    for (const eco of ["litvm", "base", "ink", "unichain", "soneium", "megaeth", "arc"]) {
+    for (const eco of ECOSYSTEMS) {
       ecosystems[eco] = {
         wallets: progressByEco[eco] ?? 0,
         submittedSessions: submittedByEco[eco] ?? 0,
