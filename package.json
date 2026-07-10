@@ -32,6 +32,7 @@
     "@rainbow-me/rainbowkit": "2.2.11",
     "@startale/app-sdk": "^1.3.1",
     "@tanstack/react-query": "^5.100.9",
+    "@upstash/redis": "^1.38.0",
     "@vercel/analytics": "2.0.1",
     "@wagmi/connectors": "8.0.13",
     "@wagmi/core": "3.4.11",

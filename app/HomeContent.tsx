@@ -6,8 +6,9 @@ import { HomeScreen } from "@/components/home-screen"
 import { QuizScreen } from "@/components/quiz-screen"
 import { ResultsScreen } from "@/components/results-screen"
 import type { Question } from "@/lib/quiz-data"
-import { useChainId, useAccount, usePublicClient } from "wagmi"
+import { useChainId, useAccount, usePublicClient, useSignMessage } from "wagmi"
 import { getTimeUntilNextSubmissionSeconds } from "@/lib/submitScore"
+import type { Hex } from "viem"
 
 type Screen = "home" | "quiz" | "results"
 
@@ -23,6 +24,7 @@ type GenerateQuizApiResponse = {
   questions?: GenerateQuizApiQuestion[]
   quizToken?: string
   ecosystem?: string
+  startIndex?: number
 }
 
 function normalizeQuestions(raw: GenerateQuizApiQuestion[]): Question[] {
@@ -45,11 +47,14 @@ function QuizApp() {
   }, [chainId])
 
   const { isConnected } = useAccount()
+  const { signMessageAsync } = useSignMessage()
   const [screen, setScreen] = useState<Screen>("home")
   const [finalScore, setFinalScore] = useState(0)
   const [userAnswers, setUserAnswers] = useState<number[]>([])
   const [questions, setQuestions] = useState<Question[]>([])
   const [quizToken, setQuizToken] = useState<string | null>(null)
+  const [startIndex, setStartIndex] = useState<number | null>(null)
+  const [quizSignature, setQuizSignature] = useState<Hex | null>(null)
   const [quizLoading, setQuizLoading] = useState(false)
   const [quizError, setQuizError] = useState<string | null>(null)
   const [globalRefreshKey, setGlobalRefreshKey] = useState(0)
@@ -65,7 +70,9 @@ function QuizApp() {
     const controller = new AbortController()
     const timeout = setTimeout(() => controller.abort(), 60_000)
     try {
-      const res = await fetch(`/api/generate-quiz?chainId=${chainId}`, {
+      const params = new URLSearchParams({ chainId: String(chainId) })
+      if (address) params.set("address", address)
+      const res = await fetch(`/api/generate-quiz?${params}`, {
         signal: controller.signal,
       })
       if (!res.ok) {
@@ -102,6 +109,22 @@ function QuizApp() {
 
       setQuestions(normalizeQuestions(data.questions))
       setQuizToken(data.quizToken)
+
+      // Sign the message if address + startIndex are available
+      if (address && data.startIndex != null) {
+        setStartIndex(data.startIndex)
+        try {
+          const message = `QuizonChain:${chainId}:${data.startIndex}`
+          const sig = await signMessageAsync({ message })
+          setQuizSignature(sig)
+        } catch (signErr) {
+          console.warn("[QuizApp] User cancelled or failed to sign message:", signErr)
+          setQuizSignature(null)
+        }
+      } else {
+        setStartIndex(null)
+        setQuizSignature(null)
+      }
     } catch (e) {
       if (chainIdRef.current !== chainId) return;
       if (e instanceof Error && e.name === "AbortError") {
@@ -111,11 +134,13 @@ function QuizApp() {
       }
       setQuestions([])
       setQuizToken(null)
+      setStartIndex(null)
+      setQuizSignature(null)
     } finally {
       clearTimeout(timeout)
       setQuizLoading(false)
     }
-  }, [chainId])
+  }, [chainId, address, signMessageAsync])
 
   // Automatically clear rate limit error after 60 seconds
   useEffect(() => {
@@ -130,6 +155,8 @@ function QuizApp() {
   useEffect(() => {
     setQuestions([])
     setQuizToken(null)
+    setStartIndex(null)
+    setQuizSignature(null)
     setQuizError(null)
     setFinalScore(0)
     setUserAnswers([])
@@ -202,10 +229,16 @@ function QuizApp() {
       return
     }
     try {
+      const body: Record<string, unknown> = { quizToken, answers }
+      if (quizSignature && startIndex != null && address) {
+        body.signature = quizSignature
+        body.address = address
+        body.startIndex = startIndex
+      }
       const res = await fetch("/api/verify-quiz", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ quizToken, answers }),
+        body: JSON.stringify(body),
       })
       if (!res.ok) {
         const text = await res.text()
@@ -229,6 +262,8 @@ function QuizApp() {
     setUserAnswers([])
     setQuestions([])
     setQuizToken(null)
+    setStartIndex(null)
+    setQuizSignature(null)
     setScreen("home")
     setGlobalRefreshKey((k) => k + 1)
   }

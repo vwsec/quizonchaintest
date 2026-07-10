@@ -15,10 +15,8 @@ import {
 import { z } from "zod"
 import fs from "fs"
 import path from "path"
-
-const INK_CHAIN_IDS = new Set([57073])
-const BASE_CHAIN_ID = 8453
-const UNICHAIN_CHAIN_ID = 130
+import { getEcosystem, getPoolFileKey, type PoolData } from "@/lib/quiz-data"
+import { getWalletProgress } from "@/lib/redis"
 
 const TARGET_CHARS = 3000
 const MIN_COMBINED_CHARS = 800
@@ -288,11 +286,18 @@ function validateQuestions(data: unknown): ServerQuestion[] {
   })
 }
 
-async function signQuizToken(chainId: number | null, answers: number[]): Promise<string> {
+async function signQuizToken(
+  chainId: number | null,
+  answers: number[],
+  address?: string | null,
+  startIndex?: number | null,
+): Promise<string> {
   const secret = new TextEncoder().encode(quizJwtSecret)
   return await new SignJWT({
     answers,
     chainId: chainId ?? null,
+    address: address ?? null,
+    startIndex: startIndex ?? null,
     type: "quiz-answers",
   })
     .setProtectedHeader({ alg: "HS256" })
@@ -308,6 +313,8 @@ async function buildQuizResponse(
   usedFallbackQuestions: boolean,
   headers: Record<string, string>,
   ecosystem: string,
+  address?: string | null,
+  startIndex?: number,
 ) {
   const randomized = items.map(shuffleOptions)
   const questions: PublicQuestion[] = randomized.map((q, i) => ({
@@ -317,7 +324,7 @@ async function buildQuizResponse(
     correctIndex: q.correctIndex,
   }))
   const answers = randomized.map((q) => q.correctIndex)
-  const quizToken = await signQuizToken(chainId, answers)
+  const quizToken = await signQuizToken(chainId, answers, address, startIndex)
   return NextResponse.json(
     {
       questions,
@@ -325,6 +332,7 @@ async function buildQuizResponse(
       sources,
       usedFallbackQuestions,
       ecosystem,
+      ...(address != null && startIndex != null ? { startIndex } : {}),
     },
     { headers },
   )
@@ -647,40 +655,6 @@ async function generateWithGroq(
 // Pool-based quiz generation
 // ──────────────────────────────────────────────
 
-const ECOSYSTEM_BY_CHAIN_ID: Record<number, string> = {
-  [BASE_CHAIN_ID]: "Base",
-  [UNICHAIN_CHAIN_ID]: "Unichain",
-  1868: "Soneium",
-  4326: "MegaETH",
-  4441: "LitVM",
-  5042002: "Arc Testnet",
-}
-
-const ECOSYSTEM_FILE_KEY: Record<string, string> = {
-  base: "base",
-  unichain: "unichain",
-  soneium: "soneium",
-  megaeth: "megaeth",
-  litvm: "litvm",
-  arc: "arc",
-  ink: "ink",
-}
-
-function getEcosystem(chainId: number | null): string | null {
-  if (chainId == null) return null
-  if (INK_CHAIN_IDS.has(chainId)) return "Ink"
-  return ECOSYSTEM_BY_CHAIN_ID[chainId] ?? null
-}
-
-function getPoolFileKey(ecosystem: string): string | null {
-  return ECOSYSTEM_FILE_KEY[ecosystem.toLowerCase()] ?? null
-}
-
-type PoolData = {
-  meta: { ecosystem: string; totalQuizzes: number }
-  quizzes: { id: number; question: string; options: string[]; correctIndex: number }[]
-}
-
 function loadPool(ecosystem: string): PoolData | null {
   const key = getPoolFileKey(ecosystem)
   if (!key) return null
@@ -698,6 +672,7 @@ async function handleGenerateQuiz(
   request: Request,
   selectedChainId: number | null,
   headers: Record<string, string>,
+  address?: string | null,
 ): Promise<NextResponse> {
   const ecosystem = getEcosystem(selectedChainId)
   if (!ecosystem) {
@@ -710,6 +685,32 @@ async function handleGenerateQuiz(
   // Try pool first
   const poolData = loadPool(ecosystem)
   if (poolData && poolData.quizzes.length >= 5) {
+    if (address) {
+      // Sequential pool access with wallet tracking
+      const startIndex = await getWalletProgress(ecosystem, address)
+      const total = poolData.quizzes.length
+      const items: ServerQuestion[] = []
+      for (let i = 0; i < 5; i++) {
+        const q = poolData.quizzes[(startIndex + i) % total]
+        items.push({
+          question: q.question,
+          options: [...q.options],
+          correctIndex: q.correctIndex,
+        })
+      }
+      const shuffled = items.map(shuffleOptions)
+      return buildQuizResponse(
+        selectedChainId,
+        shuffled,
+        [],
+        false,
+        headers,
+        ecosystem,
+        address,
+        startIndex,
+      )
+    }
+    // Random pool access (no address — legacy flow)
     const picked = fisherYatesPick(poolData.quizzes, 5)
     const items = picked.map(shuffleOptions)
     return buildQuizResponse(
@@ -761,7 +762,8 @@ export async function GET(request: Request) {
       )
     }
     const selectedChainId = readSelectedChainId(request, "GET")
-    return await handleGenerateQuiz(request, selectedChainId, headers)
+    const address = new URL(request.url).searchParams.get("address") || null
+    return await handleGenerateQuiz(request, selectedChainId, headers, address)
   } catch (err) {
     const message = err instanceof Error ? err.message : "Invalid request."
     return NextResponse.json({ error: message }, { status: 400, headers })
