@@ -212,7 +212,15 @@ function AdminContent() {
     fetch(`/api/admin/redis-stats?password=${ADMIN_PASSWORD}`)
       .then((r) => r.json())
       .then((data) => setRedisStats(data))
-      .catch(() => setRedisStats({ configured: false, totalWallets: 0, totalSubmitted: 0, ecosystems: {}, message: "Failed to fetch" }))
+      .catch((e) =>
+        setRedisStats({
+          configured: false,
+          totalWallets: 0,
+          totalSubmitted: 0,
+          ecosystems: {},
+          message: "Failed to fetch: " + String(e),
+        }),
+      )
   }, [authed])
 
   if (!authed) {
