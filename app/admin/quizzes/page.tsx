@@ -1,6 +1,7 @@
 "use client"
 
-import { useEffect, useState } from "react"
+import { Suspense, useEffect, useState } from "react"
+import { useSearchParams } from "next/navigation"
 
 const ADMIN_PASSWORD = "123456789"
 const POOL_FILES = ["quizzes-litvm.json", "quizzes-base.json", "quizzes-ink.json", "quizzes-unichain.json", "quizzes-soneium.json", "quizzes-megaeth.json", "quizzes-arc.json"]
@@ -10,16 +11,17 @@ type PoolData = {
   quizzes: { id: number; question: string; options: string[]; correctIndex: number }[]
 }
 
-export default function AdminQuizzesPage() {
+function AdminContent() {
+  const searchParams = useSearchParams()
   const [authed, setAuthed] = useState(false)
   const [pools, setPools] = useState<Record<string, PoolData | null>>({})
   const [selected, setSelected] = useState<string | null>(null)
   const [qIdx, setQIdx] = useState(0)
 
   useEffect(() => {
-    const pw = new URLSearchParams(window.location.search).get("password")
-    if (pw === ADMIN_PASSWORD) setAuthed(true)
-  }, [])
+    const pw = searchParams.get("password")
+    setAuthed(pw === ADMIN_PASSWORD)
+  }, [searchParams])
 
   useEffect(() => {
     if (!authed) return
@@ -110,5 +112,13 @@ export default function AdminQuizzesPage() {
         </div>
       )}
     </div>
+  )
+}
+
+export default function AdminQuizzesPage() {
+  return (
+    <Suspense fallback={<div className="min-h-screen bg-black text-white flex items-center justify-center">Loading...</div>}>
+      <AdminContent />
+    </Suspense>
   )
 }
