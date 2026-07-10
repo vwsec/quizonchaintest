@@ -21,7 +21,7 @@ export function makeSessionCookie(token: string): string {
     "Secure",
     "SameSite=Strict",
     `Max-Age=${COOKIE_MAX_AGE}`,
-    "Path=/admin",
+    "Path=/",
   ].join("; ")
 }
 
