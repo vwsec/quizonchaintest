@@ -13,6 +13,8 @@ import {
   ARC_DOCS_PAGES,
 } from "@/lib/docsPages"
 import { z } from "zod"
+import fs from "fs"
+import path from "path"
 
 const INK_CHAIN_IDS = new Set([57073])
 const BASE_CHAIN_ID = 8453
@@ -641,226 +643,95 @@ async function generateWithGroq(
   throw new Error(`All ${workingKeys.length} working keys failed: ${errors.join("; ")}`)
 }
 
+// ──────────────────────────────────────────────
+// Pool-based quiz generation
+// ──────────────────────────────────────────────
+
+const ECOSYSTEM_BY_CHAIN_ID: Record<number, string> = {
+  [BASE_CHAIN_ID]: "Base",
+  [UNICHAIN_CHAIN_ID]: "Unichain",
+  1868: "Soneium",
+  4326: "MegaETH",
+  4441: "LitVM",
+  5042002: "Arc Testnet",
+}
+
+const ECOSYSTEM_FILE_KEY: Record<string, string> = {
+  base: "base",
+  unichain: "unichain",
+  soneium: "soneium",
+  megaeth: "megaeth",
+  litvm: "litvm",
+  arc: "arc",
+  ink: "ink",
+}
+
+function getEcosystem(chainId: number | null): string | null {
+  if (chainId == null) return null
+  if (INK_CHAIN_IDS.has(chainId)) return "Ink"
+  return ECOSYSTEM_BY_CHAIN_ID[chainId] ?? null
+}
+
+function getPoolFileKey(ecosystem: string): string | null {
+  return ECOSYSTEM_FILE_KEY[ecosystem.toLowerCase()] ?? null
+}
+
+type PoolData = {
+  meta: { ecosystem: string; totalQuizzes: number }
+  quizzes: { id: number; question: string; options: string[]; correctIndex: number }[]
+}
+
+function loadPool(ecosystem: string): PoolData | null {
+  const key = getPoolFileKey(ecosystem)
+  if (!key) return null
+  try {
+    const filePath = path.join(process.cwd(), "data", `quizzes-${key}.json`)
+    const raw = fs.readFileSync(filePath, "utf-8")
+    return JSON.parse(raw) as PoolData
+  } catch (err) {
+    console.error(`[generate-quiz] Failed to load pool for ${ecosystem}:`, err)
+    return null
+  }
+}
+
 async function handleGenerateQuiz(
   request: Request,
   selectedChainId: number | null,
   headers: Record<string, string>,
 ): Promise<NextResponse> {
-  const requestChainId = selectedChainId ?? NaN
-
-  // --- Strict Ecosystem Mapping ---
-  const ecosystemConfigs: Record<number, { name: "Ink" | "Soneium" | "Base" | "Unichain" | "MegaETH" | "LitVM" | "Arc Testnet"; docs: string[] | readonly string[] }> = {
-    [BASE_CHAIN_ID]: { name: "Base", docs: BASE_DOCS_PAGES },
-    [UNICHAIN_CHAIN_ID]: { name: "Unichain", docs: UNICHAIN_DOCS_PAGES },
-    [1868]: { name: "Soneium", docs: SONEIUM_DOCS_PAGES },
-    [4326]: { name: "MegaETH", docs: MEGAETH_DOCS_PAGES },
-    [4441]: { name: "LitVM", docs: LITVM_DOCS_PAGES },
-    [5042002]: { name: "Arc Testnet", docs: ARC_DOCS_PAGES },
-  }
-
-  // Handle Ink IDs specifically since it's a Set
-  const isInk = INK_CHAIN_IDS.has(requestChainId)
-  
-  let config: { name: "Ink" | "Soneium" | "Base" | "Unichain" | "MegaETH" | "LitVM" | "Arc Testnet"; docs: string[] | readonly string[] } | undefined
-
-  config = isInk 
-    ? { name: "Ink" as const, docs: INK_DOCS_PAGES } 
-    : ecosystemConfigs[requestChainId]
-
-  if (!config) {
+  const ecosystem = getEcosystem(selectedChainId)
+  if (!ecosystem) {
     return NextResponse.json(
-      { error: `Invalid or unsupported chainId (${requestChainId}).` },
-      { status: 400, headers }
+      { error: `Invalid or unsupported chainId (${selectedChainId}).` },
+      { status: 400, headers },
     )
   }
 
-  const { name: ecosystemName, docs: docsPages } = config
-
-  try {
-    if (docsPages.length < 3) {
-      const label = `${ecosystemName.toUpperCase()}_DOCS_PAGES`
-      return NextResponse.json(
-        { error: `${label} must contain at least 3 URLs.` },
-        { status: 500, headers },
-      )
-    }
-
-    const picked = fisherYatesPick(docsPages, MAX_URLS_TO_TRY)
-
-    let scrapeResults = await Promise.all(
-      picked.map(async (sourceUrl) => {
-        try {
-          const text = await fetchViaJinaReader(sourceUrl)
-          if (text.length >= MIN_URL_TEXT_CHARS && isValidContent(text)) {
-            return `--- Source: ${sourceUrl} ---\n${text}`
-          }
-        } catch {
-          /* skip failed url and continue */
-        }
-        return null
-      })
-    )
-
-    let chunks = scrapeResults.filter((c): c is string => c !== null)
-    let concatenated = chunks.join("\n\n")
-    let scrapedText = trimCorpus(concatenated, TARGET_CHARS)
-
-    if (scrapedText.length < MIN_COMBINED_CHARS) {
-      console.warn(`[generate-quiz] Low scrape yield (${scrapedText.length} chars), retrying remaining URLs for ${ecosystemName}`)
-      const pickedSet = new Set(picked)
-      const remaining = docsPages.filter(u => !pickedSet.has(u))
-      if (remaining.length > 0) {
-        const retryResults = await Promise.all(
-          remaining.map(async (sourceUrl) => {
-            try {
-              const text = await fetchViaJinaReader(sourceUrl)
-              if (text.length >= MIN_URL_TEXT_CHARS && isValidContent(text)) {
-                return `--- Source: ${sourceUrl} ---\n${text}`
-              }
-            } catch {
-              /* skip failed url */
-            }
-            return null
-          })
-        )
-        const retryChunks = retryResults.filter((c): c is string => c !== null)
-        chunks = [...chunks, ...retryChunks]
-        concatenated = chunks.join("\n\n")
-        scrapedText = trimCorpus(concatenated, TARGET_CHARS)
-      }
-    }
-
-    if (scrapedText.length < MIN_URL_TEXT_CHARS) {
-      console.error(`[generate-quiz] FALLBACK TRIGGERED reason=scrape_insufficient chain=${ecosystemName} chars=${scrapedText.length}`)
-      return await buildQuizResponse(
-        selectedChainId,
-        getFallbackQuestions(ecosystemName),
-        [],
-        true,
-        headers,
-        ecosystemName,
-      )
-    }
-
-    const [topicAngle] = fisherYatesPick([...TOPIC_ANGLES], 1)
-
-    const prompt = `
-Read the ${ecosystemName} documentation below. Extract 5 quiz questions from the facts you find there.
-
-EXTRACTION STEPS:
-1. Read the documentation. Spot specific facts: chain IDs, consensus details, contract addresses, feature behaviors, governance rules, technical parameters.
-2. For each fact, write 1 question. The correct answer comes directly from what the documentation says.
-3. Create 3 wrong answers by changing numbers, feature names, or technical details — still using only ${ecosystemName} content.
-4. If a fact cannot support 4 distinct options from the documentation alone, skip it.
-5. Output exactly 5 questions. If the docs only support fewer, stop there.
-
-QUESTION RULES:
-- Topic focus: ${topicAngle}
-- Test how things work, what values mean, why design decisions were made
-- Mix difficulty: 2 easy (basic facts), 2 medium (technical details), 1 hard (nuanced or specific)
-- Wrong answers must be plausible — different values, similar-sounding features, inverted logic
-- Return ONLY valid JSON array — no markdown, no backticks, no extra text before or after
-
-JSON FORMAT:
-[{"question": "...", "options": ["A", "B", "C", "D"], "correctIndex": 2}]
-Randomize correctIndex evenly: pick 0, 1, 2, or 3 — not always 0.
-
-ANSWER OPTIONS — ${ecosystemName} only:
-- Every option must be about ${ecosystemName} based on the documentation
-- Wrong answers: pick wrong numbers, wrong feature names, or inverted facts from the same docs
-- Prefer: wrong chain ID, wrong block time, wrong gas limit, wrong contract name, wrong parameter value
-- If the docs lack material for 3 wrong answers, use near-miss variations of the correct answer
-- Do NOT reference any other blockchain (no Soneium, Ink, Base, Unichain, Ethereum, Solana, etc.)
-
-WRONG QUESTIONS — skip these:
-- Questions about URLs, pages, or whether a website loads
-- Questions about documentation layout or structure
-- Questions about anything not covered in the provided text
-
-GOOD EXAMPLES (model your questions like these):
-- "What consensus mechanism does ${ecosystemName} use?"
-- "What is the Chain ID of ${ecosystemName} mainnet?"
-- "What is the block time on ${ecosystemName}?"
-
-Documentation:
-${scrapedText}
-`.trim()
-
-    let items: z.infer<typeof quizItemSchema>[] | null = null;
-    let lastValid: z.infer<typeof quizItemSchema>[] | null = null;
-    
-    // --- Groq (3 keys, llama-3.1-8b-instant) ---
-    try {
-      const messages = [
-        { role: "system" as const, content: `You extract quiz questions from blockchain documentation. Read the text provided by the user and create questions from the facts found there. Follow their extraction steps, question rules, and format instructions precisely.` },
-        { role: "user" as const, content: prompt },
-      ]
-      let raw = await generateWithGroq(messages, GROQ_MODEL, GROQ_TIMEOUT_MS)
-      let parsed = parseModelJson(raw)
-      let candidateItems = validateQuestions(toValidatedQuizArray(parsed))
-      
-      let validQuestions = candidateItems.filter(q => isValidQuestion(q) && !hasContaminatedOptions(q, ecosystemName));
-      if (validQuestions.length >= 3) {
-        lastValid = validQuestions;
-      }
-      if (validQuestions.length < 5) {
-        throw new Error(`Generated questions failed quality check, retrying`);
-      }
-
-      const history = questionHistoryCache.get(ecosystemName) || []
-      const newNormalized = validQuestions.map(q => normalizeQuestion(q.question))
-      const overlap = newNormalized.filter(nq => history.includes(nq)).length
-      if (overlap >= 4) {
-        console.warn(`[generate-quiz] High overlap (${overlap}) for ${ecosystemName}, accepting anyway`)
-      }
-
-      items = validQuestions;
-    } catch (err) {
-      console.warn(`[generate-quiz] Groq keys exhausted for ${ecosystemName}:`, err);
-    }
-
-    if (!items && lastValid) {
-      console.warn(`[generate-quiz] Using partial set of ${lastValid.length} valid questions for ${ecosystemName}`)
-      items = lastValid;
-    }
-
-    if (!items) {
-      const reason = "all_providers_fail"
-      console.error(`[generate-quiz] FALLBACK TRIGGERED reason=${reason} chain=${ecosystemName}`)
-      return await buildQuizResponse(
-        selectedChainId,
-        getFallbackQuestions(ecosystemName),
-        picked,
-        true,
-        headers,
-        ecosystemName,
-      )
-    }
-
-    const cached = questionHistoryCache.get(ecosystemName) || []
-    const newQuestions = items.map(q => normalizeQuestion(q.question))
-    questionHistoryCache.set(ecosystemName, [...cached, ...newQuestions].slice(-MAX_CACHE_PER_ECOSYSTEM))
-
-    const shuffled = fisherYatesShuffle(items)
-    return await buildQuizResponse(
+  // Try pool first
+  const poolData = loadPool(ecosystem)
+  if (poolData && poolData.quizzes.length >= 5) {
+    const picked = fisherYatesPick(poolData.quizzes, 5)
+    const items = picked.map(shuffleOptions)
+    return buildQuizResponse(
       selectedChainId,
-      shuffled,
-      picked,
+      items,
+      [],
       false,
       headers,
-      ecosystemName,
-    )
-  } catch (err) {
-    console.error("[generate-quiz]", err)
-    return await buildQuizResponse(
-      selectedChainId,
-      getFallbackQuestions(ecosystemName),
-      [],
-      true,
-      headers,
-      ecosystemName,
+      ecosystem,
     )
   }
+
+  // Fallback to hardcoded questions
+  console.warn(`[generate-quiz] Pool unavailable for ${ecosystem}, using fallback`)
+  return buildQuizResponse(
+    selectedChainId,
+    getFallbackQuestions(ecosystem as any),
+    [],
+    true,
+    headers,
+    ecosystem,
+  )
 }
 
 export async function OPTIONS(request: Request) {
