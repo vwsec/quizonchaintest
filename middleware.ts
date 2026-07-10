@@ -4,6 +4,7 @@ import type { NextRequest } from 'next/server'
 const ALLOWED_ORIGINS = [
   'https://quizonchain.app',
   'https://www.quizonchain.app',
+  'https://quizonchaintest.vercel.app',
   'http://localhost:3000',
   'http://localhost:3100',
   'https://app.startale.com',

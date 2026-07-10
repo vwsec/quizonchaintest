@@ -65,6 +65,7 @@ function getSignerPrivateKey(): `0x${string}` {
 const ALLOWED_ORIGINS = [
   'https://quizonchain.app',
   'https://www.quizonchain.app',
+  'https://quizonchaintest.vercel.app',
   'http://localhost:3000',
   'http://localhost:3100',
   'https://app.startale.com',
