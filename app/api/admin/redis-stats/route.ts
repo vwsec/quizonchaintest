@@ -6,45 +6,56 @@ const ADMIN_PASSWORD = "123456789"
 const ECOSYSTEMS = ["litvm", "base", "ink", "unichain", "soneium", "megaeth", "arc"]
 
 export async function GET(request: Request) {
-  const { searchParams } = new URL(request.url)
-  const password = searchParams.get("password")
-
-  if (password !== ADMIN_PASSWORD) {
-    return NextResponse.json({ error: "Unauthorized" }, { status: 401 })
-  }
-
-  const r = getRedis()
-  if (!r) {
-    return NextResponse.json({
-      configured: false,
-      message: "Upstash Redis is not configured. Add KV_URL and KV_REST_API_TOKEN env vars.",
-      ecosystems: {},
-    })
-  }
-
   try {
+    const { searchParams } = new URL(request.url)
+    const password = searchParams.get("password")
+
+    if (password !== ADMIN_PASSWORD) {
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 })
+    }
+
+    const r = getRedis()
+    if (!r) {
+      return NextResponse.json({
+        configured: false,
+        message:
+          "Upstash Redis is not configured on Vercel. Add KV_URL and KV_REST_API_TOKEN env vars.",
+        ecosystems: {},
+        totalWallets: 0,
+        totalSubmitted: 0,
+      })
+    }
+
+    // Ping Redis first to verify connection is alive
+    const ping = await r.ping()
+    if (ping !== "PONG") {
+      return NextResponse.json(
+        { error: "Redis ping failed", detail: String(ping) },
+        { status: 500 },
+      )
+    }
+
     // Fetch all progress and submitted keys
     const [progressKeys, submittedKeys] = await Promise.all([
       r.keys("progress:*"),
       r.keys("submitted:*"),
     ])
 
-    // Group progress keys by ecosystem
-    // Key format: progress:{ecosystem}:{address}
-    const progressByEco: Record<string, string[]> = {}
-    for (const key of progressKeys) {
+    const progressKeysList = Array.isArray(progressKeys) ? progressKeys : []
+    const submittedKeysList = Array.isArray(submittedKeys) ? submittedKeys : []
+
+    // Group by ecosystem
+    const progressByEco: Record<string, number> = {}
+    for (const key of progressKeysList) {
       const parts = key.split(":")
       if (parts.length >= 3) {
         const eco = parts[1].toLowerCase()
-        if (!progressByEco[eco]) progressByEco[eco] = []
-        progressByEco[eco].push(key)
+        progressByEco[eco] = (progressByEco[eco] || 0) + 1
       }
     }
 
-    // Group submitted keys by ecosystem
-    // Key format: submitted:{ecosystem}:{address}:{startIndex}
     const submittedByEco: Record<string, number> = {}
-    for (const key of submittedKeys) {
+    for (const key of submittedKeysList) {
       const parts = key.split(":")
       if (parts.length >= 4) {
         const eco = parts[1].toLowerCase()
@@ -53,32 +64,25 @@ export async function GET(request: Request) {
     }
 
     // Build per-ecosystem stats
-    const ecosystems: Record<
-      string,
-      { wallets: number; submittedSessions: number }
-    > = {}
-
+    const ecosystems: Record<string, { wallets: number; submittedSessions: number }> = {}
     for (const eco of ECOSYSTEMS) {
       ecosystems[eco] = {
-        wallets: progressByEco[eco]?.length ?? 0,
+        wallets: progressByEco[eco] ?? 0,
         submittedSessions: submittedByEco[eco] ?? 0,
       }
     }
 
-    // Total across all ecosystems
-    const totalWallets = progressKeys.length
-    const totalSubmitted = submittedKeys.length
-
     return NextResponse.json({
       configured: true,
-      totalWallets,
-      totalSubmitted,
+      totalWallets: progressKeysList.length,
+      totalSubmitted: submittedKeysList.length,
       ecosystems,
     })
   } catch (err) {
-    console.error("[redis-stats] Error:", err)
+    const msg = err instanceof Error ? `${err.name}: ${err.message}` : String(err)
+    console.error("[redis-stats] Error:", msg)
     return NextResponse.json(
-      { error: "Failed to read Redis stats", detail: String(err) },
+      { error: "Failed to read Redis stats", detail: msg },
       { status: 500 },
     )
   }
