@@ -49,6 +49,7 @@ export const ECOSYSTEM_FILE_KEY: Record<string, string> = {
   megaeth: "megaeth",
   litvm: "litvm",
   arc: "arc",
+  "arc testnet": "arc",
   ink: "ink",
 }
 
