@@ -54,6 +54,7 @@ function QuizApp() {
   const [questions, setQuestions] = useState<Question[]>([])
   const [quizToken, setQuizToken] = useState<string | null>(null)
   const [startIndex, setStartIndex] = useState<number | null>(null)
+  const [ecosystem, setEcosystem] = useState<string | null>(null)
   const [quizSignature, setQuizSignature] = useState<Hex | null>(null)
   const [quizLoading, setQuizLoading] = useState(false)
   const [quizError, setQuizError] = useState<string | null>(null)
@@ -109,6 +110,7 @@ function QuizApp() {
 
       setQuestions(normalizeQuestions(data.questions))
       setQuizToken(data.quizToken)
+      if (data.ecosystem) setEcosystem(data.ecosystem)
 
       // Sign the message if address + startIndex are available
       if (address && data.startIndex != null) {
@@ -156,6 +158,7 @@ function QuizApp() {
     setQuestions([])
     setQuizToken(null)
     setStartIndex(null)
+    setEcosystem(null)
     setQuizSignature(null)
     setQuizError(null)
     setFinalScore(0)
@@ -263,6 +266,7 @@ function QuizApp() {
     setQuestions([])
     setQuizToken(null)
     setStartIndex(null)
+    setEcosystem(null)
     setQuizSignature(null)
     setScreen("home")
     setGlobalRefreshKey((k) => k + 1)
@@ -294,6 +298,8 @@ function QuizApp() {
             totalQuestions={questions.length || 5}
             quizToken={quizToken || undefined}
             userAnswers={userAnswers}
+            ecosystem={ecosystem || undefined}
+            startIndex={startIndex ?? undefined}
             onRestart={handleRestart}
             onScoreSubmitted={() => setGlobalRefreshKey(k => k + 1)}
           />

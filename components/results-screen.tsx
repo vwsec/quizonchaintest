@@ -56,6 +56,8 @@ interface ResultsScreenProps {
   totalQuestions: number
   quizToken?: string
   userAnswers?: number[]
+  ecosystem?: string
+  startIndex?: number
   onRestart: () => void
   onScoreSubmitted?: () => void
 }
@@ -79,6 +81,8 @@ export function ResultsScreen({
   totalQuestions, 
   quizToken,
   userAnswers,
+  ecosystem,
+  startIndex,
   onRestart, 
   onScoreSubmitted 
 }: ResultsScreenProps) {
@@ -314,6 +318,14 @@ export function ResultsScreen({
       await pollExplorerTx(chainId, result.hash)
       setTxState("confirmed")
       onScoreSubmitted?.()
+      // Advance wallet progress on server
+      if (ecosystem && address) {
+        fetch("/api/advance-progress", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ chainId, address: address.toLowerCase() }),
+        }).catch((err) => console.warn("[advance-progress] failed:", err))
+      }
       // Dispatch sync event for other tabs
       localStorage.setItem('quiz-cooldown-sync', Date.now().toString())
     } else {

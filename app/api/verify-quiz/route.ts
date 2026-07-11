@@ -8,7 +8,6 @@ import { getEcosystem } from "@/lib/quiz-data"
 import {
   isSubmitted,
   markSubmitted,
-  incrementWalletProgress,
 } from "@/lib/redis"
 
 const verifySchema = z.object({
@@ -119,9 +118,6 @@ export async function POST(request: Request) {
 
       // Mark as submitted (prevents replay)
       await markSubmitted(ecosystem, claimAddr, sIdx)
-
-      // Advance wallet progress
-      await incrementWalletProgress(ecosystem, claimAddr, 5)
 
       return NextResponse.json({ score })
     }
