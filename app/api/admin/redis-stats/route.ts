@@ -48,6 +48,12 @@ export async function GET(request: Request) {
 
     // Get all progress keys
     const progressKeys = await r.keys("progress:*")
+
+    // Build a name→key reverse lookup for ecosystems with display names != key
+    const ecoNameToKey: Record<string, string> = {}
+    for (const eco of ECOSYSTEMS) {
+      ecoNameToKey[eco.name.toLowerCase()] = eco.key
+    }
     const progressArr = Array.isArray(progressKeys) ? progressKeys : []
 
     // Get all submitted keys
@@ -71,7 +77,9 @@ export async function GET(request: Request) {
     for (const key of progressArr) {
       const parts = key.split(":")
       if (parts.length < 3) continue
-      const ecoKey = parts[1].toLowerCase()
+      const ecoKeyRaw = parts[1].toLowerCase()
+      // Normalize: if the stored key is a display name (e.g. "arc testnet"), map to the actual file key ("arc")
+      const ecoKey = ecoNameToKey[ecoKeyRaw] ?? ecoKeyRaw
       const address = parts.slice(2).join(":").toLowerCase() // normalize for display
 
       const val = await r.get<number>(key)

@@ -1,6 +1,11 @@
 import { Redis } from "@upstash/redis"
+import { getPoolFileKey } from "@/lib/quiz-data"
 
 let redis: Redis | null = null
+
+function normalizeEcosystem(ecosystem: string): string {
+  return getPoolFileKey(ecosystem) ?? ecosystem.toLowerCase()
+}
 
 export function getRedis(): Redis | null {
   if (redis) return redis
@@ -28,7 +33,7 @@ export async function getWalletProgress(
   const r = getRedis()
   if (!r) return 0
   try {
-    const key = `progress:${ecosystem.toLowerCase()}:${address.toLowerCase()}`
+    const key = `progress:${normalizeEcosystem(ecosystem)}:${address.toLowerCase()}`
     const val = await r.get<number>(key)
     return val ?? 0
   } catch (err) {
@@ -45,7 +50,7 @@ export async function incrementWalletProgress(
   const r = getRedis()
   if (!r) return false
   try {
-    const key = `progress:${ecosystem.toLowerCase()}:${address.toLowerCase()}`
+    const key = `progress:${normalizeEcosystem(ecosystem)}:${address.toLowerCase()}`
     await r.incrby(key, amount)
     return true
   } catch (err) {
@@ -62,7 +67,7 @@ export async function markSubmitted(
   const r = getRedis()
   if (!r) return false
   try {
-    const key = `submitted:${ecosystem.toLowerCase()}:${address.toLowerCase()}:${startIndex}`
+    const key = `submitted:${normalizeEcosystem(ecosystem)}:${address.toLowerCase()}:${startIndex}`
     await r.set(key, true, { ex: 86_400 }) // 24h TTL
     return true
   } catch (err) {
@@ -79,7 +84,7 @@ export async function isSubmitted(
   const r = getRedis()
   if (!r) return false
   try {
-    const key = `submitted:${ecosystem.toLowerCase()}:${address.toLowerCase()}:${startIndex}`
+    const key = `submitted:${normalizeEcosystem(ecosystem)}:${address.toLowerCase()}:${startIndex}`
     const exists = await r.exists(key)
     return exists === 1
   } catch (err) {
