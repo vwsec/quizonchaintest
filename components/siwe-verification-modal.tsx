@@ -49,6 +49,17 @@ export function getStoredSIWESignature(address: string): string | null {
   }
 }
 
+// Get SIWE domain from env (falls back to current host for local dev)
+function getSIWEDomain(): string {
+  if (typeof window === "undefined") return "localhost"
+  return process.env.NEXT_PUBLIC_SIWE_DOMAIN ?? window.location.host
+}
+
+function getSIWEUri(): string {
+  if (typeof window === "undefined") return "http://localhost:3000"
+  return process.env.NEXT_PUBLIC_SIWE_URI ?? window.location.origin
+}
+
 interface SIWEVerificationModalProps {
   isOpen: boolean
   onVerified: () => void
@@ -76,8 +87,8 @@ export function SIWEVerificationModal({
   const generateSIWEMessage = useCallback((): string => {
     if (!address) throw new Error("No address")
     
-    const domain = typeof window !== "undefined" ? window.location.host : "localhost"
-    const uri = typeof window !== "undefined" ? window.location.origin : "http://localhost:3000"
+    const domain = getSIWEDomain()
+    const uri = getSIWEUri()
     const nonce = crypto.randomUUID().replace(/-/g, "").slice(0, 32)
     const issuedAt = new Date().toISOString()
 
