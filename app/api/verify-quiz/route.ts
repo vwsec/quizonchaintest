@@ -87,8 +87,8 @@ export async function POST(request: Request) {
         )
       }
 
-      // Verify wallet signature
-      const message = `QuizonChain:${quizPayload.chainId}:${sIdx}`
+      // Verify wallet signature (session-level — signed once on connect)
+      const message = `QuizonChain Session:${claimAddr}`
       const isValid = await verifyMessage({
         address: claimAddr as Address,
         message,

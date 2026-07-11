@@ -55,7 +55,7 @@ function QuizApp() {
   const [quizToken, setQuizToken] = useState<string | null>(null)
   const [startIndex, setStartIndex] = useState<number | null>(null)
   const [ecosystem, setEcosystem] = useState<string | null>(null)
-  const [quizSignature, setQuizSignature] = useState<Hex | null>(null)
+  const [sessionSignature, setSessionSignature] = useState<Hex | null>(null)
   const [quizLoading, setQuizLoading] = useState(false)
   const [quizError, setQuizError] = useState<string | null>(null)
   const [globalRefreshKey, setGlobalRefreshKey] = useState(0)
@@ -112,20 +112,11 @@ function QuizApp() {
       setQuizToken(data.quizToken)
       if (data.ecosystem) setEcosystem(data.ecosystem)
 
-      // Sign the message if address + startIndex are available
+      // Store the start index — session signature is handled on connect
       if (address && data.startIndex != null) {
         setStartIndex(data.startIndex)
-        try {
-          const message = `QuizonChain:${chainId}:${data.startIndex}`
-          const sig = await signMessageAsync({ message })
-          setQuizSignature(sig)
-        } catch (signErr) {
-          console.warn("[QuizApp] User cancelled or failed to sign message:", signErr)
-          setQuizSignature(null)
-        }
       } else {
         setStartIndex(null)
-        setQuizSignature(null)
       }
     } catch (e) {
       if (chainIdRef.current !== chainId) return;
@@ -137,12 +128,11 @@ function QuizApp() {
       setQuestions([])
       setQuizToken(null)
       setStartIndex(null)
-      setQuizSignature(null)
     } finally {
       clearTimeout(timeout)
       setQuizLoading(false)
     }
-  }, [chainId, address, signMessageAsync])
+  }, [chainId, address])
 
   // Automatically clear rate limit error after 60 seconds
   useEffect(() => {
@@ -159,7 +149,7 @@ function QuizApp() {
     setQuizToken(null)
     setStartIndex(null)
     setEcosystem(null)
-    setQuizSignature(null)
+    setSessionSignature(null)
     setQuizError(null)
     setFinalScore(0)
     setUserAnswers([])
@@ -214,6 +204,24 @@ function QuizApp() {
     return () => clearInterval(timer)
   }, [cooldownRemaining])
 
+  // Session signing — one sign on connect, reused for all quizzes
+  useEffect(() => {
+    if (!isConnected || !address) {
+      setSessionSignature(null)
+      return
+    }
+    let cancelled = false
+    const message = `QuizonChain Session:${address}`
+    signMessageAsync({ message })
+      .then((sig) => {
+        if (!cancelled) setSessionSignature(sig)
+      })
+      .catch(() => {
+        if (!cancelled) setSessionSignature(null)
+      })
+    return () => { cancelled = true }
+  }, [isConnected, address, signMessageAsync])
+
   useEffect(() => {
     // ONLY fetch quiz if connected, no questions exist, and COOLDOWN is finished
     if (isConnected && questions.length === 0 && !quizLoading && !quizError && cooldownRemaining === 0 && !isCheckingCooldown) {
@@ -233,8 +241,8 @@ function QuizApp() {
     }
     try {
       const body: Record<string, unknown> = { quizToken, answers }
-      if (quizSignature && startIndex != null && address) {
-        body.signature = quizSignature
+      if (sessionSignature && startIndex != null && address) {
+        body.signature = sessionSignature
         body.address = address.toLowerCase()
         body.startIndex = startIndex
       }
@@ -267,7 +275,7 @@ function QuizApp() {
     setQuizToken(null)
     setStartIndex(null)
     setEcosystem(null)
-    setQuizSignature(null)
+    setSessionSignature(null)
     setScreen("home")
     setGlobalRefreshKey((k) => k + 1)
   }
