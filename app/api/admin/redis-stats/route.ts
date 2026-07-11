@@ -72,7 +72,7 @@ export async function GET(request: Request) {
       const parts = key.split(":")
       if (parts.length < 3) continue
       const ecoKey = parts[1].toLowerCase()
-      const address = parts.slice(2).join(":") // handle edge case where address contains colons
+      const address = parts.slice(2).join(":").toLowerCase() // normalize for display
 
       const val = await r.get<number>(key)
       const questionsDone = val ?? 0

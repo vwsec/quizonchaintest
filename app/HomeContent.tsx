@@ -71,7 +71,7 @@ function QuizApp() {
     const timeout = setTimeout(() => controller.abort(), 60_000)
     try {
       const params = new URLSearchParams({ chainId: String(chainId) })
-      if (address) params.set("address", address)
+      if (address) params.set("address", address.toLowerCase())
       const res = await fetch(`/api/generate-quiz?${params}`, {
         signal: controller.signal,
       })
@@ -232,7 +232,7 @@ function QuizApp() {
       const body: Record<string, unknown> = { quizToken, answers }
       if (quizSignature && startIndex != null && address) {
         body.signature = quizSignature
-        body.address = address
+        body.address = address.toLowerCase()
         body.startIndex = startIndex
       }
       const res = await fetch("/api/verify-quiz", {

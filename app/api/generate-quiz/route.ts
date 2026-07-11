@@ -762,7 +762,7 @@ export async function GET(request: Request) {
       )
     }
     const selectedChainId = readSelectedChainId(request, "GET")
-    const address = new URL(request.url).searchParams.get("address") || null
+    const address = new URL(request.url).searchParams.get("address")?.toLowerCase() || null
     return await handleGenerateQuiz(request, selectedChainId, headers, address)
   } catch (err) {
     const message = err instanceof Error ? err.message : "Invalid request."
@@ -799,7 +799,9 @@ export async function POST(request: Request) {
       )
     }
     const selectedChainId = await readSelectedChainIdFromBody(request)
-    return await handleGenerateQuiz(request, selectedChainId, headers)
+    const body = await request.json()
+    const address = body.address?.toLowerCase() || null
+    return await handleGenerateQuiz(request, selectedChainId, headers, address)
   } catch (err) {
     const message = err instanceof Error ? err.message : "Invalid request."
     return NextResponse.json({ error: message }, { status: 400, headers })

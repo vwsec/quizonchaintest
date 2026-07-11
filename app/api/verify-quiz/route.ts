@@ -68,7 +68,7 @@ export async function POST(request: Request) {
 
     if (hasSignatureProof) {
       const sig = parsed.data.signature as string
-      const claimAddr = parsed.data.address as string
+      const claimAddr = (parsed.data.address as string).toLowerCase()
       const sIdx = parsed.data.startIndex as number
 
       // Verify the JWT was issued for this address
