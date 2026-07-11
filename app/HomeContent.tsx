@@ -10,6 +10,7 @@ import { useChainId, useAccount, usePublicClient } from "wagmi"
 import { getTimeUntilNextSubmissionSeconds } from "@/lib/submitScore"
 import type { Hex } from "viem"
 import { getStoredSignature } from "@/components/sign-message-modal"
+import { SignMessageModal } from "@/components/sign-message-modal"
 
 type Screen = "home" | "quiz" | "results"
 
@@ -59,6 +60,7 @@ function QuizApp() {
   const [quizLoading, setQuizLoading] = useState(false)
   const [quizError, setQuizError] = useState<string | null>(null)
   const [globalRefreshKey, setGlobalRefreshKey] = useState(0)
+  const [signModalOpen, setSignModalOpen] = useState(false)
 
   const [cooldownRemaining, setCooldownRemaining] = useState(0)
   const [isCheckingCooldown, setIsCheckingCooldown] = useState(true)
@@ -275,7 +277,8 @@ function QuizApp() {
   if (!mounted) return null
 
   return (
-    <main className="relative z-10 min-h-screen">
+    <>
+      <main className="relative z-10 min-h-screen">
         {screen === "home" && (
           <HomeScreen
             onStartQuiz={handleStartQuiz}
@@ -305,7 +308,17 @@ function QuizApp() {
           />
         )}
       </main>
-    )
+      <SignMessageModal
+        isOpen={signModalOpen}
+        onClose={() => setSignModalOpen(false)}
+        onSuccess={(sig) => {
+          setSessionSignature(sig as Hex)
+          setSignModalOpen(false)
+        }}
+        walletAddress={address ?? ""}
+      />
+    </>
+  )
 }
 
 export default function HomeContent() {

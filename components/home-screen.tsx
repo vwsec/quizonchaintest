@@ -1,10 +1,10 @@
 "use client"
 
-import { useEffect, useState, type ReactNode } from "react"
+import { useEffect, useState, useRef, type ReactNode } from "react"
 import { useWallet } from "./wallet-provider"
 import { Button } from "@/components/ui/button"
 import { AlertTriangle, Shuffle } from "lucide-react"
-import { useAccount, useConnect as useWagmiConnect } from "wagmi"
+import { useAccount, useConnect as useWagmiConnect, useChainId } from "wagmi"
 import { NftProgressCard } from "./nft-mint"
 import MegaEthLogo from "./megaeth-logo"
 import InkLogo from "./ink-logo"
@@ -20,6 +20,7 @@ import { useChainUI } from "@/hooks/use-chain-ui"
 import { useFarcasterMiniApp } from "@/hooks/use-farcaster-miniapp"
 import { sdk } from "@farcaster/miniapp-sdk"
 import { cn } from "@/lib/utils"
+import { SIWEVerificationModal, getStoredSIWEVerification } from "./siwe-verification-modal"
 
 interface HomeScreenProps {
   onStartQuiz: () => void
@@ -70,7 +71,7 @@ export function HomeScreen({
   useEffect(() => { setMounted(true) }, [])
 
   const { isConnected: isWalletConnected, connect } = useWallet()
-  const { isConnected: isAccountConnected } = useAccount()
+  const { isConnected: isAccountConnected, address } = useAccount()
   const { chainConfig: cfg, heroTitle, heroSubtitle, heroLabel, isConnected } = useActiveChain()
   const ui = useChainUI()
 
@@ -100,6 +101,36 @@ export function HomeScreen({
   }
 
   const safeIsConnected = mounted ? (isWalletConnected || isAccountConnected) : false
+
+  // SIWE verification state (session-level, not per-chain)
+  const [siweVerificationStatus, setSiweVerificationStatus] = useState<'idle' | 'pending' | 'completed'>('idle')
+
+  // Check localStorage on mount for existing SIWE verification
+  useEffect(() => {
+    if (safeIsConnected && address) {
+      const stored = getStoredSIWEVerification(address)
+      setSiweVerificationStatus(stored ? 'completed' : 'idle')
+    } else {
+      setSiweVerificationStatus('idle')
+    }
+  }, [safeIsConnected, address])
+
+  // Auto-trigger SIWE verification modal after wallet connects
+  useEffect(() => {
+    if (safeIsConnected && address && siweVerificationStatus === 'idle') {
+      const stored = getStoredSIWEVerification(address)
+      if (stored) {
+        setSiweVerificationStatus('completed')
+      } else {
+        // Small delay for UX
+        const timer = setTimeout(() => {
+          setSiweVerificationStatus('pending')
+        }, 500)
+        return () => clearTimeout(timer)
+      }
+    }
+  }, [safeIsConnected, address, siweVerificationStatus])
+
   const formatCooldown = (seconds: number) => {
     const mins = Math.floor(seconds / 60)
     const secs = seconds % 60
@@ -107,8 +138,9 @@ export function HomeScreen({
   }
 
   const isCooldownActive = cooldownRemaining > 0
+  const isVerified = siweVerificationStatus === 'completed'
   const canStart =
-    safeIsConnected && hasQuiz && !quizLoading && quizError === null && !isCooldownActive && !isCheckingCooldown
+    safeIsConnected && hasQuiz && !quizLoading && quizError === null && !isCooldownActive && !isCheckingCooldown && isVerified
 
   if (!mounted) return null
 
@@ -131,10 +163,10 @@ export function HomeScreen({
             </div>
             <div className="flex flex-col items-center gap-3 w-full max-w-sm relative group">
               <div className="absolute -inset-1.5 rounded-full bg-gradient-to-r from-white/10 via-white/5 to-white/10 opacity-30 blur-md group-hover:opacity-50 transition duration-500"></div>
-              <button 
-                onClick={connect} 
+              <button
+                onClick={connect}
                 className={cn(
-                  'w-full relative z-10 transition-all duration-300 hover:scale-[1.02] active:scale-[0.98]', 
+                  'w-full relative z-10 transition-all duration-300 hover:scale-[1.02] active:scale-[0.98]',
                   ui.connectBtn
                 )}
               >
@@ -151,18 +183,18 @@ export function HomeScreen({
               >
                 <svg width="18" height="18" viewBox="0 0 181 180" fill="none" aria-hidden="true">
                   <g clipPath="url(#startale-clip)">
-                    <path d="M154.14 63.6385L127.779 89.9995L154.14 116.36L180.501 89.9995L154.14 63.6385Z" fill="currentColor"/>
-                    <path d="M26.8608 63.6399L0.5 90.0004L26.8608 116.361L53.2215 90.0004L26.8608 63.6399Z" fill="currentColor"/>
-                    <path d="M90.4992 0L64.1387 26.3608L90.4992 52.7216L116.86 26.3608L90.4992 0Z" fill="currentColor"/>
-                    <path d="M90.4997 127.278L64.1387 153.639L90.4997 180L116.86 153.639L90.4997 127.278Z" fill="currentColor"/>
-                    <path d="M154.141 26.3613H116.861V63.6413H154.141V26.3613Z" fill="currentColor"/>
-                    <path d="M64.1431 26.3613H26.8633V63.6413H64.1431V26.3613Z" fill="currentColor"/>
-                    <path d="M154.141 116.359H116.861V153.639H154.141V116.359Z" fill="currentColor"/>
-                    <path d="M64.1431 116.359H26.8633V153.639H64.1431V116.359Z" fill="currentColor"/>
+                    <path d="M154.14 63.6385L127.779 89.9995L154.14 116.36L180.501 89.9995L154.14 63.6385Z" fill="currentColor" />
+                    <path d="M26.8608 63.6399L0.5 90.0004L26.8608 116.361L53.2215 90.0004L26.8608 63.6399Z" fill="currentColor" />
+                    <path d="M90.4992 0L64.1387 26.3608L90.4992 52.7216L116.86 26.3608L90.4992 0Z" fill="currentColor" />
+                    <path d="M90.4997 127.278L64.1387 153.639L90.4997 180L116.86 153.639L90.4997 127.278Z" fill="currentColor" />
+                    <path d="M154.141 26.3613H116.861V63.6413H154.141V26.3613Z" fill="currentColor" />
+                    <path d="M64.1431 26.3613H26.8633V63.6413H64.1431V26.3613Z" fill="currentColor" />
+                    <path d="M154.141 116.359H116.861V153.639H154.141V116.359Z" fill="currentColor" />
+                    <path d="M64.1431 116.359H26.8633V153.639H64.1431V116.359Z" fill="currentColor" />
                   </g>
                   <defs>
                     <clipPath id="startale-clip">
-                      <rect width="180" height="180" fill="white" transform="translate(0.5)"/>
+                      <rect width="180" height="180" fill="white" transform="translate(0.5)" />
                     </clipPath>
                   </defs>
                 </svg>
@@ -311,6 +343,11 @@ export function HomeScreen({
           </div>
         )}
       </div>
+      <SIWEVerificationModal
+        isOpen={siweVerificationStatus === 'pending'}
+        onVerified={() => setSiweVerificationStatus('completed')}
+        onCancel={() => setSiweVerificationStatus('idle')}
+      />
     </div>
   )
 }

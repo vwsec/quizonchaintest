@@ -6,7 +6,6 @@ import Image from "next/image"
 import { usePathname } from "next/navigation"
 import { useAccount } from "wagmi"
 import { NftMintModal } from "./nft-mint"
-import { SignMessageModal, getStoredSignature, clearStoredSignature } from "./sign-message-modal"
 import { Menu } from "lucide-react"
 import {
   Sheet,
@@ -30,31 +29,10 @@ export function Header() {
   const [mounted, setMounted] = useState(false)
   useEffect(() => setMounted(true), [])
 
-  const [signModalOpen, setSignModalOpen] = useState(false)
-  const [isSigned, setIsSigned] = useState(false)
-  const [signature, setSignature] = useState<string | null>(null)
-
   const pathname = usePathname()
-  const { isConnected, address } = useAccount()
+  const { isConnected } = useAccount()
   const { chainConfig: cfg } = useActiveChain()
   const ui = useChainUI()
-
-  // Check localStorage for existing session signature
-  useEffect(() => {
-    if (address) {
-      const stored = getStoredSignature(address)
-      if (stored) {
-        setIsSigned(true)
-        setSignature(stored)
-      } else {
-        setIsSigned(false)
-        setSignature(null)
-      }
-    } else {
-      setIsSigned(false)
-      setSignature(null)
-    }
-  }, [address])
 
   const appTitle = isConnected && cfg
     ? `Quiz On ${cfg.name === 'Arc Testnet' ? 'Arc' : cfg.name === 'LitVM' ? 'LitVM' : cfg.name === 'MegaETH' ? 'MegaETH' : cfg.name === 'Unichain' ? 'Unichain' : cfg.name === 'Base' ? 'Base' : cfg.name === 'Soneium' ? 'Soneium' : cfg.name === 'Sepolia' ? 'Sepolia' : cfg.name === 'Ink' ? 'Ink' : 'Chain'}`
@@ -120,18 +98,6 @@ export function Header() {
             })}
           </nav>
           <NftMintModal />
-          {isConnected && !isSigned && (
-            <button
-              onClick={() => setSignModalOpen(true)}
-              className={cn(
-                'px-3 py-2 text-xs font-semibold rounded-lg transition-all duration-200 whitespace-nowrap',
-                'bg-white/10 text-white hover:bg-white/20',
-                ui.fontMono && 'font-mono uppercase',
-              )}
-            >
-              Sign Wallet
-            </button>
-          )}
           <ConnectButton showBalance={false} />
         </div>
 
@@ -194,16 +160,6 @@ export function Header() {
           </div>
         </div>
       </div>
-      <SignMessageModal
-        isOpen={signModalOpen}
-        onClose={() => setSignModalOpen(false)}
-        onSuccess={(sig) => {
-          console.log("[Header] Wallet signed:", sig)
-          setSignature(sig)
-          setIsSigned(true)
-        }}
-        walletAddress={address ?? ""}
-      />
     </header>
   )
 }
