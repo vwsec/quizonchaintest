@@ -62,6 +62,8 @@ function QuizApp() {
 
   const [cooldownRemaining, setCooldownRemaining] = useState(0)
   const [isCheckingCooldown, setIsCheckingCooldown] = useState(true)
+  const [isSigning, setIsSigning] = useState(false)
+  const [verifyError, setVerifyError] = useState<string | null>(null)
   const publicClient = usePublicClient()
   const { address } = useAccount()
 
@@ -204,30 +206,27 @@ function QuizApp() {
     return () => clearInterval(timer)
   }, [cooldownRemaining])
 
-  // Session signing — one sign on connect, reused for all quizzes
+  // Auto-fetch quiz when connected, signed, and cooldown is done
   useEffect(() => {
-    if (!isConnected || !address) {
-      setSessionSignature(null)
-      return
-    }
-    let cancelled = false
-    const message = `QuizonChain Session:${address}`
-    signMessageAsync({ message })
-      .then((sig) => {
-        if (!cancelled) setSessionSignature(sig)
-      })
-      .catch(() => {
-        if (!cancelled) setSessionSignature(null)
-      })
-    return () => { cancelled = true }
-  }, [isConnected, address, signMessageAsync])
-
-  useEffect(() => {
-    // ONLY fetch quiz if connected, no questions exist, and COOLDOWN is finished
-    if (isConnected && questions.length === 0 && !quizLoading && !quizError && cooldownRemaining === 0 && !isCheckingCooldown) {
+    if (isConnected && sessionSignature && questions.length === 0 && !quizLoading && !quizError && cooldownRemaining === 0 && !isCheckingCooldown) {
       void fetchQuiz()
     }
-  }, [isConnected, fetchQuiz, questions.length, quizLoading, quizError, cooldownRemaining, isCheckingCooldown])
+  }, [isConnected, sessionSignature, fetchQuiz, questions.length, quizLoading, quizError, cooldownRemaining, isCheckingCooldown])
+
+  const handleVerify = useCallback(async () => {
+    if (!address) return
+    setIsSigning(true)
+    setVerifyError(null)
+    try {
+      const message = `QuizonChain Session:${address}`
+      const sig = await signMessageAsync({ message })
+      setSessionSignature(sig)
+    } catch {
+      setVerifyError("Signature was rejected. You must sign to verify your wallet.")
+    } finally {
+      setIsSigning(false)
+    }
+  }, [address, signMessageAsync])
 
   const handleStartQuiz = () => {
     setScreen("quiz")
@@ -284,6 +283,33 @@ function QuizApp() {
 
   return (
     <main className="relative z-10 min-h-screen">
+        {/* Verification overlay — blocks UI until wallet is signed */}
+        {isConnected && !sessionSignature && address && (
+          <div className="fixed inset-0 z-[70] flex items-center justify-center bg-black/80 p-4 backdrop-blur-md">
+            <div className="w-full max-w-md rounded-2xl border border-white/10 bg-[#0a0a0a] p-8 text-center shadow-2xl animate-scale-in">
+              <div className="mx-auto mb-6 flex size-16 items-center justify-center rounded-full border border-white/10 bg-white/5">
+                <svg className="size-8 text-white/80" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M9 12.75L11.25 15 15 9.75m-3-7.036A11.959 11.959 0 013.598 6 11.99 11.99 0 003 9.749c0 5.592 3.824 10.29 9 11.623 5.176-1.332 9-6.03 9-11.622 0-1.31-.21-2.571-.598-3.751h-.152c-3.196 0-6.1-1.248-8.25-3.285z" />
+                </svg>
+              </div>
+              <h2 className="mb-2 text-xl font-bold text-white">Verify your account</h2>
+              <p className="mb-6 text-sm text-white/60">
+                To finish connecting, you must sign a message in your wallet to verify that you are the owner of this account.
+              </p>
+              {verifyError && (
+                <p className="mb-4 text-sm text-red-400">{verifyError}</p>
+              )}
+              <button
+                onClick={handleVerify}
+                disabled={isSigning}
+                className="w-full rounded-xl bg-white px-4 py-3 text-sm font-semibold text-black transition-all duration-200 hover:bg-white/90 disabled:opacity-50"
+              >
+                {isSigning ? "Waiting for signature..." : "Sign Message"}
+              </button>
+            </div>
+          </div>
+        )}
+
         {screen === "home" && (
           <HomeScreen
             onStartQuiz={handleStartQuiz}
