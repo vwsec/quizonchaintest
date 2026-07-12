@@ -20,7 +20,6 @@ import { useChainUI } from "@/hooks/use-chain-ui"
 import { useFarcasterMiniApp } from "@/hooks/use-farcaster-miniapp"
 import { sdk } from "@farcaster/miniapp-sdk"
 import { cn } from "@/lib/utils"
-import { SIWEVerificationModal, getStoredSIWEVerification } from "./siwe-verification-modal"
 
 interface HomeScreenProps {
   onStartQuiz: () => void
@@ -102,35 +101,6 @@ export function HomeScreen({
 
   const safeIsConnected = mounted ? (isWalletConnected || isAccountConnected) : false
 
-  // SIWE verification state (session-level, not per-chain)
-  const [siweVerificationStatus, setSiweVerificationStatus] = useState<'idle' | 'pending' | 'completed'>('idle')
-
-  // Check localStorage on mount for existing SIWE verification
-  useEffect(() => {
-    if (safeIsConnected && address) {
-      const stored = getStoredSIWEVerification(address)
-      setSiweVerificationStatus(stored ? 'completed' : 'idle')
-    } else {
-      setSiweVerificationStatus('idle')
-    }
-  }, [safeIsConnected, address])
-
-  // Auto-trigger SIWE verification modal after wallet connects
-  useEffect(() => {
-    if (safeIsConnected && address && siweVerificationStatus === 'idle') {
-      const stored = getStoredSIWEVerification(address)
-      if (stored) {
-        setSiweVerificationStatus('completed')
-      } else {
-        // Small delay for UX
-        const timer = setTimeout(() => {
-          setSiweVerificationStatus('pending')
-        }, 500)
-        return () => clearTimeout(timer)
-      }
-    }
-  }, [safeIsConnected, address, siweVerificationStatus])
-
   const formatCooldown = (seconds: number) => {
     const mins = Math.floor(seconds / 60)
     const secs = seconds % 60
@@ -138,9 +108,8 @@ export function HomeScreen({
   }
 
   const isCooldownActive = cooldownRemaining > 0
-  const isVerified = siweVerificationStatus === 'completed'
   const canStart =
-    safeIsConnected && hasQuiz && !quizLoading && quizError === null && !isCooldownActive && !isCheckingCooldown && isVerified
+    safeIsConnected && hasQuiz && !quizLoading && quizError === null && !isCooldownActive && !isCheckingCooldown
 
   if (!mounted) return null
 
@@ -343,11 +312,6 @@ export function HomeScreen({
           </div>
         )}
       </div>
-      <SIWEVerificationModal
-        isOpen={siweVerificationStatus === 'pending'}
-        onVerified={() => setSiweVerificationStatus('completed')}
-        onCancel={() => setSiweVerificationStatus('idle')}
-      />
     </div>
   )
 }

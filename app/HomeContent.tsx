@@ -8,9 +8,6 @@ import { ResultsScreen } from "@/components/results-screen"
 import type { Question } from "@/lib/quiz-data"
 import { useChainId, useAccount, usePublicClient } from "wagmi"
 import { getTimeUntilNextSubmissionSeconds } from "@/lib/submitScore"
-import type { Hex } from "viem"
-import { getStoredSignature } from "@/components/sign-message-modal"
-import { SignMessageModal } from "@/components/sign-message-modal"
 
 type Screen = "home" | "quiz" | "results"
 
@@ -56,26 +53,14 @@ function QuizApp() {
   const [quizToken, setQuizToken] = useState<string | null>(null)
   const [startIndex, setStartIndex] = useState<number | null>(null)
   const [ecosystem, setEcosystem] = useState<string | null>(null)
-  const [sessionSignature, setSessionSignature] = useState<Hex | null>(null)
   const [quizLoading, setQuizLoading] = useState(false)
   const [quizError, setQuizError] = useState<string | null>(null)
   const [globalRefreshKey, setGlobalRefreshKey] = useState(0)
-  const [signModalOpen, setSignModalOpen] = useState(false)
 
   const [cooldownRemaining, setCooldownRemaining] = useState(0)
   const [isCheckingCooldown, setIsCheckingCooldown] = useState(true)
   const publicClient = usePublicClient()
   const { address } = useAccount()
-
-  // Restore session signature from localStorage on mount
-  useEffect(() => {
-    if (address) {
-      const stored = getStoredSignature(address)
-      if (stored) {
-        setSessionSignature(stored as Hex)
-      }
-    }
-  }, [address])
 
   const fetchQuiz = useCallback(async () => {
     setQuizLoading(true)
@@ -124,7 +109,7 @@ function QuizApp() {
       setQuizToken(data.quizToken)
       if (data.ecosystem) setEcosystem(data.ecosystem)
 
-      // Store the start index — session signature is handled on connect
+      // Store the start index
       if (address && data.startIndex != null) {
         setStartIndex(data.startIndex)
       } else {
@@ -161,7 +146,6 @@ function QuizApp() {
     setQuizToken(null)
     setStartIndex(null)
     setEcosystem(null)
-    setSessionSignature(null)
     setQuizError(null)
     setFinalScore(0)
     setUserAnswers([])
@@ -216,12 +200,12 @@ function QuizApp() {
     return () => clearInterval(timer)
   }, [cooldownRemaining])
 
-  // Auto-fetch quiz when connected, signed, and cooldown is done
+  // Auto-fetch quiz when connected and cooldown is done
   useEffect(() => {
-    if (isConnected && sessionSignature && questions.length === 0 && !quizLoading && !quizError && cooldownRemaining === 0 && !isCheckingCooldown) {
+    if (isConnected && questions.length === 0 && !quizLoading && !quizError && cooldownRemaining === 0 && !isCheckingCooldown) {
       void fetchQuiz()
     }
-  }, [isConnected, sessionSignature, fetchQuiz, questions.length, quizLoading, quizError, cooldownRemaining, isCheckingCooldown])
+  }, [isConnected, fetchQuiz, questions.length, quizLoading, quizError, cooldownRemaining, isCheckingCooldown])
 
   const handleStartQuiz = () => {
     setScreen("quiz")
@@ -234,12 +218,7 @@ function QuizApp() {
       return
     }
     try {
-      const body: Record<string, unknown> = { quizToken, answers }
-      if (sessionSignature && startIndex != null && address) {
-        body.signature = sessionSignature
-        body.address = address.toLowerCase()
-        body.startIndex = startIndex
-      }
+      const body = { quizToken, answers }
       const res = await fetch("/api/verify-quiz", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -269,7 +248,6 @@ function QuizApp() {
     setQuizToken(null)
     setStartIndex(null)
     setEcosystem(null)
-    setSessionSignature(null)
     setScreen("home")
     setGlobalRefreshKey((k) => k + 1)
   }
@@ -308,15 +286,6 @@ function QuizApp() {
           />
         )}
       </main>
-      <SignMessageModal
-        isOpen={signModalOpen}
-        onClose={() => setSignModalOpen(false)}
-        onSuccess={(sig) => {
-          setSessionSignature(sig as Hex)
-          setSignModalOpen(false)
-        }}
-        walletAddress={address ?? ""}
-      />
     </>
   )
 }
