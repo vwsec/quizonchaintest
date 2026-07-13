@@ -37,7 +37,7 @@
         "Gas is split evenly into 10 equal pieces of 40M gas each with no carryover",
         "Only 4 out of 10 Flashblocks actually receive any gas allocation at all"
       ],
-      "correctIndex": 3,
+      "correctIndex": 1,
       "id": 2
     },
     {
@@ -752,7 +752,7 @@
         "400M gas, which is the full block gas limit",
         "80M gas, which is 2/10 of the block gas limit"
       ],
-      "correctIndex": 2,
+      "correctIndex": 1,
       "id": 67
     },
     {
@@ -1632,7 +1632,7 @@
         "It is the same as the Ethereum mainnet chain ID",
         "It changes with every protocol upgrade"
       ],
-      "correctIndex": 1,
+      "correctIndex": 0,
       "id": 147
     },
     {
@@ -1786,7 +1786,7 @@
         "120M gas, which is 3/10 of the block gas limit",
         "400M gas, which is the full block gas limit"
       ],
-      "correctIndex": 3,
+      "correctIndex": 2,
       "id": 161
     },
     {
@@ -1852,7 +1852,7 @@
         "8453",
         "42161"
       ],
-      "correctIndex": 0,
+      "correctIndex": 2,
       "id": 167
     },
     {
@@ -2028,7 +2028,7 @@
         "42161",
         "1"
       ],
-      "correctIndex": 3,
+      "correctIndex": 1,
       "id": 183
     },
     {
@@ -2248,7 +2248,7 @@
         "10 in decimal (that belongs to Optimism)",
         "Both 8453 and 0x2105 are correct representations"
       ],
-      "correctIndex": 2,
+      "correctIndex": 3,
       "id": 203
     },
     {

@@ -22,9 +22,9 @@
       "id": 1,
       "question": "What does Arc use as its native gas token?",
       "options": [
-        "USDC \u2014 a stablecoin",
+        "USDC — a stablecoin",
         "A volatile native token like ETH",
-        "ARCC \u2014 a newly created token",
+        "ARCC — a newly created token",
         "A basket of stablecoins"
       ],
       "correctIndex": 0
@@ -165,7 +165,7 @@
       "id": 14,
       "question": "How long does it take for a transaction to reach finality on Arc?",
       "options": [
-        "12\u201315 minutes",
+        "12–15 minutes",
         "About 7 days",
         "Under 1 second",
         "Approximately 30 seconds"
@@ -189,7 +189,7 @@
       "options": [
         "Both achieve finality in under 1 second",
         "Arc achieves finality in under 1 second versus ~7 days for L2 rollup withdrawals",
-        "Arc finality is 12\u201315 minutes versus ~7 days for L2s",
+        "Arc finality is 12–15 minutes versus ~7 days for L2s",
         "Both require approximately 7 days for full finality"
       ],
       "correctIndex": 1
@@ -275,10 +275,10 @@
       "id": 24,
       "question": "What isolation model does APS enforce for deployed contracts?",
       "options": [
-        "Default-open \u2014 all functions and storage are accessible by default",
-        "Permissioned \u2014 only whitelisted addresses can deploy",
-        "Default-deny \u2014 every function and storage slot is inaccessible by default",
-        "Public-by-default \u2014 all state is transparent on the ledger"
+        "Default-open — all functions and storage are accessible by default",
+        "Permissioned — only whitelisted addresses can deploy",
+        "Default-deny — every function and storage slot is inaccessible by default",
+        "Public-by-default — all state is transparent on the ledger"
       ],
       "correctIndex": 2
     },
@@ -308,10 +308,10 @@
       "id": 27,
       "question": "Which phase in Arc's post-quantum roadmap addresses private smart contract state?",
       "options": [
-        "Phase 1 \u2014 wallet signatures",
-        "Phase 2 \u2014 post-quantum privacy",
-        "Phase 3 \u2014 validator signatures",
-        "Phase 4 \u2014 offchain infrastructure"
+        "Phase 1 — wallet signatures",
+        "Phase 2 — post-quantum privacy",
+        "Phase 3 — validator signatures",
+        "Phase 4 — offchain infrastructure"
       ],
       "correctIndex": 1
     },
@@ -429,7 +429,7 @@
       "id": 38,
       "question": "What kind of finality does Arc provide?",
       "options": [
-        "Deterministic finality \u2014 transactions are either unconfirmed or final",
+        "Deterministic finality — transactions are either unconfirmed or final",
         "Probabilistic finality like Bitcoin",
         "Economic finality based on bonded stake value",
         "Optimistic finality with a fraud proof window"
@@ -475,7 +475,7 @@
       "options": [
         "It uses a points-based fee system",
         "It requires all transactions to be sponsored by dApps",
-        "It uses USDC \u2014 a stablecoin \u2014 as its native gas token",
+        "It uses USDC — a stablecoin — as its native gas token",
         "It bundles gas costs into subscription fees"
       ],
       "correctIndex": 2
@@ -1376,8 +1376,8 @@
       "question": "On Ethereum, users need ETH for gas and USDC for stable transactions. On Arc:",
       "options": [
         "Users still need ETH for gas",
-        "Users need only USDC \u2014 no separate volatile token required for gas",
-        "Users need neither \u2014 all transactions are free",
+        "Users need only USDC — no separate volatile token required for gas",
+        "Users need neither — all transactions are free",
         "Users need three separate tokens for gas, DeFi, and governance"
       ],
       "correctIndex": 3
@@ -1477,7 +1477,7 @@
         "The native 18-decimal interface",
         "The ERC-20 6-decimal interface",
         "Both interfaces independently",
-        "Neither \u2014 protocols must use EURC instead"
+        "Neither — protocols must use EURC instead"
       ],
       "correctIndex": 3
     },
@@ -1488,7 +1488,7 @@
         "The ERC-20 6-decimal interface",
         "The native 18-decimal interface",
         "Both interfaces are debited equally",
-        "Neither \u2014 gas is paid in a different token"
+        "Neither — gas is paid in a different token"
       ],
       "correctIndex": 3
     },
@@ -1607,7 +1607,7 @@
       "question": "Native transfers of USDC on Arc mean that USDC behaves like:",
       "options": [
         "An ERC-20 token that requires approval first",
-        "The native currency (like ETH) \u2014 send it directly without wrapping",
+        "The native currency (like ETH) — send it directly without wrapping",
         "A wrapped token with a 24-hour unlock period",
         "An NFT that cannot be divided"
       ],
@@ -1617,7 +1617,7 @@
       "id": 146,
       "question": "Which of these best describes native USDC transfers on Arc?",
       "options": [
-        "They work like sending ETH \u2014 simple, direct, no contract call needed",
+        "They work like sending ETH — simple, direct, no contract call needed",
         "They require calling a smart contract approve function first",
         "They are processed off-chain and batched weekly",
         "They can only be initiated by smart contracts"
@@ -1630,7 +1630,7 @@
       "options": [
         "ETH",
         "The ARCC governance token",
-        "Just USDC \u2014 no other token is needed to pay gas",
+        "Just USDC — no other token is needed to pay gas",
         "Both USDC and a volatile token"
       ],
       "correctIndex": 2
@@ -1641,7 +1641,7 @@
       "options": [
         "Users must also acquire ETH to pay gas",
         "Users must acquire ARC, the native token",
-        "Users only need USDC \u2014 no ETH or other token needed for gas",
+        "Users only need USDC — no ETH or other token needed for gas",
         "Users pay no gas at all"
       ],
       "correctIndex": 2
@@ -1683,8 +1683,8 @@
       "id": 152,
       "question": "On Ethereum, sending USDC requires holding ETH for gas. On Arc:",
       "options": [
-        "This is also true \u2014 you need a separate gas token",
-        "You only need USDC \u2014 it serves as both the value transfer and gas asset",
+        "This is also true — you need a separate gas token",
+        "You only need USDC — it serves as both the value transfer and gas asset",
         "Gas is free on Arc",
         "You need EURC for gas, not USDC"
       ],
@@ -1917,7 +1917,7 @@
         "Only send USDC but not pay gas",
         "Both pay gas and send USDC transfers using the same asset",
         "Only pay gas but not receive USDC",
-        "Neither \u2014 they need a separate gas token"
+        "Neither — they need a separate gas token"
       ],
       "correctIndex": 3
     },
@@ -1960,7 +1960,7 @@
       "options": [
         "A different balance than the native interface",
         "The same underlying balance accessible via the native interface",
-        "Zero \u2014 ERC-20 queries don't work on Arc",
+        "Zero — ERC-20 queries don't work on Arc",
         "Only USDC that was bridged from Ethereum"
       ],
       "correctIndex": 3
@@ -2454,7 +2454,7 @@
       "question": "How would you describe priority fees on Arc?",
       "options": [
         "Minimal",
-        "Non-existent \u2014 there are no priority fees",
+        "Non-existent — there are no priority fees",
         "Determined by a weekly auction",
         "Higher than Ethereum's typical priority fees"
       ],
@@ -2467,7 +2467,7 @@
         "It doubles every block when utilization exceeds 50%",
         "It adjusts proportionally to the EWMA-smoothed signal",
         "It adjusts based on the raw per-block value only",
-        "It does not adjust at all \u2014 it is fixed"
+        "It does not adjust at all — it is fixed"
       ],
       "correctIndex": 1
     },
@@ -2926,7 +2926,7 @@
       "id": 265,
       "question": "What state can a transaction be in on Arc?",
       "options": [
-        "Unconfirmed or final \u2014 no intermediate state",
+        "Unconfirmed or final — no intermediate state",
         "Pending, confirmed, or finalized",
         "Mempool, proposed, committed, or executed",
         "Queued, processed, or settled"
@@ -2962,7 +2962,7 @@
         "They last 12 blocks like Bitcoin",
         "They last approximately 30 seconds",
         "They are configurable by each dApp",
-        "There are no confirmation windows \u2014 transactions are either unconfirmed or final"
+        "There are no confirmation windows — transactions are either unconfirmed or final"
       ],
       "correctIndex": 3
     },
@@ -3114,7 +3114,7 @@
       "question": "A DeFi protocol is choosing a chain to avoid reorg-based sandwich attacks. Which chain's finality model best serves this need?",
       "options": [
         "A chain with probabilistic finality and deep reorg protection",
-        "Arc with deterministic finality \u2014 no reorgs can occur once a block is finalized",
+        "Arc with deterministic finality — no reorgs can occur once a block is finalized",
         "A chain with optimistic finality and fraud proofs",
         "A chain that uses checkpoints every 100 blocks"
       ],
@@ -3149,7 +3149,7 @@
         "Once a transaction is confirmed by two-thirds of validators, it becomes final and irreversible. Before that, it's unconfirmed",
         "Unconfirmed means the transaction is still in the mempool; final means it's in a block",
         "Unconfirmed transactions can be reversed; final ones can only be reversed by a hard fork",
-        "There is no difference \u2014 all transactions are immediately final"
+        "There is no difference — all transactions are immediately final"
       ],
       "correctIndex": 0
     },
@@ -3289,9 +3289,9 @@
       "id": 298,
       "question": "Is privacy mandatory or opt-in on Arc?",
       "options": [
-        "Mandatory \u2014 all transactions are private",
+        "Mandatory — all transactions are private",
         "Not available at all",
-        "Opt-in \u2014 applications choose when to keep data off the public ledger",
+        "Opt-in — applications choose when to keep data off the public ledger",
         "Mandatory only for certain contract types"
       ],
       "correctIndex": 2
@@ -3311,10 +3311,10 @@
       "id": 300,
       "question": "How many execution environments does Arc feature?",
       "options": [
-        "Two \u2014 one for public state and one for private state",
-        "One \u2014 the public EVM only",
-        "Three \u2014 public, private, and confidential",
-        "Four \u2014 segregated by data type"
+        "Two — one for public state and one for private state",
+        "One — the public EVM only",
+        "Three — public, private, and confidential",
+        "Four — segregated by data type"
       ],
       "correctIndex": 0
     },
@@ -3379,7 +3379,7 @@
       "options": [
         "The full transaction details and return values",
         "A zero-knowledge proof of correct execution",
-        "Only an acknowledgement and predefined gas cost \u2014 no execution results or event logs",
+        "Only an acknowledgement and predefined gas cost — no execution results or event logs",
         "The encrypted version of the transaction output"
       ],
       "correctIndex": 2
@@ -3399,7 +3399,7 @@
       "id": 308,
       "question": "How do private and public contracts compose on Arc?",
       "options": [
-        "Synchronously and atomically \u2014 no cross-chain bridges or async messaging needed",
+        "Synchronously and atomically — no cross-chain bridges or async messaging needed",
         "Asynchronously through cross-chain bridges",
         "Through a third-party oracle network",
         "Private contracts cannot interact with public contracts"
@@ -3446,7 +3446,7 @@
         "Arc for public state",
         "Both Arc and APS",
         "APS for private state",
-        "Neither \u2014 Arc uses a unified environment"
+        "Neither — Arc uses a unified environment"
       ],
       "correctIndex": 1
     },
@@ -3520,7 +3520,7 @@
       "id": 319,
       "question": "What bridge is needed to move assets between Arc's public and private environments?",
       "options": [
-        "No external bridge \u2014 controlled precompile operations handle it in a single block",
+        "No external bridge — controlled precompile operations handle it in a single block",
         "A third-party cross-chain bridge",
         "A liquidity pool on a decentralized exchange",
         "A centralized exchange wallet transfer"
@@ -3576,7 +3576,7 @@
       "question": "What happens to the execution details of a private transaction on the public ledger?",
       "options": [
         "They are fully visible but encrypted",
-        "They are not exposed \u2014 only an acknowledgement and gas cost are recorded",
+        "They are not exposed — only an acknowledgement and gas cost are recorded",
         "They are hashed and stored on-chain",
         "They are published after a 24-hour delay"
       ],
@@ -3676,7 +3676,7 @@
       "options": [
         "The event logs are stored encrypted on the public ledger",
         "The event logs are emitted on a separate private event channel",
-        "The event logs are not exposed to the public ledger \u2014 only an acknowledgement and gas cost are returned",
+        "The event logs are not exposed to the public ledger — only an acknowledgement and gas cost are returned",
         "The event logs are hashed and stored for audit purposes"
       ],
       "correctIndex": 2
@@ -3720,7 +3720,7 @@
       "options": [
         "The return values of the private function call",
         "A zero-knowledge proof attesting to correct execution",
-        "Only an acknowledgement and the gas cost \u2014 no return values or event logs",
+        "Only an acknowledgement and the gas cost — no return values or event logs",
         "An encrypted blob containing all execution outputs"
       ],
       "correctIndex": 2
@@ -3861,10 +3861,10 @@
       "id": 350,
       "question": "Which phase of Arc's post-quantum roadmap addresses validator security?",
       "options": [
-        "Phase 1 \u2014 wallet signatures",
-        "Phase 3 \u2014 post-quantum validator signatures",
-        "Phase 2 \u2014 post-quantum privacy",
-        "Phase 4 \u2014 post-quantum offchain infrastructure"
+        "Phase 1 — wallet signatures",
+        "Phase 3 — post-quantum validator signatures",
+        "Phase 2 — post-quantum privacy",
+        "Phase 4 — post-quantum offchain infrastructure"
       ],
       "correctIndex": 1
     },
@@ -3872,10 +3872,10 @@
       "id": 351,
       "question": "Which phase of Arc's post-quantum roadmap addresses private smart contract state?",
       "options": [
-        "Phase 1 \u2014 wallet signatures",
-        "Phase 3 \u2014 validator signatures",
-        "Phase 2 \u2014 post-quantum privacy (APS)",
-        "Phase 4 \u2014 offchain infrastructure"
+        "Phase 1 — wallet signatures",
+        "Phase 3 — validator signatures",
+        "Phase 2 — post-quantum privacy (APS)",
+        "Phase 4 — offchain infrastructure"
       ],
       "correctIndex": 2
     },
@@ -3883,10 +3883,10 @@
       "id": 352,
       "question": "Which phase of Arc's post-quantum roadmap covers infrastructure outside the core protocol?",
       "options": [
-        "Phase 1 \u2014 wallet signatures",
-        "Phase 2 \u2014 post-quantum privacy",
-        "Phase 3 \u2014 validator signatures",
-        "Phase 4 \u2014 post-quantum offchain infrastructure"
+        "Phase 1 — wallet signatures",
+        "Phase 2 — post-quantum privacy",
+        "Phase 3 — validator signatures",
+        "Phase 4 — post-quantum offchain infrastructure"
       ],
       "correctIndex": 3
     },
@@ -3894,10 +3894,10 @@
       "id": 353,
       "question": "What is the logical order of Arc's four-phase post-quantum roadmap?",
       "options": [
-        "Wallet signatures \u2192 Privacy \u2192 Validator signatures \u2192 Offchain infrastructure",
-        "Privacy \u2192 Wallet signatures \u2192 Offchain infrastructure \u2192 Validator signatures",
-        "Validator signatures \u2192 Wallet signatures \u2192 Privacy \u2192 Offchain infrastructure",
-        "Offchain infrastructure \u2192 Validator signatures \u2192 Privacy \u2192 Wallet signatures"
+        "Wallet signatures → Privacy → Validator signatures → Offchain infrastructure",
+        "Privacy → Wallet signatures → Offchain infrastructure → Validator signatures",
+        "Validator signatures → Wallet signatures → Privacy → Offchain infrastructure",
+        "Offchain infrastructure → Validator signatures → Privacy → Wallet signatures"
       ],
       "correctIndex": 0
     },
@@ -3951,7 +3951,7 @@
       "options": [
         "Immediately using classical computers",
         "In the future when large-scale quantum computers become practical",
-        "Never \u2014 the encryption is quantum-resistant",
+        "Never — the encryption is quantum-resistant",
         "Only if the private key is leaked"
       ],
       "correctIndex": 1
@@ -4026,10 +4026,10 @@
       "id": 365,
       "question": "An exchange wants to future-proof its Arc integration against quantum threats. Which roadmap phase is most relevant for user funds?",
       "options": [
-        "Phase 1 \u2014 post-quantum wallet signatures (targeted at mainnet launch)",
-        "Phase 4 \u2014 offchain infrastructure",
-        "Phase 2 \u2014 post-quantum privacy",
-        "Phase 3 \u2014 validator signatures"
+        "Phase 1 — post-quantum wallet signatures (targeted at mainnet launch)",
+        "Phase 4 — offchain infrastructure",
+        "Phase 2 — post-quantum privacy",
+        "Phase 3 — validator signatures"
       ],
       "correctIndex": 0
     },
@@ -4114,7 +4114,7 @@
       "id": 373,
       "question": "What does Arc's post-quantum roadmap aim to achieve overall?",
       "options": [
-        "To make all components of Arc \u2014 wallets, privacy, validators, and offchain infrastructure \u2014 resistant to quantum computing attacks",
+        "To make all components of Arc — wallets, privacy, validators, and offchain infrastructure — resistant to quantum computing attacks",
         "To replace the consensus protocol with a quantum-powered one",
         "To transition Arc from a blockchain to a quantum computing platform",
         "To add quantum random number generation for validator selection"
@@ -4147,10 +4147,10 @@
       "id": 376,
       "question": "If someone captures encrypted data from Arc's public ledger today, what post-quantum risk applies?",
       "options": [
-        "No risk \u2014 the data is already quantum-resistant",
-        "Signature forgery \u2014 the data could be signed by an attacker",
-        "No risk \u2014 blockchain data is not encrypted",
-        "Harvest-now-decrypt-later \u2014 the data could be decrypted in the future with a sufficiently powerful quantum computer"
+        "No risk — the data is already quantum-resistant",
+        "Signature forgery — the data could be signed by an attacker",
+        "No risk — blockchain data is not encrypted",
+        "Harvest-now-decrypt-later — the data could be decrypted in the future with a sufficiently powerful quantum computer"
       ],
       "correctIndex": 3
     },
@@ -4169,8 +4169,8 @@
       "id": 378,
       "question": "What protects Arc's users against quantum threats while post-quantum features are being developed?",
       "options": [
-        "Nothing \u2014 users must purchase third-party quantum protection",
-        "Classical cryptography, which remains secure against today's classical computers \u2014 the post-quantum roadmap addresses future risks",
+        "Nothing — users must purchase third-party quantum protection",
+        "Classical cryptography, which remains secure against today's classical computers — the post-quantum roadmap addresses future risks",
         "Arc has already implemented all post-quantum upgrades",
         "Users must use hardware wallets for quantum protection"
       ],
@@ -6809,10 +6809,10 @@
       "id": 618,
       "question": "Compared to a typical L2 rollup withdrawal, Arc finality is:",
       "options": [
-        "Slower \u2014 15 minutes versus instant for L2",
-        "Faster \u2014 under 1 second versus ~7 days for L2 withdrawals",
-        "The same \u2014 both take ~7 days",
-        "Faster \u2014 under 1 second versus 12 minutes for L2"
+        "Slower — 15 minutes versus instant for L2",
+        "Faster — under 1 second versus ~7 days for L2 withdrawals",
+        "The same — both take ~7 days",
+        "Faster — under 1 second versus 12 minutes for L2"
       ],
       "correctIndex": 1
     },
@@ -6875,8 +6875,8 @@
       "id": 624,
       "question": "Arc uses USDC as gas. What does Ethereum L1 use?",
       "options": [
-        "USDC \u2014 the same as Arc",
-        "ETH \u2014 a volatile native token",
+        "USDC — the same as Arc",
+        "ETH — a volatile native token",
         "A token pegged to the dollar",
         "A basket of stablecoins"
       ],
@@ -6921,7 +6921,7 @@
       "options": [
         "Ethereum also separates consensus from execution",
         "Ethereum L1 has consensus and execution integrated, not separated",
-        "Ethereum has no separation at all \u2014 a monolithic design",
+        "Ethereum has no separation at all — a monolithic design",
         "Ethereum separates execution into shards"
       ],
       "correctIndex": 1
@@ -6931,7 +6931,7 @@
       "question": "Arc uses Malachite BFT for consensus. Ethereum L1 uses:",
       "options": [
         "Nakamoto consensus with Proof of Work",
-        "Gasper (Casper FFG + LMD-GHOST) \u2014 probabilistic for a while",
+        "Gasper (Casper FFG + LMD-GHOST) — probabilistic for a while",
         "Tendermint BFT",
         "HotStuff BFT"
       ],
@@ -6955,7 +6955,7 @@
         "A permissioned set controlled by the Ethereum Foundation",
         "A permissionless set where anyone with 32 ETH can stake",
         "A set of validators elected by a centralized committee",
-        "No validators \u2014 Ethereum uses Proof of Work"
+        "No validators — Ethereum uses Proof of Work"
       ],
       "correctIndex": 1
     },
@@ -6966,7 +6966,7 @@
         "Both have permissionless validator sets",
         "Arc has permissioned validators; Ethereum L1 has open permissionless staking",
         "Arc has permissionless validators; Ethereum has permissioned",
-        "Neither uses validators \u2014 both use Proof of Work"
+        "Neither uses validators — both use Proof of Work"
       ],
       "correctIndex": 1
     },
@@ -6986,7 +6986,7 @@
       "question": "On Ethereum L1, becoming a validator requires:",
       "options": [
         "Approval from the Ethereum Foundation board",
-        "Depositing 32 ETH into the staking contract \u2014 permissionless and open to anyone",
+        "Depositing 32 ETH into the staking contract — permissionless and open to anyone",
         "Running a Proof of Work mining rig",
         "Holding a governance token and passing a vote"
       ],
@@ -6999,7 +6999,7 @@
         "Ethereum mainnet",
         "Arc",
         "Both Arc and Ethereum mainnet",
-        "Neither \u2014 Arc uses a custom non-EVM"
+        "Neither — Arc uses a custom non-EVM"
       ],
       "correctIndex": 1
     },
@@ -7093,7 +7093,7 @@
     },
     {
       "id": 644,
-      "question": "Arc permissioned validators versus Ethereum L1 permissionless staking \u2014 which is correct?",
+      "question": "Arc permissioned validators versus Ethereum L1 permissionless staking — which is correct?",
       "options": [
         "Both are permissionless and open to anyone",
         "Arc uses a permissioned set; Ethereum L1 is permissionless with 32 ETH minimum",
@@ -7109,7 +7109,7 @@
         "10,000 USDC",
         "32 ETH",
         "100 ARC tokens",
-        "No minimum \u2014 anyone can validate"
+        "No minimum — anyone can validate"
       ],
       "correctIndex": 1
     },
@@ -7131,7 +7131,7 @@
         "Consensus and execution run on the same layer",
         "The consensus layer (Malachite BFT) and execution layer (EVM) are independent modules",
         "The execution layer also runs BFT consensus",
-        "There is no execution layer \u2014 just a value transfer network"
+        "There is no execution layer — just a value transfer network"
       ],
       "correctIndex": 1
     },
@@ -7141,7 +7141,7 @@
       "options": [
         "Consensus and execution are completely separate like Arc",
         "Consensus and execution are combined into one unified node client (like Geth)",
-        "Only execution exists \u2014 there is no consensus layer",
+        "Only execution exists — there is no consensus layer",
         "Consensus is handled by a separate sidechain"
       ],
       "correctIndex": 1
@@ -7183,8 +7183,8 @@
       "id": 652,
       "question": "Which chain requires waiting for multiple block confirmations before considering a transaction final?",
       "options": [
-        "Arc (deterministic) \u2014 final immediately",
-        "Ethereum L1 (probabilistic) \u2014 users wait for multiple blocks",
+        "Arc (deterministic) — final immediately",
+        "Ethereum L1 (probabilistic) — users wait for multiple blocks",
         "Both require multiple confirmations",
         "Neither requires confirmations"
       ],
@@ -7227,8 +7227,8 @@
       "id": 656,
       "question": "Which chain still has reorg risk even after a block is produced?",
       "options": [
-        "Arc \u2014 deterministic finality means no reorgs",
-        "Ethereum L1 \u2014 probabilistic finality means orphaned blocks are possible",
+        "Arc — deterministic finality means no reorgs",
+        "Ethereum L1 — probabilistic finality means orphaned blocks are possible",
         "Both have equal reorg risk",
         "Neither has any reorg risk"
       ],
@@ -7272,8 +7272,8 @@
       "question": "Which chain's fee model makes it easier to predict transaction costs in dollar terms?",
       "options": [
         "Both are equally predictable",
-        "Ethereum L1 \u2014 fees are in a volatile token but predictable",
-        "Arc \u2014 fees are in USDC and smoothed via EWMA",
+        "Ethereum L1 — fees are in a volatile token but predictable",
+        "Arc — fees are in USDC and smoothed via EWMA",
         "Neither offers predictable fees"
       ],
       "correctIndex": 2
@@ -7306,7 +7306,7 @@
       "options": [
         "Has a volatile governance token that fluctuates",
         "Also has a volatile native token called ARC",
-        "Has no volatile native token \u2014 using only stablecoins",
+        "Has no volatile native token — using only stablecoins",
         "Uses a dual-token model with one volatile and one stable"
       ],
       "correctIndex": 2
@@ -7362,7 +7362,7 @@
         "Higher security but lower transaction speed",
         "Less throughput in exchange for maximum decentralization",
         "Less decentralization in exchange for higher throughput and predictable finality",
-        "No trade-off \u2014 permissioned is strictly better"
+        "No trade-off — permissioned is strictly better"
       ],
       "correctIndex": 2
     },
@@ -7382,9 +7382,9 @@
       "question": "If you are building a point-of-sale payment system, which chain's finality model is preferable and why?",
       "options": [
         "Either works equally well for POS",
-        "Ethereum L1 \u2014 probabilistic finality is acceptable for small payments",
-        "Arc \u2014 deterministic sub-second finality means merchants can confirm payment instantly",
-        "Bitcoin \u2014 it is the most established payment network"
+        "Ethereum L1 — probabilistic finality is acceptable for small payments",
+        "Arc — deterministic sub-second finality means merchants can confirm payment instantly",
+        "Bitcoin — it is the most established payment network"
       ],
       "correctIndex": 2
     },
@@ -7625,7 +7625,7 @@
       "options": [
         "The receiving party must wait 7 days before accessing funds",
         "Settlement requires both parties to sign before processing",
-        "Counterparty risk is eliminated \u2014 once sent, the funds cannot be clawed back",
+        "Counterparty risk is eliminated — once sent, the funds cannot be clawed back",
         "International sanctions compliance is bypassed"
       ],
       "correctIndex": 2
@@ -7659,7 +7659,7 @@
         "A required mix of 50% stablecoins and 50% volatile tokens",
         "Only the volatile ARCC token which may appreciate in value",
         "Stable-valued assets (USDC, USYC) without exposure to volatile token fluctuations",
-        "No assets \u2014 Arc is a messaging protocol only"
+        "No assets — Arc is a messaging protocol only"
       ],
       "correctIndex": 2
     },
@@ -7733,10 +7733,10 @@
       "id": 702,
       "question": "A treasury manager using Arc can access yield through which stablecoin?",
       "options": [
-        "EURC \u2014 which offers higher yields than USDC",
-        "USDC \u2014 which pays interest natively on Arc",
-        "USYC \u2014 a yield-bearing stablecoin on Arc",
-        "ARCC \u2014 the volatile native governance token"
+        "EURC — which offers higher yields than USDC",
+        "USDC — which pays interest natively on Arc",
+        "USYC — a yield-bearing stablecoin on Arc",
+        "ARCC — the volatile native governance token"
       ],
       "correctIndex": 2
     },
@@ -7887,10 +7887,10 @@
       "id": 716,
       "question": "Which phase addresses the most user-facing quantum vulnerability first?",
       "options": [
-        "Phase 3 \u2014 validator signatures, since validators secure the network",
-        "Phase 4 \u2014 offchain infrastructure, since it affects all external systems",
-        "Phase 2 \u2014 privacy, since confidential data is most sensitive",
-        "Phase 1 \u2014 wallet signatures, since users frequently transact"
+        "Phase 3 — validator signatures, since validators secure the network",
+        "Phase 4 — offchain infrastructure, since it affects all external systems",
+        "Phase 2 — privacy, since confidential data is most sensitive",
+        "Phase 1 — wallet signatures, since users frequently transact"
       ],
       "correctIndex": 3
     },
@@ -7910,7 +7910,7 @@
       "question": "Until Arc's post-quantum features are live, user transactions are protected by:",
       "options": [
         "Hardware wallet quantum resistance",
-        "No cryptography \u2014 transactions are unprotected",
+        "No cryptography — transactions are unprotected",
         "Third-party quantum security add-ons",
         "Classical cryptography, which remains secure against today's computers"
       ],
@@ -7942,10 +7942,10 @@
       "id": 721,
       "question": "Arc's APS privacy sector uses which isolation model?",
       "options": [
-        "Public-by-default \u2014 all state is transparent on the ledger",
-        "Default-open \u2014 all functions and storage are accessible by default",
-        "Permissioned access \u2014 only whitelisted addresses can interact",
-        "Default-deny \u2014 every function and storage slot is inaccessible by default"
+        "Public-by-default — all state is transparent on the ledger",
+        "Default-open — all functions and storage are accessible by default",
+        "Permissioned access — only whitelisted addresses can interact",
+        "Default-deny — every function and storage slot is inaccessible by default"
       ],
       "correctIndex": 3
     },
@@ -8000,7 +8000,7 @@
         "A zero-knowledge proof of correct execution",
         "The full execution results including all return values",
         "An encrypted version of the transaction data",
-        "Only an acknowledgement and the gas cost \u2014 no execution results or event logs"
+        "Only an acknowledgement and the gas cost — no execution results or event logs"
       ],
       "correctIndex": 3
     },
@@ -8198,7 +8198,7 @@
         "A centralized exchange wallet transfer",
         "A dedicated cross-chain bridge with a 7-day delay",
         "A third-party decentralized exchange",
-        "Controlled precompile operations within a single block \u2014 no external bridge needed"
+        "Controlled precompile operations within a single block — no external bridge needed"
       ],
       "correctIndex": 3
     },
@@ -8374,7 +8374,7 @@
         "Wallets must implement complex fork detection algorithms",
         "Wallets must track 12 confirmations before showing a balance change",
         "Wallets need to poll for 7 days before crediting user balances",
-        "No reorg handling logic is needed \u2014 a transaction is either unconfirmed or final"
+        "No reorg handling logic is needed — a transaction is either unconfirmed or final"
       ],
       "correctIndex": 3
     },
@@ -8416,7 +8416,7 @@
       "question": "In Malachite BFT, what prevents a malicious supermajority from finalizing invalid blocks?",
       "options": [
         "Validators are randomly selected each round for fairness",
-        "There is no protection \u2014 a malicious supermajority can do anything",
+        "There is no protection — a malicious supermajority can do anything",
         "The Proof of Work requirement prevents invalid blocks",
         "The combination of BFT safety guarantees and the execution layer verifying state transitions"
       ],
@@ -8536,10 +8536,10 @@
       "id": 775,
       "question": "What is the correct transaction lifecycle on Arc?",
       "options": [
-        "Submitted \u2192 Pending \u2192 Confirmed \u2192 Final",
-        "Mempool \u2192 Proposed \u2192 Executed \u2192 Settled",
-        "Submitted \u2192 Signed \u2192 Validated \u2192 Archived",
-        "Queued \u2192 Bundled \u2192 Committed \u2192 Verified"
+        "Submitted → Pending → Confirmed → Final",
+        "Mempool → Proposed → Executed → Settled",
+        "Submitted → Signed → Validated → Archived",
+        "Queued → Bundled → Committed → Verified"
       ],
       "correctIndex": 0
     },
@@ -8636,7 +8636,7 @@
       "question": "What does it mean that wallets experience a simpler transaction lifecycle on Arc?",
       "options": [
         "Transactions must wait for 12 block confirmations",
-        "There is no pending or confirmation-waiting state \u2014 just unconfirmed or final",
+        "There is no pending or confirmation-waiting state — just unconfirmed or final",
         "Transactions skip the mempool entirely",
         "Wallets do not need to track nonces on Arc"
       ],
@@ -8648,7 +8648,7 @@
       "options": [
         "Node requirements are documented for operator reference",
         "Node requirements are kept secret for security",
-        "There are no specific requirements \u2014 any machine works",
+        "There are no specific requirements — any machine works",
         "Requirements are emailed to approved operators only"
       ],
       "correctIndex": 1
@@ -8902,7 +8902,7 @@
         "Arc uses different event signatures for native USDC movements",
         "Arc does not emit any events for token transfers",
         "Arc emits events on a separate event channel",
-        "There is no difference \u2014 they are identical"
+        "There is no difference — they are identical"
       ],
       "correctIndex": 1
     },
@@ -8932,7 +8932,7 @@
       "id": 811,
       "question": "When an exchange processes a USDC withdrawal on Arc, what should they consider?",
       "options": [
-        "USDC can be sent via native transfers or ERC-20 interface \u2014 same asset",
+        "USDC can be sent via native transfers or ERC-20 interface — same asset",
         "Only native USDC transfers are valid for withdrawals",
         "All withdrawals must go through Circle's CCTP",
         "Withdrawals must be batched in groups of 10"
@@ -9034,7 +9034,7 @@
         "Anyone with enough USDC can become a validator",
         "Validators are selected by a permissioned governance process",
         "Validators are chosen randomly from all token holders",
-        "There is no validator set \u2014 Arc uses proof-of-authority"
+        "There is no validator set — Arc uses proof-of-authority"
       ],
       "correctIndex": 2
     },
@@ -9207,10 +9207,10 @@
       "id": 836,
       "question": "What is the correct order of states in Arc's transaction lifecycle?",
       "options": [
-        "Submit \u2192 Verify \u2192 Index \u2192 Final",
-        "Mempool \u2192 Pending \u2192 Committed \u2192 Final",
-        "Submit \u2192 Pending \u2192 Committed \u2192 Final",
-        "Broadcast \u2192 Confirm \u2192 Settle \u2192 Archive"
+        "Submit → Verify → Index → Final",
+        "Mempool → Pending → Committed → Final",
+        "Submit → Pending → Committed → Final",
+        "Broadcast → Confirm → Settle → Archive"
       ],
       "correctIndex": 1
     },
@@ -9353,7 +9353,7 @@
         "Anyone can join the validator set by staking tokens",
         "Only permissioned entities approved by governance can validate",
         "Validators are elected by community vote every epoch",
-        "There is no validator set \u2014 blocks are produced by a single sequencer"
+        "There is no validator set — blocks are produced by a single sequencer"
       ],
       "correctIndex": 1
     },
@@ -9498,7 +9498,7 @@
         "80002",
         "11155111"
       ],
-      "correctIndex": 3
+      "correctIndex": 0
     },
     {
       "id": 863,
@@ -9546,7 +9546,7 @@
     },
     {
       "id": 867,
-      "question": "In the transaction lifecycle submit \u2192 pending \u2192 committed \u2192 final, which state means the transaction is still waiting for inclusion?",
+      "question": "In the transaction lifecycle submit → pending → committed → final, which state means the transaction is still waiting for inclusion?",
       "options": [
         "Submitted",
         "Pending",
@@ -9557,7 +9557,7 @@
     },
     {
       "id": 868,
-      "question": "In the transaction lifecycle submit \u2192 pending \u2192 committed \u2192 final, which state means the transaction is included in a block awaiting consensus?",
+      "question": "In the transaction lifecycle submit → pending → committed → final, which state means the transaction is included in a block awaiting consensus?",
       "options": [
         "Submitted",
         "Pending",
@@ -9605,7 +9605,7 @@
       "options": [
         "Always use the ERC-20 interface because it is standard",
         "Always use the native interface because it is cheaper",
-        "Use either interface \u2014 they represent the same underlying asset",
+        "Use either interface — they represent the same underlying asset",
         "Withdrawals must go through a centralized bridge"
       ],
       "correctIndex": 0
@@ -9637,7 +9637,7 @@
       "question": "When integrating Arc into a wallet, what must the wallet understand about finality?",
       "options": [
         "Transactions need 32 block confirmations for safety",
-        "There is no reorg risk \u2014 a transaction is final once committed",
+        "There is no reorg risk — a transaction is final once committed",
         "Wallets must wait for a 7-day challenge period",
         "Finality depends on the transaction value"
       ],
@@ -9648,7 +9648,7 @@
       "question": "How should a wallet display the cost of a transaction on Arc?",
       "options": [
         "Convert the gas price from USDC to ETH for consistency",
-        "Show the fee in USDC \u2014 users see familiar dollar amounts directly",
+        "Show the fee in USDC — users see familiar dollar amounts directly",
         "Display the fee as a percentage of the transaction value",
         "Hide the fee and include it in the transfer amount"
       ],
@@ -9883,7 +9883,7 @@
         "57073",
         "11155111"
       ],
-      "correctIndex": 2
+      "correctIndex": 1
     },
     {
       "id": 898,
@@ -10056,7 +10056,7 @@
       "options": [
         "Node requirements are documented in the Arc developer documentation",
         "Requirements are emailed to each operator individually",
-        "There are no documented requirements \u2014 operators must experiment",
+        "There are no documented requirements — operators must experiment",
         "Requirements are enforced by the node software at startup"
       ],
       "correctIndex": 1
@@ -10244,7 +10244,7 @@
       "id": 930,
       "question": "How should a developer handle SELFDESTRUCT when porting a contract to Arc?",
       "options": [
-        "No changes needed \u2014 it works identically to Ethereum",
+        "No changes needed — it works identically to Ethereum",
         "Account for Arc's different SELFDESTRUCT semantics in the ported contract",
         "Remove all SELFDESTRUCT usage as it is disabled on Arc",
         "Replace SELFDESTRUCT with a custom suicide function"
@@ -10399,7 +10399,7 @@
       "question": "What should a wallet developer understand about Arc's transaction states?",
       "options": [
         "Transactions have three states: pending, confirmed, and finalized with reorg risk",
-        "Transactions have two states: unconfirmed and final \u2014 no reorg risk",
+        "Transactions have two states: unconfirmed and final — no reorg risk",
         "Transactions have five states with complex rollback logic",
         "Transactions have one state: immediately final upon submission"
       ],
@@ -10433,7 +10433,7 @@
       "options": [
         "Documented node requirements are available in the Arc developer docs",
         "Node specifications are confidential",
-        "There are no specific requirements \u2014 any machine works",
+        "There are no specific requirements — any machine works",
         "Specifications are sent to node operators via email"
       ],
       "correctIndex": 2
@@ -10634,7 +10634,7 @@
         "Ethereum Sepolia",
         "Base mainnet"
       ],
-      "correctIndex": 0
+      "correctIndex": 1
     },
     {
       "id": 966,
@@ -10740,7 +10740,7 @@
       "question": "When a wallet adds Arc support, how should it handle transaction confirmations?",
       "options": [
         "Wait for 12 block confirmations like Ethereum",
-        "Treat a transaction as confirmed as soon as it is committed \u2014 no waiting needed",
+        "Treat a transaction as confirmed as soon as it is committed — no waiting needed",
         "Require manual user verification of each transaction",
         "Wait for 7 days to ensure no challenge period"
       ],
@@ -10762,7 +10762,7 @@
       "question": "After a transaction is committed on Arc, when can a wallet mark it as final?",
       "options": [
         "After 32 block confirmations",
-        "Immediately \u2014 deterministic finality guarantees no reorgs",
+        "Immediately — deterministic finality guarantees no reorgs",
         "After approximately 15 minutes",
         "After the next block is produced"
       ],
@@ -10808,7 +10808,7 @@
         "Yes, they are separate processes that can be independently operated",
         "No, they must be run by the same operator on the same machine",
         "Only the Arc foundation can operate consensus nodes",
-        "Consensus nodes do not exist \u2014 only execution nodes"
+        "Consensus nodes do not exist — only execution nodes"
       ],
       "correctIndex": 1
     },

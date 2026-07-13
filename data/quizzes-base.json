@@ -34,11 +34,11 @@
       "options": [
         "Each Flashblock has an independent 40M gas budget that resets after each one",
         "Gas budgets stack, so Flashblock 10 can hold transactions totaling approximately 400M gas",
-        "Only 4 out of 10 Flashblocks actually receive any gas allocation at all",
-        "Gas is split evenly into 10 equal pieces of 40M gas each with no carryover"
+        "Gas is split evenly into 10 equal pieces of 40M gas each with no carryover",
+        "Only 4 out of 10 Flashblocks actually receive any gas allocation at all"
       ],
-      "correctIndex": 2,
-      "id": 2
+      "correctIndex": 1,
+      "id": 7
     },
     {
       "question": "The incrementally increasing gas budget across Flashblocks means what?",
@@ -167,7 +167,7 @@
         "No, Base relies solely on automated monitoring systems",
         "Yes, Base has a Security Council with multisig capabilities",
         "The Security Council was proposed but never implemented",
-        "Only on testnet \u2014 the mainnet Security Council is planned"
+        "Only on testnet — the mainnet Security Council is planned"
       ],
       "correctIndex": 2,
       "id": 14
@@ -286,7 +286,7 @@
       "question": "What is the relationship between Base's vanilla mode and its Flashblocks mode?",
       "options": [
         "They are the same thing with different marketing names",
-        "Both are valid configurations \u2014 Flashblocks is an enhanced option using base-builder for faster preconfirmations",
+        "Both are valid configurations — Flashblocks is an enhanced option using base-builder for faster preconfirmations",
         "Vanilla mode replaced Flashblocks due to performance issues",
         "Flashblocks replaced vanilla mode permanently and cannot be disabled"
       ],
@@ -310,7 +310,7 @@
         "Approximately 400M gas, achieved when Flashblock 10 is filled completely",
         "Approximately 40M gas, the budget of Flashblock 1",
         "Approximately 16.7M gas, the per-transaction maximum",
-        "There is no maximum \u2014 blocks can be arbitrarily large"
+        "There is no maximum — blocks can be arbitrarily large"
       ],
       "correctIndex": 3,
       "id": 27
@@ -343,7 +343,7 @@
         "Only eth_blockNumber and eth_gasPrice",
         "Only eth_sendTransaction and eth_call",
         "All standard Ethereum JSON-RPC methods",
-        "None \u2014 Base uses a completely different RPC specification"
+        "None — Base uses a completely different RPC specification"
       ],
       "correctIndex": 2,
       "id": 30
@@ -560,10 +560,10 @@
     {
       "question": "How is gas allocated across the 10 Flashblocks?",
       "options": [
-        "Equally \u2014 each Flashblock independently receives 40M gas",
-        "Cumulatively \u2014 Flashblock 1 has 40M, Flashblock 10 has 400M gas available",
-        "Decreasing \u2014 Flashblock 1 gets the most gas, Flashblock 10 gets the least",
-        "Randomly \u2014 each Flashblock is assigned a random gas budget"
+        "Equally — each Flashblock independently receives 40M gas",
+        "Cumulatively — Flashblock 1 has 40M, Flashblock 10 has 400M gas available",
+        "Decreasing — Flashblock 1 gets the most gas, Flashblock 10 gets the least",
+        "Randomly — each Flashblock is assigned a random gas budget"
       ],
       "correctIndex": 2,
       "id": 50
@@ -793,7 +793,7 @@
       "options": [
         "Developers must learn two different programming paradigms",
         "Consensus runs faster but execution is slower",
-        "There is no benefit \u2014 it adds unnecessary complexity",
+        "There is no benefit — it adds unnecessary complexity",
         "Execution can be upgraded independently without changing the consensus mechanism"
       ],
       "correctIndex": 3,
@@ -858,7 +858,7 @@
       "question": "A developer migrating from Ethereum to Base would need to change what?",
       "options": [
         "Their smart contract code from Solidity to Vyper",
-        "Nothing \u2014 Base is EVM-equivalent, so contracts and tooling work as-is",
+        "Nothing — Base is EVM-equivalent, so contracts and tooling work as-is",
         "Their deployment scripts to use a Base-specific SDK",
         "Their entire infrastructure to use Base-only providers"
       ],
@@ -902,9 +902,9 @@
       "question": "What bytecode compatibility does Base offer?",
       "options": [
         "Compatible with EVM bytecode only for simple ETH transfers",
-        "Full EVM bytecode compatibility \u2014 same opcodes, same behavior as Ethereum",
-        "Partial compatibility \u2014 some opcodes like DIFFICULTY behave differently",
-        "No EVM compatibility \u2014 Base uses WebAssembly (WASM) bytecode"
+        "Full EVM bytecode compatibility — same opcodes, same behavior as Ethereum",
+        "Partial compatibility — some opcodes like DIFFICULTY behave differently",
+        "No EVM compatibility — Base uses WebAssembly (WASM) bytecode"
       ],
       "correctIndex": 1,
       "id": 81
@@ -991,7 +991,7 @@
       "options": [
         "All transactions are processed strictly in order of arrival regardless of fee",
         "When priority fees are equal, earlier arriving transactions are ordered first",
-        "Arrival time is never considered \u2014 only the priority fee matters",
+        "Arrival time is never considered — only the priority fee matters",
         "The very first transaction in each 200ms window gets guaranteed inclusion"
       ],
       "correctIndex": 1,
@@ -1014,7 +1014,7 @@
         "A single transaction cannot entirely fill Flashblock 1's approximately 40M gas budget",
         "Multiple transactions can fit in even the smallest Flashblock during operation",
         "Transactions are always routed to Flashblock 10 for efficient packing",
-        "Both A and B \u2014 it prevents single-tx saturation and allows multiple txs per Flashblock"
+        "Both A and B — it prevents single-tx saturation and allows multiple txs per Flashblock"
       ],
       "correctIndex": 3,
       "id": 91
@@ -1033,10 +1033,10 @@
     {
       "question": "Does Base have a native governance token?",
       "options": [
-        "Yes \u2014 it is called BASE and is used for on-chain governance",
-        "Yes \u2014 it is called COIN and is issued by Coinbase",
-        "No \u2014 Base does not have a native governance token",
-        "Yes \u2014 it is called OP, inherited from the Optimism ecosystem"
+        "Yes — it is called BASE and is used for on-chain governance",
+        "Yes — it is called COIN and is issued by Coinbase",
+        "No — Base does not have a native governance token",
+        "Yes — it is called OP, inherited from the Optimism ecosystem"
       ],
       "correctIndex": 1,
       "id": 93
@@ -1102,7 +1102,7 @@
         "Base has its own validator set that stakes a native BASE token",
         "Base relies on Ethereum's security for final settlement and data availability",
         "Base uses a proof-of-authority consensus with trusted third-party validators",
-        "Base has no security mechanism \u2014 it is a permissioned ledger operated by Coinbase"
+        "Base has no security mechanism — it is a permissioned ledger operated by Coinbase"
       ],
       "correctIndex": 3,
       "id": 99
@@ -1343,7 +1343,7 @@
       "options": [
         "It can be changed by a higher priority fee arriving later from another user",
         "It is re-determined by the next Flashblock in the sequence",
-        "It is locked \u2014 later-arriving transactions cannot be inserted into that Flashblock",
+        "It is locked — later-arriving transactions cannot be inserted into that Flashblock",
         "It is re-evaluated when the full block is assembled and submitted to L1"
       ],
       "correctIndex": 1,
@@ -1377,7 +1377,7 @@
         "Only 10M gas remaining from the original 40M allocation",
         "Up to 80M gas, since the cumulative budget for Flashblock 2 is 2/10 of the total",
         "Only 40M gas regardless of how much Flashblock 1 actually used",
-        "No gas at all \u2014 Flashblock 2 is skipped if Flashblock 1 used gas"
+        "No gas at all — Flashblock 2 is skipped if Flashblock 1 used gas"
       ],
       "correctIndex": 0,
       "id": 124
@@ -1418,7 +1418,7 @@
     {
       "question": "Which Ethereum developer tools work on Base without changes?",
       "options": [
-        "None \u2014 Base requires proprietary tools",
+        "None — Base requires proprietary tools",
         "Only Hardhat",
         "Only Foundry",
         "Standard Ethereum tools like Hardhat, Foundry, and Remix"
@@ -1632,7 +1632,7 @@
         "It changes with every protocol upgrade",
         "It is shared with Optimism mainnet for compatibility"
       ],
-      "correctIndex": 3,
+      "correctIndex": 0,
       "id": 147
     },
     {
@@ -1852,7 +1852,7 @@
         "42161",
         "1"
       ],
-      "correctIndex": 3,
+      "correctIndex": 1,
       "id": 167
     },
     {
@@ -1992,7 +1992,7 @@
       "options": [
         "12-second confirmation like Ethereum L1 with no acceleration",
         "200ms preconfirmations, fast enough for most interactive applications",
-        "No preconfirmation \u2014 users must wait the full 2 seconds minimum",
+        "No preconfirmation — users must wait the full 2 seconds minimum",
         "Preconfirmations only available to whitelisted dApps"
       ],
       "correctIndex": 0,
@@ -2028,7 +2028,7 @@
         "42161",
         "1"
       ],
-      "correctIndex": 3,
+      "correctIndex": 1,
       "id": 183
     },
     {
@@ -2166,10 +2166,10 @@
     {
       "question": "What kind of rollup is Base?",
       "options": [
-        "Optimistic rollup \u2014 transactions are valid unless challenged via fraud proofs",
-        "ZK-rollup \u2014 every batch includes a zero-knowledge validity proof",
-        "Plasma chain \u2014 users must exit to L1 within a challenge period",
-        "Validium \u2014 data is stored off-chain with validity proofs"
+        "Optimistic rollup — transactions are valid unless challenged via fraud proofs",
+        "ZK-rollup — every batch includes a zero-knowledge validity proof",
+        "Plasma chain — users must exit to L1 within a challenge period",
+        "Validium — data is stored off-chain with validity proofs"
       ],
       "correctIndex": 0,
       "id": 196
@@ -2180,7 +2180,7 @@
         "Vanilla mode is faster but less secure than Flashblocks",
         "Flashblocks offers faster preconfirmations but may occasionally break expected ordering; vanilla is simpler but slower",
         "Flashblocks mode reduces total throughput compared to vanilla",
-        "There is no trade-off \u2014 Flashblocks is strictly better in all ways"
+        "There is no trade-off — Flashblocks is strictly better in all ways"
       ],
       "correctIndex": 1,
       "id": 197
@@ -2421,7 +2421,7 @@
       "options": [
         "They are combined in a single monolithic node for simplicity",
         "They are separated, like other OP Stack chains",
-        "There is no consensus layer \u2014 Base is permissioned",
+        "There is no consensus layer — Base is permissioned",
         "Both layers run directly on Ethereum mainnet"
       ],
       "correctIndex": 3,
@@ -2433,7 +2433,7 @@
         "Up to 1.8 seconds faster (2 seconds minus 200 milliseconds)",
         "10 seconds faster",
         "2 seconds faster (exactly one full block time)",
-        "No difference \u2014 both confirm at the same time"
+        "No difference — both confirm at the same time"
       ],
       "correctIndex": 0,
       "id": 220
@@ -2441,10 +2441,10 @@
     {
       "question": "The separation of consensus from execution in the OP Stack means what?",
       "options": [
-        "Consensus is completely skipped on Base \u2014 only execution matters",
+        "Consensus is completely skipped on Base — only execution matters",
         "Different software modules handle transaction ordering versus execution",
         "Transactions execute before they are ordered by the sequencer",
-        "Base has no execution layer \u2014 Ethereum handles all execution"
+        "Base has no execution layer — Ethereum handles all execution"
       ],
       "correctIndex": 1,
       "id": 221
@@ -2457,7 +2457,7 @@
         "0x7c",
         "0x2105"
       ],
-      "correctIndex": 2,
+      "correctIndex": 3,
       "id": 222
     },
     {
@@ -2584,7 +2584,7 @@
     {
       "question": "When would a transaction with a medium priority fee be included in Flashblock 1 rather than Flashblock 3?",
       "options": [
-        "Never \u2014 medium-fee transactions always go to later Flashblocks",
+        "Never — medium-fee transactions always go to later Flashblocks",
         "Only if the transaction is submitted by a whitelisted address",
         "If the mempool has relatively few high-fee transactions at the time of the first auction",
         "Only if the transaction size is smaller than 21,000 gas"
@@ -2727,10 +2727,10 @@
     {
       "question": "The transition between vanilla mode and Flashblocks mode on Base is what kind of change?",
       "options": [
-        "A permanent switch \u2014 Flashblocks completely replaced vanilla mode",
+        "A permanent switch — Flashblocks completely replaced vanilla mode",
         "Only available on testnet, never enabled on mainnet",
         "Only available for institutional and whitelisted users",
-        "A configuration choice \u2014 Flashblocks is an optional feature of base-builder"
+        "A configuration choice — Flashblocks is an optional feature of base-builder"
       ],
       "correctIndex": 3,
       "id": 247
@@ -2981,7 +2981,7 @@
       "id": 270,
       "question": "How does finality for regular Base L2 transactions differ from withdrawal transactions?",
       "options": [
-        "They are the same \u2014 both wait 7 days",
+        "They are the same — both wait 7 days",
         "Withdrawals finalize in seconds; regular transactions wait 7 days",
         "Regular L2 transactions finalize quickly; only withdrawals must wait 7 days",
         "Both finalize in approximately 2 minutes"
@@ -3159,7 +3159,7 @@
       "options": [
         "To keep fees exactly the same for every transaction",
         "To always charge the maximum possible fee",
-        "To match L2 demand \u2014 fees rise when blocks are full and fall when they are not",
+        "To match L2 demand — fees rise when blocks are full and fall when they are not",
         "To match L1 gas prices exactly"
       ],
       "correctIndex": 2
@@ -3169,8 +3169,8 @@
       "question": "When Ethereum gas prices spike, Base transactions become:",
       "options": [
         "Cheaper because users switch to L2",
-        "Unaffected \u2014 L2 fees are independent of L1",
-        "Free \u2014 fees are waived during high congestion",
+        "Unaffected — L2 fees are independent of L1",
+        "Free — fees are waived during high congestion",
         "More expensive because the L1 security fee increases"
       ],
       "correctIndex": 3
@@ -3235,7 +3235,7 @@
       "question": "The 400M gas block limit on Base applies to:",
       "options": [
         "Only the sequencer's blocks",
-        "Flashblocks \u2014 they have access to the full budget",
+        "Flashblocks — they have access to the full budget",
         "Only withdrawal transactions",
         "Only L1 batch submissions"
       ],
@@ -3245,10 +3245,10 @@
       "id": 294,
       "question": "EIP-1559 on Base adjusts the L2 base fee based on:",
       "options": [
-        "L1 gas prices \u2014 when L1 is expensive, the L2 fee adjusts",
-        "Validator voting \u2014 validators decide the fee each block",
-        "Block utilization \u2014 when blocks are above target, the base fee increases",
-        "User tips \u2014 the base fee is the median of all tips received"
+        "L1 gas prices — when L1 is expensive, the L2 fee adjusts",
+        "Validator voting — validators decide the fee each block",
+        "Block utilization — when blocks are above target, the base fee increases",
+        "User tips — the base fee is the median of all tips received"
       ],
       "correctIndex": 2
     },
@@ -3413,7 +3413,7 @@
         "Only L1 Batch Finality",
         "L1 Batch Inclusion or earlier stages since reorg risk is minimal",
         "Only after 7 days",
-        "None \u2014 Base transactions cannot be considered final"
+        "None — Base transactions cannot be considered final"
       ],
       "correctIndex": 1
     },
@@ -4028,7 +4028,7 @@
       "options": [
         "Their Base transactions become cheaper as users move to L2",
         "Their Base transactions cost more because the L1 security fee is higher",
-        "There is no effect \u2014 L2 fees are completely independent",
+        "There is no effect — L2 fees are completely independent",
         "Base transactions are rejected until L1 fees drop"
       ],
       "correctIndex": 1
@@ -4128,7 +4128,7 @@
         "Block gas limit / target gas per block",
         "Maximum priority fee / minimum base fee",
         "(Elasticity Multiplier - 1) / Base Fee Change Denominator",
-        "L1 base fee \u00d7 L2 gas used"
+        "L1 base fee × L2 gas used"
       ],
       "correctIndex": 2
     },
@@ -4497,7 +4497,7 @@
     },
     {
       "id": 408,
-      "question": "Which bridge infrastructure does Base rely on for L1\u2194L2 transfers?",
+      "question": "Which bridge infrastructure does Base rely on for L1↔L2 transfers?",
       "options": [
         "Optimism's standard bridge contracts",
         "Arbitrum's standard bridge contracts",
@@ -4554,8 +4554,8 @@
       "id": 413,
       "question": "A Base transaction's L1 security fee varies directly with:",
       "options": [
-        "L2 block utilization \u2014 when L2 is busy, the L1 fee increases",
-        "L1 congestion \u2014 when Ethereum gas is high, the L1 security fee increases",
+        "L2 block utilization — when L2 is busy, the L1 fee increases",
+        "L1 congestion — when Ethereum gas is high, the L1 security fee increases",
         "The transaction's gas limit on L2",
         "The number of Base validators"
       ],
@@ -4719,10 +4719,10 @@
       "id": 428,
       "question": "Which of the following is NOT a valid bridge option for Base?",
       "options": [
-        "Arbitrum Bridge for Arbitrum\u2194Base transfers",
-        "The Base Bridge for L1\u2194L2 transfers",
+        "Arbitrum Bridge for Arbitrum↔Base transfers",
+        "The Base Bridge for L1↔L2 transfers",
         "CCTP for native USDC transfers",
-        "Solana Bridge for Solana\u2194Base transfers"
+        "Solana Bridge for Solana↔Base transfers"
       ],
       "correctIndex": 0
     },
@@ -4995,8 +4995,8 @@
       "question": "Which statement about Base bridging is TRUE?",
       "options": [
         "The Base Bridge and CCTP serve the same purpose for all tokens",
-        "The Base Bridge handles L1\u2194L2 transfers (any asset) while CCTP handles native USDC cross-chain transfers",
-        "CCTP is exclusive to Solana\u2194Base transfers",
+        "The Base Bridge handles L1↔L2 transfers (any asset) while CCTP handles native USDC cross-chain transfers",
+        "CCTP is exclusive to Solana↔Base transfers",
         "The Base Bridge only supports ETH transfers"
       ],
       "correctIndex": 1
@@ -5030,7 +5030,7 @@
         "L2 to L1 withdrawals only",
         "L1 to L2 deposits only",
         "Both deposits and withdrawals",
-        "Neither \u2014 the 7-day period applies to all Base transactions"
+        "Neither — the 7-day period applies to all Base transactions"
       ],
       "correctIndex": 0
     },
@@ -5126,10 +5126,10 @@
       "id": 465,
       "question": "The minimum amount of time to double the base fee on Base is:",
       "options": [
-        "9 blocks \u00d7 2s = 18 seconds",
-        "18 blocks \u00d7 2s = 36 seconds",
-        "36 blocks \u00d7 2s = 72 seconds",
-        "72 blocks \u00d7 2s = 144 seconds"
+        "9 blocks × 2s = 18 seconds",
+        "18 blocks × 2s = 36 seconds",
+        "36 blocks × 2s = 72 seconds",
+        "72 blocks × 2s = 144 seconds"
       ],
       "correctIndex": 1
     },
@@ -5247,10 +5247,10 @@
       "id": 476,
       "question": "Every Base transaction has how many distinct costs?",
       "options": [
-        "Two \u2014 an L2 execution fee and an L1 security fee",
-        "One \u2014 the execution fee",
-        "Three \u2014 execution, storage, and data fees",
-        "Four \u2014 gas, priority, bridge, and protocol fees"
+        "Two — an L2 execution fee and an L1 security fee",
+        "One — the execution fee",
+        "Three — execution, storage, and data fees",
+        "Four — gas, priority, bridge, and protocol fees"
       ],
       "correctIndex": 0
     },
@@ -5258,7 +5258,7 @@
       "id": 477,
       "question": "If an Ethereum reorg occurs, what could happen to Base?",
       "options": [
-        "Nothing \u2014 Base is completely independent of Ethereum's consensus",
+        "Nothing — Base is completely independent of Ethereum's consensus",
         "It can cause a reorg on Base because Base depends on Ethereum for data availability",
         "Base increases its block time to compensate",
         "Base pauses block production until Ethereum stabilizes"
@@ -5283,7 +5283,7 @@
         "CCTP is slower than the Base Bridge",
         "CCTP only works on testnet",
         "The Base Bridge only supports USDC",
-        "CCTP is a Circle-operated protocol for native USDC transfers, while the Base Bridge handles general L1\u2194L2 transfers"
+        "CCTP is a Circle-operated protocol for native USDC transfers, while the Base Bridge handles general L1↔L2 transfers"
       ],
       "correctIndex": 3
     },
@@ -5599,7 +5599,7 @@
       "id": 508,
       "question": "What makes the L1 security fee on Base variable?",
       "options": [
-        "It depends on L1 congestion \u2014 when Ethereum gas is expensive, posting data costs more",
+        "It depends on L1 congestion — when Ethereum gas is expensive, posting data costs more",
         "It is voted on by Base token holders every block",
         "It depends on how many validators are online",
         "It is set by the Base sequencer based on profitability targets"
@@ -5610,9 +5610,9 @@
       "id": 509,
       "question": "Which of the following is NOT a bridge or protocol available on Base?",
       "options": [
-        "Base Bridge for L1\u2194L2 transfers",
-        "zkSync Bridge for zkSync\u2194Base transfers",
-        "Solana Bridge for Solana\u2194Base transfers",
+        "Base Bridge for L1↔L2 transfers",
+        "zkSync Bridge for zkSync↔Base transfers",
+        "Solana Bridge for Solana↔Base transfers",
         "CCTP for native USDC transfers"
       ],
       "correctIndex": 1
@@ -5863,10 +5863,10 @@
       "id": 532,
       "question": "Flashblock Inclusion's 'Under 0.001% reorg probability' means the chance of a reorg is:",
       "options": [
-        "Extremely low \u2014 less than 1 in 100,000",
-        "Moderate \u2014 about 1 in 1,000",
-        "High \u2014 about 1 in 100",
-        "Certain \u2014 every Flashblock eventually reorgs"
+        "Extremely low — less than 1 in 100,000",
+        "Moderate — about 1 in 1,000",
+        "High — about 1 in 100",
+        "Certain — every Flashblock eventually reorgs"
       ],
       "correctIndex": 0
     },
@@ -5930,8 +5930,8 @@
       "question": "A user bridges USDC from Solana to Base. Which infrastructure do they use?",
       "options": [
         "The Base Bridge which connects to all chains",
-        "CCTP which is restricted to Ethereum\u2194Base only",
-        "The Solana Bridge for Solana\u2194Base transfers",
+        "CCTP which is restricted to Ethereum↔Base only",
+        "The Solana Bridge for Solana↔Base transfers",
         "An Optimism bridge via a detour through Ethereum"
       ],
       "correctIndex": 2
@@ -9109,7 +9109,7 @@
       "options": [
         "It is smaller than most other L2s' gas limits",
         "It is the same as Ethereum L1's block gas limit",
-        "It is unlimited \u2014 there is no block gas limit on Base",
+        "It is unlimited — there is no block gas limit on Base",
         "It is larger than Ethereum L1's 30M and competitive with other L2s"
       ],
       "correctIndex": 3,
@@ -9406,7 +9406,7 @@
       "options": [
         "Developers must rewrite contracts in a new language",
         "Base offers higher security than Ethereum L1",
-        "No changes needed \u2014 EVM equivalence means same code, same tools, but lower fees",
+        "No changes needed — EVM equivalence means same code, same tools, but lower fees",
         "Base has no gas limits unlike Ethereum L1"
       ],
       "correctIndex": 2,
@@ -10427,10 +10427,10 @@
     {
       "question": "Base vs Solana: Which ecosystem would a developer choose for EVM tool compatibility?",
       "options": [
-        "Solana \u2014 it has broader EVM tool support",
+        "Solana — it has broader EVM tool support",
         "Neither supports Ethereum developer tools",
         "Both support Hardhat, Foundry, and Remix equally",
-        "Base \u2014 as an EVM-equivalent L2, it supports all standard Ethereum developer tools"
+        "Base — as an EVM-equivalent L2, it supports all standard Ethereum developer tools"
       ],
       "correctIndex": 3,
       "id": 947
@@ -10526,8 +10526,8 @@
     {
       "question": "Base vs Ethereum L1: Which chain has higher throughput for simple token transfers?",
       "options": [
-        "Base \u2014 its larger block gas limit and faster block time provide higher throughput",
-        "Ethereum L1 \u2014 it processes more transactions per second",
+        "Base — its larger block gas limit and faster block time provide higher throughput",
+        "Ethereum L1 — it processes more transactions per second",
         "Both have identical throughput",
         "Neither can process token transfers"
       ],
@@ -10606,7 +10606,7 @@
         "Only Hardhat",
         "Only Remix",
         "Only a Base-specific SDK called BaseForge",
-        "Hardhat, Foundry, and Remix \u2014 the same tools as Ethereum"
+        "Hardhat, Foundry, and Remix — the same tools as Ethereum"
       ],
       "correctIndex": 3,
       "id": 963

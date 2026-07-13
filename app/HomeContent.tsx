@@ -191,6 +191,17 @@ function QuizApp() {
     return () => window.removeEventListener('storage', handleStorage)
   }, [])
 
+  // Re-sync cooldown from chain when tab becomes visible (fixes background tab timer drift)
+  useEffect(() => {
+    const handleVisibilityChange = () => {
+      if (document.visibilityState === 'visible' && isConnected && address) {
+        setGlobalRefreshKey(k => k + 1)
+      }
+    }
+    document.addEventListener('visibilitychange', handleVisibilityChange)
+    return () => document.removeEventListener('visibilitychange', handleVisibilityChange)
+  }, [isConnected, address])
+
   // Timer for cooldown
   useEffect(() => {
     if (cooldownRemaining <= 0) return
