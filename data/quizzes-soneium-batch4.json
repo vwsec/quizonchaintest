@@ -1,0 +1,666 @@
+{
+  "meta": {
+    "topic": "Soneium Fees",
+    "batch": 4,
+    "question_count": 50,
+    "source": "Soneium Fees documentation (L2 execution fee, L1 security fee, EIP-1559, fee variability, OP Stack fee docs)",
+    "generated_at": "2025-07-13",
+    "difficulty_distribution": {
+      "easy": 15,
+      "medium": 20,
+      "hard": 15
+    }
+  },
+  "quizzes": [
+    {
+      "id": "soneium-fees-001",
+      "question": "How many distinct fee components does every Soneium transaction have?",
+      "options": [
+        "One (L2 execution fee only)",
+        "Two (L2 execution fee + L1 security fee)",
+        "Three (L2 execution, L1 security, and priority fee)",
+        "Four (L2 execution, L1 security, priority fee, and tip)"
+      ],
+      "correctIndex": 1,
+      "difficulty": "easy",
+      "type": "direct_fact"
+    },
+    {
+      "id": "soneium-fees-002",
+      "question": "What does the L2 execution fee on Soneium cover?",
+      "options": [
+        "Cost to publish transaction data on Ethereum L1",
+        "Cost to execute the transaction on the L2",
+        "Priority tip for transaction priority",
+        "Gas price on Ethereum L1"
+      ],
+      "correctIndex": 1,
+      "difficulty": "easy",
+      "type": "direct_fact"
+    },
+    {
+      "id": "soneium-fees-003",
+      "question": "What does the L1 security fee on Soneium represent?",
+      "options": [
+        "Cost to execute the transaction on L2",
+        "Estimated cost to publish transaction data on Ethereum L1",
+        "Priority fee for transaction priority",
+        "Base fee for L2 execution"
+      ],
+      "correctIndex": 1,
+      "difficulty": "easy",
+      "type": "direct_fact"
+    },
+    {
+      "id": "soneium-fees-004",
+      "question": "Which fee is typically higher on Soneium: L2 execution fee or L1 security fee?",
+      "options": [
+        "L2 execution fee",
+        "L1 security fee",
+        "They are typically equal",
+        "It varies and neither is consistently higher"
+      ],
+      "correctIndex": 1,
+      "difficulty": "easy",
+      "type": "direct_fact"
+    },
+    {
+      "id": "soneium-fees-005",
+      "question": "Which fee mechanism does Soneium use for BOTH L2 execution fee and L1 security fee?",
+      "options": [
+        "EIP-1559 (EIP-1559 fee mechanism)",
+        "Legacy gas price auction",
+        "EIP-4844 (blob gas)",
+        "Fixed fee per transaction"
+      ],
+      "correctIndex": 0,
+      "difficulty": "easy",
+      "type": "direct_fact"
+    },
+    {
+      "id": "soneium-fees-006",
+      "question": "What causes the L1 security fee on Soneium to vary?",
+      "Options": [
+        "L2 transaction demand",
+        "Ethereum L1 gas prices",
+        "L2 base fee",
+        "Priority fee tips"
+      ],
+      "correctIndex": 1,
+      "difficulty": "easy",
+      "type": "direct_fact"
+    },
+    {
+      "id": "soneium-fees-007",
+      "question": "When is the L1 security fee on Soneium typically lower?",
+      "options": [
+        "Weekdays during high Ethereum activity",
+        "Weekends when Ethereum L1 gas prices are lower",
+        "During high L2 transaction demand",
+        "When L2 base fee is high"
+      ],
+      "correctIndex": 1,
+      "difficulty": "easy",
+      "type": "detail"
+    },
+    {
+      "id": "soneium-fees-008",
+      "question": "What causes the L2 execution fee on Soneium to vary?",
+      "options": [
+        "Ethereum L1 gas prices",
+        "L2 transaction demand",
+        "Ethereum blob gas prices",
+        "Priority fee tips"
+      ],
+      "correctIndex": 1,
+      "difficulty": "easy",
+      "type": "direct_fact"
+    },
+    {
+      "id": "soneium-fees-009",
+      "question": "Which fee mechanism does Soneium use that is the same as Ethereum L1?",
+      "options": [
+        "EIP-1559 fee mechanism",
+        "EIP-4844 blob gas",
+        "EIP-1559 for L2 only, legacy for L1",
+        "Fixed fee schedule"
+      ],
+      "correctIndex": 0,
+      "difficulty": "easy",
+      "type": "direct_fact"
+    },
+    {
+      "id": "soneium-fees-010",
+      "question": "For production dApps on Soneium, what is recommended regarding RPC access?",
+      "options": [
+        "Use public RPC endpoints only",
+        "Run your own RPC node or get an API key from infrastructure partners",
+        "Use only the default public RPC",
+        "Use any public RPC without API keys"
+      ],
+      "correctIndex": 1,
+      "difficulty": "easy",
+      "type": "direct_fact"
+    },
+    {
+      "id": "soneium-fees-011",
+      "question": "Where can developers find additional fee details for Soneium?",
+      "options": [
+        "Ethereum Yellow Paper",
+        "OP Stack developer documentation",
+        "EIP-1559 specification",
+        "EIP-4844 specification"
+      ],
+      "correctIndex": 1,
+      "difficulty": "easy",
+      "type": "direct_fact"
+    },
+    {
+      "id": "soneium-fees-012",
+      "question": "Which statement about Soneium fees is FALSE?",
+      "options": [
+        "Every transaction has both an L2 execution fee and L1 security fee",
+        "L1 security fee is typically higher than L2 execution fee",
+        "Both fees use the EIP-1559 mechanism",
+        "L2 execution fee varies with Ethereum L1 gas prices"
+      ],
+      "correctIndex": 3,
+      "difficulty": "medium",
+      "type": "negative"
+    },
+    {
+      "id": "soneium-fees-013",
+      "question": "Compared to the L2 execution fee, the L1 security fee on Soneium is typically:",
+      "options": [
+        "Lower",
+        "Higher",
+        "Equal",
+        "Unrelated"
+      ],
+      "correctIndex": 1,
+      "difficulty": "medium",
+      "type": "comparison"
+    },
+    {
+      "id": "soneium-fees-014",
+      "question": "If Ethereum L1 gas prices spike on a weekday, what happens to Soneium's L1 security fee?",
+      "options": [
+        "It decreases",
+        "It increases",
+        "It stays the same",
+        "It becomes zero"
+      ],
+      "correctIndex": 1,
+      "difficulty": "medium",
+      "type": "scenario"
+    },
+    {
+      "id": "soneium-fees-015",
+      "question": "A user submits a transaction on Soneium during a weekend when Ethereum L1 gas is low. What happens to the L1 security fee?",
+      "options": [
+        "It increases significantly",
+        "It decreases",
+        "It stays the same as weekdays",
+        "It becomes zero"
+      ],
+      "correctIndex": 1,
+      "difficulty": "medium",
+      "type": "scenario"
+    },
+    {
+      "id": "soneium-fees-016",
+      "question": "When L2 transaction demand on Soneium increases significantly, which fee component is most affected?",
+      "options": [
+        "L1 security fee",
+        "L2 execution fee",
+        "Both equally",
+        "Neither"
+      ],
+      "correctIndex": 1,
+      "difficulty": "medium",
+      "type": "scenario"
+    },
+    {
+      "id": "soneium-fees-017",
+      "question": "Both the L2 execution fee and L1 security fee on Soneium use which Ethereum fee mechanism?",
+      "options": [
+        "EIP-1559",
+        "EIP-4844",
+        "EIP-1559 for L2, legacy for L1",
+        "Legacy gas auction"
+      ],
+      "correctIndex": 0,
+      "difficulty": "medium",
+      "type": "detail"
+    },
+    {
+      "id": "soneium-fees-018",
+      "question": "For a production dApp on Soneium, what is the recommended RPC setup?",
+      "options": [
+        "Use any public RPC endpoint",
+        "Run your own RPC node or obtain an API key from infrastructure partners",
+        "Use only the default public RPC without API key",
+        "Use only WebSocket connections"
+      ],
+      "correctIndex": 1,
+      "difficulty": "medium",
+      "type": "direct_fact"
+    },
+    {
+      "id": "soneium-fees-019",
+      "question": "Which documentation contains additional fee details for Soneium beyond the core facts?",
+      "options": [
+        "Ethereum Yellow Paper",
+        "OP Stack developer documentation",
+        "EIP-1559 specification",
+        "EIP-4844 specification"
+      ],
+      "correctIndex": 1,
+      "difficulty": "medium",
+      "type": "direct_fact"
+    },
+    {
+      "id": "soneium-fees-020",
+      "question": "Which statement correctly describes the relationship between L1 and L2 fees on Soneium?",
+      "options": [
+        "L2 fee > L1 fee typically",
+        "L1 fee > L2 fee typically",
+        "L1 fee = L2 fee always",
+        "L1 fee is fixed, L2 fee varies"
+      ],
+      "correctIndex": 1,
+      "difficulty": "medium",
+      "type": "comparison"
+    },
+    {
+      "id": "soneium-fees-021",
+      "question": "If Ethereum L1 gas price is 50 gwei on a weekday and drops to 10 gwei on a weekend, how does the L1 security fee on Soneium change?",
+      "options": [
+        "Increases 5x",
+        "Decreases significantly (roughly 5x lower)",
+        "Remains unchanged",
+        "Becomes zero"
+      ],
+      "correctIndex": 1,
+      "difficulty": "medium",
+      "type": "scenario"
+    },
+    {
+      "id": "soneium-fees-022",
+      "question": "Which of the following does NOT affect the L1 security fee on Soneium?",
+      "options": [
+        "Ethereum L1 gas prices",
+        "Ethereum L1 network congestion",
+        "Soneium L2 transaction demand",
+        "Weekend vs weekday Ethereum activity"
+      ],
+      "correctIndex": 2,
+      "difficulty": "medium",
+      "type": "negative"
+    },
+    {
+      "id": "soneium-fees-023",
+      "question": "Which of the following does NOT affect the L2 execution fee on Soneium?",
+      "options": [
+        "L2 transaction demand",
+        "L2 base fee",
+        "Ethereum L1 gas prices",
+        "L2 network congestion"
+      ],
+      "correctIndex": 2,
+      "difficulty": "medium",
+      "type": "negative"
+    },
+    {
+      "id": "soneium-fees-024",
+      "question": "What fee mechanism do Soneium's L2 execution fee and L1 security fee share with Ethereum L1?",
+      "options": [
+        "EIP-1559 base fee + priority fee mechanism",
+        "EIP-4844 blob gas",
+        "EIP-1559 for L2 only, legacy for L1",
+        "Fixed gas price"
+      ],
+      "correctIndex": 0,
+      "difficulty": "medium",
+      "type": "detail"
+    },
+    {
+      "id": "soneium-fees-025",
+      "question": "A developer is building a production dApp on Soneium. What infrastructure setup is recommended?",
+      "options": [
+        "Use the default public RPC endpoint",
+        "Run their own RPC node or get an API key from infrastructure partners",
+        "Use any free public RPC without authentication",
+        "Only use WebSocket connections"
+      ],
+      "correctIndex": 1,
+      "difficulty": "medium",
+      "type": "scenario"
+    },
+    {
+      "id": "soneium-fees-026",
+      "question": "Where should developers look for additional fee details specific to Soneium's OP Stack implementation?",
+      "options": [
+        "Ethereum Yellow Paper",
+        "EIP-1559 specification",
+        "OP Stack developer documentation",
+        "EIP-4844 specification"
+      ],
+      "correctIndex": 2,
+      "difficulty": "medium",
+      "type": "direct_fact"
+    },
+    {
+      "id": "soneium-fees-027",
+      "question": "Which fee component on Soneium is an estimate rather than an exact cost?",
+      "options": [
+        "L2 execution fee",
+        "L1 security fee",
+        "Both are exact",
+        "Both are estimates"
+      ],
+      "correctIndex": 1,
+      "difficulty": "hard",
+      "type": "detail"
+    },
+    {
+      "id": "soneium-fees-028",
+      "question": "Why is the L1 security fee on Soneium described as an 'estimated cost'?",
+      "options": [
+        "It's a fixed fee that doesn't change",
+        "It's estimated based on current L1 gas prices at submission time",
+        "It's always exactly the L1 gas cost",
+        "It's a fixed percentage of the L2 fee"
+      ],
+      "correctIndex": 1,
+      "difficulty": "hard",
+      "type": "detail"
+    },
+    {
+      "id": "soneium-fees-029",
+      "question": "If a user submits a transaction on Soneium when L1 gas is 30 gwei, but by the time it's posted to L1 gas is 50 gwei, what happens to the L1 security fee?",
+      "options": [
+        "User pays based on 30 gwei estimate",
+        "User pays based on 50 gwei actual cost",
+        "User pays the average (40 gwei)",
+        "Transaction fails"
+      ],
+      "correctIndex": 1,
+      "difficulty": "hard",
+      "type": "scenario"
+    },
+    {
+      "id": "soneium-fees-030",
+      "question": "How does the EIP-1559 mechanism on Soneium's L2 differ from Ethereum L1's EIP-1559?",
+      "options": [
+        "It uses a different base fee calculation",
+        "It uses the same EIP-1559 mechanism",
+        "It uses legacy gas auction",
+        "It uses EIP-4844 blob gas"
+      ],
+      "correctIndex": 1,
+      "difficulty": "hard",
+      "type": "comparison"
+    },
+    {
+      "id": "soneium-fees-031",
+      "question": "A dApp developer notices higher fees on Soneium during weekdays vs weekends. Which fee component is primarily responsible?",
+      "options": [
+        "L2 execution fee",
+        "L1 security fee",
+        "Both equally",
+        "Priority fee"
+      ],
+      "correctIndex": 1,
+      "difficulty": "hard",
+      "type": "scenario"
+    },
+    {
+      "id": "soneium-fees-032",
+      "question": "Which fee on Soneium is more sensitive to Ethereum L1 network conditions?",
+      "options": [
+        "L2 execution fee",
+        "L1 security fee",
+        "Both equally",
+        "Neither"
+      ],
+      "correctIndex": 1,
+      "difficulty": "hard",
+      "type": "comparison"
+    },
+    {
+      "id": "soneium-fees-033",
+      "question": "Which fee on Soneium is more sensitive to L2 network activity?",
+      "options": [
+        "L1 security fee",
+        "L2 execution fee",
+        "Both equally",
+        "Neither"
+      ],
+      "correctIndex": 1,
+      "difficulty": "hard",
+      "type": "comparison"
+    },
+    {
+      "id": "soneium-fees-034",
+      "question": "What happens to the L2 execution fee when there's a surge in Soneium transaction volume?",
+      "options": [
+        "It decreases",
+        "It increases",
+        "It stays constant",
+        "It becomes zero"
+      ],
+      "correctIndex": 1,
+      "difficulty": "hard",
+      "type": "scenario"
+    },
+    {
+      "id": "soneium-fees-035",
+      "question": "Both Soneium L2 execution fee and L1 security fee use EIP-1559. What does this mean for fee calculation?",
+      "options": [
+        "Both use base fee + priority fee structure",
+        "Both use fixed gas price",
+        "L2 uses EIP-1559, L1 uses legacy",
+        "Both use EIP-4844 blob gas"
+      ],
+      "correctIndex": 0,
+      "difficulty": "hard",
+      "type": "detail"
+    },
+    {
+      "id": "soneium-fees-036",
+      "question": "For production dApps on Soneium, why is running your own RPC node or getting an API key recommended?",
+      "options": [
+        "Public RPCs don't support EIP-1559",
+        "Public RPCs may have rate limits and reliability issues for production",
+        "Public RPCs charge higher fees",
+        "Public RPCs don't support L1 security fees"
+      ],
+      "correctIndex": 1,
+      "difficulty": "hard",
+      "type": "scenario"
+    },
+    {
+      "id": "soneium-fees-037",
+      "question": "Where would a developer find detailed fee parameters specific to Soneium's OP Stack implementation?",
+      "options": [
+        "EIP-1559 specification",
+        "Ethereum Yellow Paper",
+        "OP Stack developer documentation",
+        "EIP-4844 specification"
+      ],
+      "correctIndex": 2,
+      "difficulty": "hard",
+      "type": "direct_fact"
+    },
+    {
+      "id": "soneium-fees-038",
+      "question": "Which statement about Soneium's fee structure is incorrect?",
+      "options": [
+        "Every transaction has two fee components",
+        "L1 security fee varies with Ethereum L1 gas prices",
+        "L2 execution fee varies with L2 transaction demand",
+        "L1 security fee is typically lower than L2 execution fee"
+      ],
+      "correctIndex": 3,
+      "difficulty": "hard",
+      "type": "negative"
+    },
+    {
+      "id": "soneium-fees-039",
+      "question": "If a transaction on Soneium has an L2 execution fee of 0.0001 ETH and L1 security fee of 0.0005 ETH, which is higher and is this typical?",
+      "options": [
+        "L2 fee is higher; this is atypical",
+        "L1 fee is higher; this is typical",
+        "They are equal; this is typical",
+        "L2 fee is higher; this is typical"
+      ],
+      "correctIndex": 1,
+      "difficulty": "hard",
+      "type": "comparison"
+    },
+    {
+      "id": "soneium-fees-040",
+      "question": "How does the EIP-1559 base fee mechanism work on Soneium's L2?",
+      "options": [
+        "Same as Ethereum L1: base fee adjusts based on L2 block utilization",
+        "Fixed base fee set by Soneium governance",
+        "Based on Ethereum L1 base fee",
+        "Based on L1 blob gas price"
+      ],
+      "correctIndex": 0,
+      "difficulty": "hard",
+      "type": "detail"
+    },
+    {
+      "id": "soneium-fees-041",
+      "question": "What is the primary driver of L1 security fee variability on Soneium?",
+      "options": [
+        "Soneium L2 transaction volume",
+        "Ethereum L1 gas market conditions",
+        "Soneium L2 base fee",
+        "Priority fee tips on L2"
+      ],
+      "correctIndex": 1,
+      "difficulty": "hard",
+      "type": "detail"
+    },
+    {
+      "id": "soneium-fees-042",
+      "question": "A user wants to minimize total transaction cost on Soneium. When should they transact?",
+      "options": [
+        "Weekday during high Ethereum activity",
+        "Weekend when Ethereum L1 gas prices are typically lower",
+        "When L2 transaction demand is highest",
+        "Time of day doesn't matter"
+      ],
+      "correctIndex": 1,
+      "difficulty": "hard",
+      "type": "scenario"
+    },
+    {
+      "id": "soneium-fees-043",
+      "question": "Which of the following is NOT a source of fee information for Soneium developers?",
+      "options": [
+        "OP Stack developer documentation",
+        "Soneium-specific fee documentation",
+        "EIP-1559 specification (for fee mechanism)",
+        "Ethereum Yellow Paper (for fee parameters)"
+      ],
+      "correctIndex": 3,
+      "difficulty": "hard",
+      "type": "negative"
+    },
+    {
+      "id": "soneium-fees-044",
+      "question": "How does the L1 security fee estimation work on Soneium?",
+      "options": [
+        "Fixed fee per transaction",
+        "Estimated based on current Ethereum L1 gas prices at time of submission",
+        "Calculated after transaction is finalized on L1",
+        "Based on L2 gas used multiplied by L1 gas price"
+      ],
+      "correctIndex": 1,
+      "difficulty": "hard",
+      "type": "detail"
+    },
+    {
+      "id": "soneium-fees-045",
+      "question": "If Ethereum L1 implements EIP-4844 (blobs), how would this affect Soneium's L1 security fee?",
+      "options": [
+        "Would eliminate L1 security fee entirely",
+        "Would reduce L1 security fee since blob gas is cheaper than calldata gas",
+        "Would increase L1 security fee",
+        "No effect - Soneium doesn't use Ethereum for data availability"
+      ],
+      "correctIndex": 1,
+      "difficulty": "hard",
+      "type": "scenario"
+    },
+    {
+      "id": "soneium-fees-046",
+      "question": "Which statement correctly describes the fee relationship between Soneium L2 and Ethereum L1?",
+      "options": [
+        "Soneium L2 fees are a subset of L1 fees",
+        "Soneium has its own L2 fee + pays L1 for security (data availability)",
+        "Soneium fees are paid directly to Ethereum validators",
+        "Soneium has no L1 fee component"
+      ],
+      "correctIndex": 1,
+      "difficulty": "hard",
+      "type": "comparison"
+    },
+    {
+      "id": "soneium-fees-047",
+      "question": "What is the fee implication for a dApp that uses a public RPC endpoint vs running their own node on Soneium?",
+      "options": [
+        "Higher transaction fees on public RPC",
+        "Public RPCs may have rate limits affecting reliability, not transaction fees",
+        "Lower transaction fees on public RPC",
+        "No difference in transaction fees"
+      ],
+      "correctIndex": 1,
+      "difficulty": "hard",
+      "type": "scenario"
+    },
+    {
+      "id": "soneium-fees-048",
+      "question": "Which fee component is an estimate at the time of transaction submission?",
+      "options": [
+        "L2 execution fee",
+        "L1 security fee",
+        "Both are exact",
+        "Both are estimates"
+      ],
+      "correctIndex": 1,
+      "difficulty": "hard",
+      "type": "detail"
+    },
+    {
+      "id": "soneium-fees-049",
+      "question": "How do EIP-1559 base fees on Soneium L2 respond to network demand?",
+      "options": [
+        "They are fixed by governance",
+        "They increase when L2 blocks are >50% full, decrease when <50% full",
+        "They track Ethereum L1 base fee exactly",
+        "They are based on L1 blob gas price"
+      ],
+      "correctIndex": 1,
+      "difficulty": "hard",
+      "type": "detail"
+    },
+    {
+      "id": "soneium-fees-050",
+      "question": "A developer building on Soneium wants to estimate total transaction costs for users. Which two fee components must they account for?",
+      "options": [
+        "L2 base fee + L2 priority fee",
+        "L2 execution fee + L1 security fee",
+        "L1 base fee + L1 priority fee",
+        "L2 execution fee + L1 blob fee"
+      ],
+      "correctIndex": 1,
+      "difficulty": "hard",
+      "type": "scenario"
+    }
+  ]
+}

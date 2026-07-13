@@ -1,0 +1,663 @@
+{
+  "meta": {
+    "title": "Soneium FAQ — Consensus, Native Token, Canonical Bridge, EVM Opcodes, OP Stack Differences, Minato Testnet",
+    "topic": "Soneium FAQ",
+    "totalQuestions": 50,
+    "difficulty": "intermediate",
+    "source": "Soneium FAQ (Consensus, Native Token, Canonical Bridge, EVM Opcodes, OP Stack differences, Minato Testnet)",
+    "tags": ["Soneium", "Optimism OP Stack", "Optimistic Rollup", "Ethereum", "Minato Testnet", "Canonical Bridge", "EVM Opcodes"],
+    "createdAt": "2025-07-13T00:00:00Z"
+  },
+  "quizzes": [
+    {
+      "id": "soneium-faq-001",
+      "question": "What consensus mechanism does Soneium rely on for finality?",
+      "type": "multiple_choice",
+      "options": [
+        "Its own Proof-of-Stake validator set",
+        "Ethereum's Proof-of-Stake consensus (parent chain)",
+        "Proof-of-Authority with designated sequencers",
+        "A dedicated Proof-of-Stake validator set on Soneium"
+      ],
+      "correctIndex": 1,
+      "explanation": "Soneium operates as an Optimistic Rollup on the Optimism OP Stack and relies on Ethereum's Proof-of-Stake consensus for finality, not its own validator set."
+    },
+    {
+      "id": "soneium-faq-002",
+      "question": "Which consensus mechanism does the Soneium Optimistic Rollup inherit finality from?",
+      "type": "multiple_choice",
+      "options": [
+        "Its own Proof-of-Stake validator set",
+        "Ethereum's Proof-of-Stake consensus on the parent chain",
+        "A dedicated Proof-of-Authority validator set",
+        "Optimism's standalone Proof-of-Stake network"
+      ],
+      "correctIndex": 1,
+      "explanation": "Soneium is an Optimistic Rollup built on the Optimism OP Stack and relies on Ethereum's Proof-of-Stake consensus on the parent chain (Ethereum Mainnet or Sepolia) for finality."
+    },
+    {
+      "id": "soneium-faq-003",
+      "question": "What is the consensus mechanism used by Soneium?",
+      "type": "multiple_choice",
+      "options": [
+        "Optimistic Rollup consensus with its own validators",
+        "Ethereum's Proof-of-Stake via the OP Stack Optimistic Rollup",
+        "Proof-of-Authority with a permissioned sequencer set",
+        "Delegated Proof-of-Stake with elected sequencers"
+      ],
+      "correctIndex": 1,
+      "explanation": "Soneium uses the Optimism OP Stack and operates as an Optimistic Rollup, relying on Ethereum's Proof-of-Stake consensus for finality."
+    },
+    {
+      "id": "soneium-faq-004",
+      "question": "Does Soneium have its own native token for gas fees?",
+      "type": "multiple_choice",
+      "options": [
+        "Yes, SONE is the native gas token with 18 decimals",
+        "Yes, SON is the native gas token with 18 decimals",
+        "No, ETH is the native gas token with 18 decimals",
+        "Yes, SONE is the native gas token with 6 decimals"
+      ],
+      "correctIndex": 2,
+      "explanation": "Soneium has NO native token planned. The native gas token is ETH with 18 decimals, inherited from Ethereum as the parent chain."
+    },
+    {
+      "id": "soneium-faq-005",
+      "question": "What is Soneium's native gas token and how many decimals does it have?",
+      "type": "multiple_choice",
+      "options": [
+        "SONE token, 18 decimals",
+        "SON token, 18 decimals",
+        "ETH, 18 decimals",
+        "ETH, 6 decimals"
+      ],
+      "correctIndex": 2,
+      "explanation": "Soneium has NO native token. The native gas token is ETH (Ethereum's native token) with 18 decimals, inherited from the Ethereum parent chain."
+    },
+    {
+      "id": "soneium-faq-006",
+      "question": "Which statement about Soneium's native token is correct?",
+      "type": "multiple_choice",
+      "options": [
+        "Soneium has a native token called SONE with 18 decimals used for gas",
+        "Soneium has a native token called SON with 6 decimals used for gas",
+        "Soneium has NO native token; ETH (18 decimals) is the native gas token",
+        "Soneium uses OP token as its native gas token with 18 decimals"
+      ],
+      "correctIndex": 2,
+      "explanation": "Soneium explicitly states NO native token is planned. ETH (18 decimals) serves as the native gas token, inherited from Ethereum."
+    },
+    {
+      "id": "soneium-faq-007",
+      "question": "Which statement about Soneium's native token is FALSE?",
+      "type": "multiple_choice",
+      "options": [
+        "Soneium has no native token planned",
+        "ETH is the native gas token with 18 decimals",
+        "Soneium has a native token called SONE used for gas fees",
+        "ETH serves as the native gas token inherited from Ethereum"
+      ],
+      "correctIndex": 2,
+      "explanation": "The false statement is that Soneium has a native token called SONE. Soneium explicitly states NO native token is planned; ETH (18 decimals) is the gas token."
+    },
+    {
+      "id": "soneium-faq-008",
+      "question": "Does Soneium have a canonical bridge to Ethereum?",
+      "type": "multiple_choice",
+      "options": [
+        "No, it relies solely on third-party bridges",
+        "Yes, documented on the Superchain Bridges page",
+        "Yes, but only through third-party bridges like Hop and Across",
+        "No, bridging is only available through centralized exchanges"
+      ],
+      "correctIndex": 1,
+      "explanation": "Yes, Soneium has a canonical bridge. The FAQ directs users to the Superchain Bridges page for canonical bridge information."
+    },
+    {
+      "id": "soneium-faq-009",
+      "question": "Where can users find information about Soneium's canonical bridge?",
+      "type": "multiple_choice",
+      "options": [
+        "Soneium's official bridge documentation page",
+        "The Superchain Bridges page",
+        "The Optimism Bridge documentation",
+        "The Ethereum Bridge documentation"
+      ],
+      "correctIndex": 1,
+      "explanation": "The Soneium FAQ explicitly refers users to the Superchain Bridges page for canonical bridge information."
+    },
+    {
+      "id": "soneium-faq-010",
+      "question": "Which statement about Soneium's canonical bridge is TRUE?",
+      "type": "multiple_choice",
+      "options": [
+        "Soneium has no canonical bridge; only third-party bridges exist",
+        "Soneium's canonical bridge is documented on the Superchain Bridges page",
+        "Soneium's canonical bridge is the same as the Optimism Gateway",
+        "Soneium only supports bridging via centralized exchanges"
+      ],
+      "correctIndex": 1,
+      "explanation": "The Soneium FAQ explicitly states 'YES' to having a canonical bridge and refers users to the Superchain Bridges page."
+    },
+    {
+      "id": "soneium-faq-011",
+      "question": "Which EVM opcodes does Soneium support?",
+      "type": "multiple_choice",
+      "options": [
+        "Only a subset of EVM opcodes; most are disabled",
+        "All standard EVM opcodes; differences from Ethereum are documented in OP chain docs",
+        "Only EVM opcodes from the Berlin hard fork",
+        "A custom opcode set incompatible with standard EVM"
+      ],
+      "correctIndex": 1,
+      "explanation": "Soneium supports standard EVM opcodes. Differences from Ethereum are documented in the OP chain documentation on opcode differences."
+    },
+    {
+      "id": "soneium-faq-012",
+      "question": "Where can developers find the differences between Soneium's EVM opcodes and Ethereum's?",
+      "type": "multiple_choice",
+      "options": [
+        "Soneium's official documentation only",
+        "The Optimism OP chain documentation on opcode differences",
+        "The Ethereum Yellow Paper",
+        "The Solidity documentation"
+      ],
+      "correctIndex": 1,
+      "explanation": "The Soneium FAQ states that EVM opcode differences from Ethereum are documented in the OP chain documentation (Optimism OP chain docs)."
+    },
+    {
+      "id": "soneium-faq-013",
+      "question": "Which statement about Soneium's EVM opcode support is TRUE?",
+      "type": "multiple_choice",
+      "options": [
+        "Soneium uses a completely different opcode set from Ethereum",
+        "Soneium supports standard EVM opcodes; differences from Ethereum are in OP chain docs",
+        "Soneium only supports pre-Istanbul EVM opcodes",
+        "Soneium has added custom opcodes not found in Ethereum"
+      ],
+      "correctIndex": 1,
+      "explanation": "Soneium supports standard EVM opcodes. Differences from Ethereum mainnet are documented in the OP chain documentation, not Soneium-specific docs."
+    },
+    {
+      "id": "soneium-faq-014",
+      "question": "What is the primary source for understanding differences between Soneium (OP Stack) and Ethereum?",
+      "type": "multiple_choice",
+      "options": [
+        "Soneium's official developer documentation only",
+        "The Optimism OP chain documentation on differences from Ethereum",
+        "The Ethereum Yellow Paper",
+        "The Solidity language documentation"
+      ],
+      "correctIndex": 1,
+      "explanation": "The Soneium FAQ explicitly states: 'Refer to OP chain documentation on differences' when asked about differences from Ethereum."
+    },
+    {
+      "id": "soneium-faq-015",
+      "question": "Where should developers look to understand the differences between Soneium (OP Stack) and Ethereum?",
+      "type": "multiple_choice",
+      "options": [
+        "Soneium's official documentation only",
+        "Optimism OP chain documentation on differences from Ethereum",
+        "The Ethereum Foundation's specification documents",
+        "The OP Stack specification repository only"
+      ],
+      "correctIndex": 1,
+      "explanation": "The Soneium FAQ explicitly directs developers to 'OP chain documentation on differences' for understanding differences from Ethereum."
+    },
+    {
+      "id": "soneium-faq-016",
+      "question": "Which statement about differences between Soneium and Ethereum is FALSE?",
+      "type": "multiple_choice",
+      "options": [
+        "Differences are documented in the OP chain documentation",
+        "Soneium is built on the Optimism OP Stack",
+        "Soneium has completely different consensus from Ethereum",
+        "Soneium operates as an Optimistic Rollup on Ethereum"
+      ],
+      "correctIndex": 2,
+      "explanation": "Soneium does NOT have completely different consensus — it relies on Ethereum's PoS consensus as an Optimistic Rollup. Differences from Ethereum are documented in OP chain docs."
+    },
+    {
+      "id": "soneium-faq-017",
+      "question": "What is the parent chain for Soneium's Minato Testnet?",
+      "type": "multiple_choice",
+      "options": [
+        "Ethereum Mainnet",
+        "Ethereum Sepolia Testnet",
+        "Optimism Sepolia Testnet",
+        "Arbitrum Sepolia Testnet"
+      ],
+      "correctIndex": 1,
+      "explanation": "The Soneium FAQ states: 'Parent chain: Ethereum Sepolia (Minato Testnet), Ethereum Mainnet (Mainnet)'."
+    },
+    {
+      "id": "soneium-faq-018",
+      "question": "Which Ethereum testnet serves as the parent chain for Soneium's Minato Testnet?",
+      "type": "multiple_choice",
+      "options": [
+        "Ethereum Goerli",
+        "Ethereum Sepolia",
+        "Ethereum Holesky",
+        "Optimism Sepolia"
+      ],
+      "correctIndex": 1,
+      "explanation": "The Soneium FAQ explicitly states: 'Parent chain: Ethereum Sepolia (Minato Testnet)'."
+    },
+    {
+      "id": "soneium-faq-019",
+      "question": "What is the parent chain for Soneium Mainnet?",
+      "type": "multiple_choice",
+      "options": [
+        "Ethereum Sepolia",
+        "Optimism Mainnet",
+        "Ethereum Mainnet",
+        "Arbitrum One"
+      ],
+      "correctIndex": 2,
+      "explanation": "The Soneium FAQ states: 'Parent chain: Ethereum Sepolia (Minato Testnet), Ethereum Mainnet (Mainnet)'."
+    },
+    {
+      "id": "soneium-faq-020",
+      "question": "Which statement about Minato Testnet is TRUE?",
+      "type": "multiple_choice",
+      "options": [
+        "Minato Testnet uses Optimism Mainnet as its parent chain",
+        "Minato Testnet uses Ethereum Sepolia as its parent chain",
+        "Minato Testnet has its own native token for gas",
+        "Minato Testnet uses a different consensus mechanism than Mainnet"
+      ],
+      "correctIndex": 1,
+      "explanation": "The Soneium FAQ states: 'Parent chain: Ethereum Sepolia (Minato Testnet)'. Minato uses Ethereum Sepolia as parent chain and ETH as gas token (no native token), same as Mainnet."
+    },
+    {
+      "id": "soneium-faq-021",
+      "question": "Does Minato Testnet information apply to Soneium Mainnet?",
+      "type": "multiple_choice",
+      "options": [
+        "No, Minato Testnet is completely different from Mainnet",
+        "Yes, Minato Testnet info applies to Mainnet once released",
+        "Only the consensus mechanism applies to Mainnet",
+        "Only the native token information applies to Mainnet"
+      ],
+      "correctIndex": 1,
+      "explanation": "The Soneium FAQ explicitly states: 'Minato Testnet info applies to Mainnet once released'."
+    },
+    {
+      "id": "soneium-faq-022",
+      "question": "Which statement about Minato Testnet and Mainnet is FALSE?",
+      "type": "multiple_choice",
+      "options": [
+        "Minato Testnet uses Ethereum Sepolia as parent chain",
+        "Minato Testnet info applies to Mainnet once released",
+        "Minato Testnet has a different native gas token than Mainnet",
+        "Both Minato and Mainnet use ETH as native gas token"
+      ],
+      "correctIndex": 2,
+      "explanation": "Minato Testnet info applies to Mainnet once released, and both use ETH (18 decimals) as the native gas token with NO native token. The false statement is that they have different gas tokens."
+    },
+    {
+      "id": "soneium-faq-023",
+      "question": "What technology stack is Soneium built on?",
+      "type": "multiple_choice",
+      "options": [
+        "Arbitrum Nitro Stack",
+        "Optimism OP Stack",
+        "Polygon CDK",
+        "zkSync ZK Stack"
+      ],
+      "correctIndex": 1,
+      "explanation": "Soneium is built on the Optimism OP Stack and operates as an Optimistic Rollup."
+    },
+    {
+      "id": "soneium-faq-024",
+      "question": "Which technology stack does Soneium use?",
+      "type": "multiple_choice",
+      "options": [
+        "Optimism OP Stack",
+        "Arbitrum Orbit",
+        "Polygon CDK",
+        "Custom rollup stack"
+      ],
+      "correctIndex": 0,
+      "explanation": "Soneium is built on the Optimism OP Stack, as stated multiple times in the FAQ."
+    },
+    {
+      "id": "soneium-faq-025",
+      "question": "Which of the following is TRUE about Soneium's architecture?",
+      "type": "multiple_choice",
+      "options": [
+        "Built on Arbitrum Orbit with ZK-proofs",
+        "Built on Optimism OP Stack as an Optimistic Rollup",
+        "Built on Polygon CDK with ZK-proofs",
+        "Built on a custom sovereign rollup stack"
+      ],
+      "correctIndex": 1,
+      "explanation": "Soneium uses the Optimism OP Stack and operates as an Optimistic Rollup, relying on Ethereum for consensus."
+    },
+    {
+      "id": "soneium-faq-026",
+      "question": "What type of rollup is Soneium?",
+      "type": "multiple_choice",
+      "options": [
+        "ZK-Rollup",
+        "Optimistic Rollup",
+        "Validium",
+        "Sovereign Rollup"
+      ],
+      "correctIndex": 1,
+      "explanation": "Soneium operates as an Optimistic Rollup built on the Optimism OP Stack."
+    },
+    {
+      "id": "soneium-faq-027",
+      "question": "Which rollup type does Soneium use?",
+      "type": "multiple_choice",
+      "options": [
+        "Zero-Knowledge Rollup (ZK-Rollup)",
+        "Optimistic Rollup",
+        "Validium",
+        "Sovereign Rollup"
+      ],
+      "correctIndex": 1,
+      "explanation": "Soneium operates as an Optimistic Rollup on the Optimism OP Stack."
+    },
+    {
+      "id": "soneium-faq-028",
+      "question": "Where can developers find answers to many Soneium FAQ questions?",
+      "type": "multiple_choice",
+      "options": [
+        "Only in Soneium's official documentation",
+        "In standard OP chain documentation",
+        "Only in the Optimism specification repository",
+        "Only in Ethereum Foundation documentation"
+      ],
+      "correctIndex": 1,
+      "explanation": "The Soneium FAQ states: 'Many answers found in standard OP chain documentation.'"
+    },
+    {
+      "id": "soneium-faq-029",
+      "question": "Where are many Soneium FAQ answers found?",
+      "type": "multiple_choice",
+      "options": [
+        "Soneium's proprietary documentation only",
+        "Standard OP chain documentation",
+        "Ethereum Foundation blog posts",
+        "Optimism governance forum only"
+      ],
+      "correctIndex": 1,
+      "explanation": "The FAQ explicitly states: 'Many answers found in standard OP chain documentation.'"
+    },
+    {
+      "id": "soneium-faq-030",
+      "question": "Which statement about finding Soneium technical details is TRUE?",
+      "type": "multiple_choice",
+      "options": [
+        "All technical details are only in Soneium's docs",
+        "Many answers are found in standard OP chain documentation",
+        "Technical details are only in the Optimism spec repo",
+        "No public documentation exists for Soneium technical details"
+      ],
+      "correctIndex": 1,
+      "explanation": "The Soneium FAQ explicitly states: 'Many answers found in standard OP chain documentation.'"
+    },
+    {
+      "id": "soneium-faq-031",
+      "question": "What is the native gas token on Soneium Minato Testnet?",
+      "type": "multiple_choice",
+      "options": [
+        "MINA token (18 decimals)",
+        "SEP-ETH (Sepolia ETH, 18 decimals)",
+        "Soneium Testnet Token (18 decimals)",
+        "OP token (18 decimals)"
+      ],
+      "correctIndex": 1,
+      "explanation": "Minato Testnet uses Ethereum Sepolia as parent chain. The native gas token is ETH (Sepolia ETH) with 18 decimals, as Soneium has NO native token."
+    },
+    {
+      "id": "soneium-faq-032",
+      "question": "How many decimals does Soneium's native gas token have?",
+      "type": "multiple_choice",
+      "options": [
+        "6 decimals",
+        "8 decimals",
+        "18 decimals",
+        "9 decimals"
+      ],
+      "correctIndex": 2,
+      "explanation": "Soneium uses ETH as its native gas token, which has 18 decimals (inherited from Ethereum)."
+    },
+    {
+      "id": "soneium-faq-033",
+      "question": "If a developer wants to understand EVM opcode differences between Soneium and Ethereum, where should they look?",
+      "type": "multiple_choice",
+      "options": [
+        "Soneium's official EVM reference",
+        "Optimism OP chain documentation on opcode differences",
+        "Ethereum EIP repository",
+        "Solidity compiler documentation"
+      ],
+      "correctIndex": 1,
+      "explanation": "The FAQ directs developers to 'OP chain documentation' for EVM opcode differences from Ethereum."
+    },
+    {
+      "id": "soneium-faq-034",
+      "question": "A developer wants to bridge assets to Soneium Mainnet. Where should they look for the canonical bridge?",
+      "type": "multiple_choice",
+      "options": [
+        "Soneium's custom bridge UI only",
+        "The Superchain Bridges page",
+        "Optimism Gateway only",
+        "Third-party bridge aggregators only"
+      ],
+      "correctIndex": 1,
+      "explanation": "The Soneium FAQ refers users to the Superchain Bridges page for canonical bridge information."
+    },
+    {
+      "id": "soneium-faq-035",
+      "question": "A project wants to deploy on Soneium Minato Testnet. Which Ethereum testnet does Minato settle to?",
+      "type": "multiple_choice",
+      "options": [
+        "Ethereum Goerli",
+        "Ethereum Sepolia",
+        "Ethereum Holesky",
+        "Optimism Sepolia"
+      ],
+      "correctIndex": 1,
+      "explanation": "The Soneium FAQ states: 'Parent chain: Ethereum Sepolia (Minato Testnet)'."
+    },
+    {
+      "id": "soneium-faq-036",
+      "question": "Which statement correctly describes Soneium's relationship to Ethereum consensus?",
+      "type": "multiple_choice",
+      "options": [
+        "Soneium runs its own PoS validators that anchor to Ethereum",
+        "Soneium inherits Ethereum's PoS consensus as an Optimistic Rollup",
+        "Soneium uses Optimism's consensus which is separate from Ethereum",
+        "Soneium uses a PoA consensus with Ethereum as a data availability layer only"
+      ],
+      "correctIndex": 1,
+      "explanation": "Soneium operates as an Optimistic Rollup on the OP Stack, relying on Ethereum's Proof-of-Stake consensus for finality."
+    },
+    {
+      "id": "soneium-faq-037",
+      "question": "What is the relationship between Soneium and the Optimism OP Stack?",
+      "type": "multiple_choice",
+      "options": [
+        "Soneium is a fork of the OP Stack with major modifications",
+        "Soneium is built on the OP Stack and operates as an Optimistic Rollup",
+        "Soneium uses the OP Stack only for the bridge, not execution",
+        "Soneium is a separate stack that is compatible with OP Stack"
+      ],
+      "correctIndex": 1,
+      "explanation": "Soneium is built on the Optimism OP Stack and operates as an Optimistic Rollup, as stated multiple times in the FAQ."
+    },
+    {
+      "id": "soneium-faq-038",
+      "question": "If a smart contract uses standard EVM opcodes, will it work on Soneium?",
+      "type": "multiple_choice",
+      "options": [
+        "No, Soneium uses a custom opcode set",
+        "Yes, Soneium supports standard EVM opcodes (differences in OP chain docs)",
+        "Only if compiled with a special Soneium compiler",
+        "Only if the contract doesn't use storage opcodes"
+      ],
+      "correctIndex": 1,
+      "explanation": "Soneium supports standard EVM opcodes. Differences from Ethereum are documented in OP chain documentation."
+    },
+    {
+      "id": "soneium-faq-039",
+      "question": "Which of the following is NOT a characteristic of Soneium?",
+      "type": "multiple_choice",
+      "options": [
+        "Built on Optimism OP Stack",
+        "Operates as an Optimistic Rollup",
+        "Has a native token called SONE for gas",
+        "Uses ETH (18 decimals) as native gas token"
+      ],
+      "correctIndex": 2,
+      "explanation": "Soneium has NO native token. ETH (18 decimals) is the gas token. The other three statements are true characteristics of Soneium."
+    },
+    {
+      "id": "soneium-faq-040",
+      "question": "A user wants to bridge ETH from Ethereum Mainnet to Soneium Mainnet. Which bridge should they use?",
+      "type": "multiple_choice",
+      "options": [
+        "Only the Optimism Gateway",
+        "The canonical bridge listed on the Superchain Bridges page",
+        "Only third-party bridges like Hop or Across",
+        "Only centralized exchange withdrawals"
+      ],
+      "correctIndex": 1,
+      "explanation": "The Soneium FAQ directs users to the Superchain Bridges page for canonical bridge information."
+    },
+    {
+      "id": "soneium-faq-041",
+      "question": "What is the parent chain for Soneium Mainnet?",
+      "type": "multiple_choice",
+      "options": [
+        "Optimism Mainnet",
+        "Ethereum Mainnet",
+        "Arbitrum One",
+        "Base Mainnet"
+      ],
+      "correctIndex": 1,
+      "explanation": "The FAQ states: 'Parent chain: Ethereum Sepolia (Minato Testnet), Ethereum Mainnet (Mainnet)'."
+    },
+    {
+      "id": "soneium-faq-042",
+      "question": "How does Soneium achieve transaction finality?",
+      "type": "multiple_choice",
+      "options": [
+        "Through its own validator set with BFT consensus",
+        "Through Ethereum's PoS consensus as an Optimistic Rollup",
+        "Through Optimism's sequencer consensus",
+        "Through a Proof-of-Authority validator set"
+      ],
+      "correctIndex": 1,
+      "explanation": "As an Optimistic Rollup on the OP Stack, Soneium relies on Ethereum's Proof-of-Stake consensus for finality."
+    },
+    {
+      "id": "soneium-faq-043",
+      "question": "Which statement about Soneium's canonical bridge is correct?",
+      "type": "multiple_choice",
+      "options": [
+        "Soneium has no canonical bridge",
+        "The canonical bridge is documented on the Superchain Bridges page",
+        "The canonical bridge is only available on Mainnet, not Minato",
+        "The canonical bridge uses a different token standard on Soneium"
+      ],
+      "correctIndex": 1,
+      "explanation": "The FAQ confirms Soneium has a canonical bridge and refers to the Superchain Bridges page."
+    },
+    {
+      "id": "soneium-faq-044",
+      "question": "A developer is porting an Ethereum smart contract to Soneium. Where should they check for EVM differences?",
+      "type": "multiple_choice",
+      "options": [
+        "Soneium-specific EVM documentation only",
+        "Optimism OP chain documentation on EVM differences",
+        "The Solidity breaking changes documentation",
+        "The EVM version changelog in Hardhat"
+      ],
+      "correctIndex": 1,
+      "explanation": "The FAQ states EVM opcode differences from Ethereum are documented in OP chain documentation."
+    },
+    {
+      "id": "soneium-faq-045",
+      "question": "What does the Soneium FAQ say about finding technical answers?",
+      "type": "multiple_choice",
+      "options": [
+        "All answers are in Soneium's docs only",
+        "Many answers found in standard OP chain documentation",
+        "Answers are only in the Optimism GitHub repo",
+        "No public documentation exists for technical details"
+      ],
+      "correctIndex": 1,
+      "explanation": "The FAQ explicitly states: 'Many answers found in standard OP chain documentation.'"
+    },
+    {
+      "id": "soneium-faq-046",
+      "question": "Which testnet uses Ethereum Sepolia as its parent chain?",
+      "type": "multiple_choice",
+      "options": [
+        "Soneium Minato Testnet",
+        "Soneium Mainnet",
+        "Optimism Sepolia",
+        "Arbitrum Sepolia"
+      ],
+      "correctIndex": 0,
+      "explanation": "The FAQ states: 'Parent chain: Ethereum Sepolia (Minato Testnet)'."
+    },
+    {
+      "id": "soneium-faq-047",
+      "question": "If a project launches on Minato Testnet today, what can they expect when Mainnet launches?",
+      "type": "multiple_choice",
+      "options": [
+        "Completely different architecture and token model",
+        "Minato Testnet info applies to Mainnet once released",
+        "Only the consensus mechanism will remain the same",
+        "They must rewrite all contracts for Mainnet"
+      ],
+      "correctIndex": 1,
+      "explanation": "The FAQ explicitly states: 'Minato Testnet info applies to Mainnet once released.'"
+    },
+    {
+      "id": "soneium-faq-048",
+      "question": "Which of the following is a correct pairing of Soneium network and its parent chain?",
+      "type": "multiple_choice",
+      "options": [
+        "Minato Testnet → Optimism Sepolia",
+        "Minato Testnet → Ethereum Sepolia",
+        "Mainnet → Optimism Mainnet",
+        "Mainnet → Ethereum Goerli"
+      ],
+      "correctIndex": 1,
+      "explanation": "The FAQ states: 'Parent chain: Ethereum Sepolia (Minato Testnet), Ethereum Mainnet (Mainnet)'."
+    },
+    {
+      "id": "soneium-faq-049",
+      "question": "What is the consensus model for Soneium Mainnet?",
+      "type": "multiple_choice",
+      "options": [
+        "Independent Proof-of-Stake",
+        "Ethereum Mainnet Proof-of-Stake (via OP Stack Optimistic Rollup)",
+        "Optimism Proof-of-Stake",
+        "Proof-of-Authority with Soneium Foundation validators"
+      ],
+      "correctIndex": 1,
+      "explanation": "Soneium Mainnet uses Ethereum Mainnet as parent chain and relies on Ethereum's PoS consensus as an Optimistic Rollup on the OP Stack."
+    },
+    {
+      "id": "soneium-faq-050",
+      "question": "Which of the following statements about Soneium is entirely accurate based on the FAQ?",
+      "type": "multiple_choice",
+      "options": [
+        "Soneium has a native token SONE, uses OP Stack, and settles to Optimism",
+        "Soneium has no native token, uses ETH as gas, built on OP Stack as Optimistic Rollup, settles to Ethereum",
+        "Soneium uses OP token for gas, built on Arbitrum stack, settles to Ethereum",
+        "Soneium has native token with 6 decimals, uses ZK-Rollup, settles to Ethereum"
+      ],
+      "correctIndex": 1,
+      "explanation": "This option correctly captures: NO native token, ETH (18 decimals) as gas, built on Optimism OP Stack, operates as Optimistic Rollup, settles to Ethereum (Sepolia for Minato, Mainnet for Mainnet)."
+    }
+  ]
+}

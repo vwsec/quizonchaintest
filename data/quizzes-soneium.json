@@ -1,0 +1,131 @@
+{
+  "meta": {
+    "ecosystem": "Soneium",
+    "batchId": "soneium-2026-07-13-merged",
+    "generatedAt": "2026-07-13T07:30:00Z",
+    "totalQuizzes": 20,
+    "questionsPerSession": 5
+  },
+  "quizzes": [
+    {
+      "id": 0,
+      "question": "What is the Chain ID of Soneium Mainnet?",
+      "options": ["1868", "1869", "1", "8453"],
+      "correctIndex": 0
+    },
+    {
+      "id": 1,
+      "question": "What is the native gas token on Soneium?",
+      "options": ["SONE", "SON", "ETH", "OP"],
+      "correctIndex": 2
+    },
+    {
+      "id": 2,
+      "question": "How many decimals does Soneium's native gas token have?",
+      "options": ["6", "8", "18", "9"],
+      "correctIndex": 2
+    },
+    {
+      "id": 3,
+      "question": "What is the RPC endpoint for Soneium Mainnet?",
+      "options": ["https://rpc.soneium.org/", "https://mainnet.soneium.io", "https://soneium-rpc.com", "https://api.soneium.org"],
+      "correctIndex": 0
+    },
+    {
+      "id": 4,
+      "question": "Which technology stack is Soneium built on?",
+      "options": ["Arbitrum Nitro Stack", "Optimism OP Stack", "Polygon CDK", "zkSync ZK Stack"],
+      "correctIndex": 1
+    },
+    {
+      "id": 5,
+      "question": "What type of rollup is Soneium?",
+      "options": ["ZK-Rollup", "Optimistic Rollup", "Validium", "Sovereign Rollup"],
+      "correctIndex": 1
+    },
+    {
+      "id": 6,
+      "question": "Which consensus mechanism does Soneium rely on for finality?",
+      "options": ["Its own Proof-of-Stake validator set", "Ethereum's Proof-of-Stake consensus (parent chain)", "Proof-of-Authority with designated sequencers", "Optimism's standalone Proof-of-Stake network"],
+      "correctIndex": 1
+    },
+    {
+      "id": 7,
+      "question": "What is the parent chain for Soneium Mainnet?",
+      "options": ["Ethereum Sepolia", "Ethereum Mainnet", "Optimism Mainnet", "Arbitrum One"],
+      "correctIndex": 1
+    },
+    {
+      "id": 8,
+      "question": "What is the name of Soneium's testnet?",
+      "options": ["Minato", "Sepolia", "Goerli", "Holesky"],
+      "correctIndex": 0
+    },
+    {
+      "id": 9,
+      "question": "Which Ethereum testnet serves as the parent chain for Soneium Minato Testnet?",
+      "options": ["Goerli", "Sepolia", "Holesky", "Optimism Sepolia"],
+      "correctIndex": 1
+    },
+    {
+      "id": 10,
+      "question": "Does Soneium have a native token planned?",
+      "options": ["Yes, SONE with 18 decimals", "Yes, SON with 6 decimals", "No native token planned; ETH is used for gas", "Yes, OP token is used for gas"],
+      "correctIndex": 2
+    },
+    {
+      "id": 11,
+      "question": "Does Soneium have a canonical bridge to Ethereum?",
+      "options": ["No, only third-party bridges", "Yes, documented on the Superchain Bridges page", "Yes, but only through Hop and Across", "No, bridging only via centralized exchanges"],
+      "correctIndex": 1
+    },
+    {
+      "id": 12,
+      "question": "Where can canonical bridge information for Soneium be found?",
+      "options": ["Ethereum Foundation website", "Superchain Bridges page", "Optimism Gateway", "Base Bridge UI"],
+      "correctIndex": 1
+    },
+    {
+      "id": 13,
+      "question": "Which token list does Soneium use as its reference for tokens deployed on Soneium?",
+      "options": ["Ethereum Mainnet Token List", "Optimism Superchain Token List", "Arbitrum Token List", "Base Token List"],
+      "correctIndex": 1
+    },
+    {
+      "id": 14,
+      "question": "How many steps are in the process to add a token to the Soneium Token List?",
+      "options": ["2 steps", "3 steps", "4 steps", "5 steps"],
+      "correctIndex": 1
+    },
+    {
+      "id": 15,
+      "question": "What is the first step to add a token to the Soneium Token List?",
+      "options": ["Submit a PR to the GitHub repository", "Deploy the token on Soneium using standard bridge contracts", "Await final approval from the Soneium team", "Deploy the token on Optimism Mainnet"],
+      "correctIndex": 1
+    },
+    {
+      "id": 16,
+      "question": "What is the L1 address of the OptimismMintableERC20Factory for Soneium?",
+      "options": ["0x9cf951e3f74b644e621b36ca9cea147a78d4c39f", "0xeb9bf100225c214efc3e7c651ebbadcf85177607", "0xc1047e30efc9e172cfe7aa0219895b6a43fc415f", "0x99c9fc46f92e8a1c0dec1b1747d010903e884be1"],
+      "correctIndex": 2
+    },
+    {
+      "id": 17,
+      "question": "What is the L1StandardBridge address for Soneium?",
+      "options": ["0x9cf951e3f74b644e621b36ca9cea147a78d4c39f", "0xeb9bf100225c214efc3e7c651ebbadcf85177607", "0xc1047e30efc9e172cfe7aa0219895b6a43fc415f", "0x99c9fc46f92e8a1c0dec1b1747d010903e884be1"],
+      "correctIndex": 1
+    },
+    {
+      "id": 18,
+      "question": "What is the L1CrossDomainMessenger address for Soneium?",
+      "options": ["0xeb9bf100225c214efc3e7c651ebbadcf85177607", "0x9cf951e3f74b644e621b36ca9cea147a78d4c39f", "0xc1047e30efc9e172cfe7aa0219895b6a43fc415f", "0x99c9fc46f92e8a1c0dec1b1747d010903e884be1"],
+      "correctIndex": 1
+    },
+    {
+      "id": 19,
+      "question": "How many fee components does every Soneium transaction have?",
+      "options": ["One (L2 execution fee only)", "Two (L2 execution fee + L1 security fee)", "Three (L2 execution, L1 security, and priority fee)", "Four (L2 execution, L1 security, priority fee, and tip)"],
+      "correctIndex": 1
+    }
+  ]
+}

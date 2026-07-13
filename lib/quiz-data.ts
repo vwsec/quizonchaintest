@@ -13,11 +13,19 @@ export interface PoolMeta {
   questionsPerSession: number
 }
 
+export interface QuestionSource {
+  url: string
+  section: string      // heading path, e.g. "## Overview > ### Installation"
+  heading: string      // the specific heading text
+  fetchedAt: string    // ISO8601 timestamp
+}
+
 export interface PoolQuiz {
   id: number
   question: string
   options: string[]
   correctIndex: number
+  source?: QuestionSource  // optional for backward compat with existing pools
 }
 
 export interface PoolData {
