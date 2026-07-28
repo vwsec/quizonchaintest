@@ -1,6 +1,7 @@
 import { createPublicClient, http, type Chain } from 'viem';
 import { quizScoresAbi } from './submitScore';
 import { inkMainnet, soneiumMainnet, base, unichain, megaEth, litvmTestnet, arcTestnet, sepoliaTestnet } from './chains';
+import { fetchLitvmLeaderboard } from './litvm-leaderboard';
 
 export type GlobalPlayer = {
   address: `0x${string}`;
@@ -27,6 +28,15 @@ export async function getChainLeaderboard(chainConfig: {
   contractAddress: string;
   chainName: string;
 }): Promise<GlobalPlayer[]> {
+  // LitVM uses the hybrid seed+events loader instead of direct RPC
+  if (chainConfig.chain.id === 4441) {
+    try {
+      return await fetchLitvmLeaderboard()
+    } catch {
+      // fall through to the direct RPC path if hybrid loader fails
+    }
+  }
+
   const client = createPublicClient({
     chain: chainConfig.chain,
     transport: http(undefined, {
