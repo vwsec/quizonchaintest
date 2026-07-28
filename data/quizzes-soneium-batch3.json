@@ -10,19 +10,19 @@
     {
       "question": "Which token list does Soneium use as its reference for tokens deployed on Soneium?",
       "options": [
-        "Ethereum Mainnet Token List",
         "Optimism Superchain Token List",
+        "Ethereum Mainnet Token List",
         "Arbitrum Token List",
         "Base Token List"
       ],
-      "correctIndex": 1,
+      "correctIndex": 0,
       "id": 0
     },
     {
       "question": "What is a prerequisite for a token issuer to add their token to the Soneium Token List?",
       "options": [
-        "Deploy the ERC-20 on Soneium first",
         "Deploy the ERC-20 on Ethereum first",
+        "Deploy the ERC-20 on Soneium first",
         "Deploy the ERC-20 on Optimism first",
         "Deploy the ERC-20 on Arbitrum first"
       ],
@@ -32,8 +32,8 @@
     {
       "question": "How many steps are in the process to add a token to the Soneium Token List?",
       "options": [
-        "2 steps",
         "3 steps",
+        "2 steps",
         "4 steps",
         "5 steps"
       ],
@@ -43,8 +43,8 @@
     {
       "question": "What is the first step to add a token to the Soneium Token List?",
       "options": [
-        "Submit a PR to the GitHub repository",
         "Deploy the token on Soneium using standard bridge contracts",
+        "Submit a PR to the GitHub repository",
         "Await final approval from the Soneium team",
         "Deploy the token on Optimism Mainnet"
       ],
@@ -54,30 +54,30 @@
     {
       "question": "Which factory contract is recommended for deploying a token on Soneium via the standard bridge?",
       "options": [
-        "OptimismMintableERC20Factory",
-        "StandardBridgeTokenFactory",
         "SoneiumTokenFactory",
+        "StandardBridgeTokenFactory",
+        "OptimismMintableERC20Factory",
         "L1CrossDomainMessengerFactory"
       ],
-      "correctIndex": 0,
+      "correctIndex": 2,
       "id": 4
     },
     {
       "question": "What is the L1 address of the OptimismMintableERC20Factory on Soneium?",
       "options": [
-        "0x9cf951e3f74b644e621b36ca9cea147a78d4c39f",
-        "0xeb9bf100225c214efc3e7c651ebbadcf85177607",
         "0xc1047e30efc9e172cfe7aa0219895b6a43fc415f",
+        "0xeb9bf100225c214efc3e7c651ebbadcf85177607",
+        "0x9cf951e3f74b644e621b36ca9cea147a78d4c39f",
         "0x99c9fc46f92e8a1c0dec1b1747d010903e884be1"
       ],
-      "correctIndex": 2,
+      "correctIndex": 0,
       "id": 5
     },
     {
       "question": "What is the second step to add a token to the Soneium Token List?",
       "options": [
-        "Deploy the token on Soneium using standard bridge contracts",
         "Submit a PR to the GitHub repository with token details",
+        "Deploy the token on Soneium using standard bridge contracts",
         "Await final approval from the Soneium team",
         "Deploy the token on Ethereum Mainnet"
       ],
@@ -87,8 +87,8 @@
     {
       "question": "What information must be specified in the GitHub PR when submitting a token for the Soneium Token List?",
       "options": [
-        "Only the token name and symbol",
         "Specify 'soneium' and/or 'soneium-sepolia'",
+        "Only the token name and symbol",
         "Only the contract address on Ethereum",
         "Only the token decimals and total supply"
       ],
@@ -103,29 +103,29 @@
         "Within 1 week",
         "Within 2 weeks"
       ],
-      "correctIndex": 3,
+      "correctIndex": 1,
       "id": 8
     },
     {
       "question": "What is the third step in the 3-step process to add a token to the Soneium Token List?",
       "options": [
         "Deploy the token on Soneium using standard bridge contracts",
-        "Submit a PR to the GitHub repository with token details",
         "Await final approval from the Soneium team",
-        "Deploy the token on Ethereum Mainnet"
+        "Deploy the token on Ethereum Mainnet",
+        "Submit a PR to the GitHub repository with token details"
       ],
-      "correctIndex": 2,
+      "correctIndex": 1,
       "id": 9
     },
     {
       "question": "What is the L1StandardBridge address on Soneium?",
       "options": [
-        "0xc1047e30efc9e172cfe7aa0219895b6a43fc415f",
-        "0x9cf951e3f74b644e621b36ca9cea147a78d4c39f",
         "0xeb9bf100225c214efc3e7c651ebbadcf85177607",
+        "0x9cf951e3f74b644e621b36ca9cea147a78d4c39f",
+        "0xc1047e30efc9e172cfe7aa0219895b6a43fc415f",
         "0x99c9fc46f92e8a1c0dec1b1747d010903e884be1"
       ],
-      "correctIndex": 2,
+      "correctIndex": 0,
       "id": 10
     },
     {
@@ -143,11 +143,11 @@
       "question": "Which bridge contracts must be compatible with the standard bridge interface for Soneium deployment?",
       "options": [
         "Only L1StandardBridge",
-        "Only L1CrossDomainMessenger",
         "Both L1StandardBridge and L1CrossDomainMessenger",
-        "Only OptimismMintableERC20Factory"
+        "Only OptimismMintableERC20Factory",
+        "Only L1CrossDomainMessenger"
       ],
-      "correctIndex": 2,
+      "correctIndex": 1,
       "id": 12
     },
     {
@@ -155,17 +155,17 @@
       "options": [
         "Soneium Docs only",
         "Optimism Docs only",
-        "Superchain Bridges page",
-        "Ethereum Foundation website"
+        "Ethereum Foundation website",
+        "Superchain Bridges page"
       ],
-      "correctIndex": 2,
+      "correctIndex": 3,
       "id": 13
     },
     {
       "question": "Which network must a token be deployed on FIRST before adding to Soneium Token List?",
       "options": [
-        "Soneium Mainnet",
         "Ethereum Mainnet",
+        "Soneium Mainnet",
         "Optimism Mainnet",
         "Soneium Sepolia"
       ],
@@ -176,9 +176,9 @@
       "question": "What happens after submitting a PR to add a token to the Soneium Token List?",
       "options": [
         "Token is immediately added",
-        "Await final approval (24-72 hour review)",
+        "Sent to Optimism for approval",
         "Automatically deployed to Soneium",
-        "Sent to Optimism for approval"
+        "Await final approval (24-72 hour review)"
       ],
       "correctIndex": 3,
       "id": 15
@@ -187,22 +187,22 @@
       "question": "What network identifiers must be specified in the GitHub PR for Soneium Token List?",
       "options": [
         "'ethereum' and 'optimism'",
-        "'soneium' and/or 'soneium-sepolia'",
+        "'mainnet' and 'testnet' only",
         "'base' and 'arbitrum'",
-        "'mainnet' and 'testnet' only"
+        "'soneium' and/or 'soneium-sepolia'"
       ],
-      "correctIndex": 0,
+      "correctIndex": 3,
       "id": 16
     },
     {
       "question": "The OptimismMintableERC20Factory is deployed on which layer?",
       "options": [
         "L2 (Soneium)",
-        "L1 (Ethereum)",
+        "Optimism Mainnet only",
         "Both L1 and L2",
-        "Optimism Mainnet only"
+        "L1 (Ethereum)"
       ],
-      "correctIndex": 1,
+      "correctIndex": 3,
       "id": 17
     },
     {
@@ -224,7 +224,7 @@
         "Within 72 hours",
         "Within 1 week"
       ],
-      "correctIndex": 3,
+      "correctIndex": 2,
       "id": 19
     },
     {
@@ -242,33 +242,33 @@
       "question": "What bridge standard does Soneium use for token deployment?",
       "options": [
         "Custom Soneium Bridge",
-        "Optimism Standard Bridge",
         "Arbitrum Bridge",
+        "Optimism Standard Bridge",
         "Polygon Bridge"
       ],
-      "correctIndex": 1,
+      "correctIndex": 2,
       "id": 21
     },
     {
       "question": "Where is the Superchain Token List hosted that Soneium references?",
       "options": [
         "Soneium GitHub repository",
-        "Optimism GitHub repository (Superchain)",
         "Ethereum Foundation GitHub",
+        "Optimism GitHub repository (Superchain)",
         "CoinGecko API"
       ],
-      "correctIndex": 1,
+      "correctIndex": 2,
       "id": 22
     },
     {
       "question": "What must a token issuer do before submitting a PR for Soneium Token List?",
       "options": [
         "Get listed on CoinGecko",
-        "Deploy token on Soneium using standard bridge",
+        "Have 1000+ holders on Ethereum",
         "Audit by Trail of Bits",
-        "Have 1000+ holders on Ethereum"
+        "Deploy token on Soneium using standard bridge"
       ],
-      "correctIndex": 0,
+      "correctIndex": 3,
       "id": 23
     },
     {
@@ -286,11 +286,11 @@
       "question": "Which step comes FIRST in the 3-step token listing process?",
       "options": [
         "Submit GitHub PR",
-        "Deploy on Soneium via standard bridge",
         "Await approval",
-        "Get Optimism approval"
+        "Get Optimism approval",
+        "Deploy on Soneium via standard bridge"
       ],
-      "correctIndex": 0,
+      "correctIndex": 2,
       "id": 25
     },
     {
@@ -301,7 +301,7 @@
         "Within 72 hours",
         "Within 1 week"
       ],
-      "correctIndex": 3,
+      "correctIndex": 0,
       "id": 26
     },
     {
@@ -330,20 +330,20 @@
       "question": "Where do you submit the PR to add a token to the Soneium Token List?",
       "options": [
         "Soneium Discord",
-        "Soneium GitHub repository",
+        "Ethereum Magicians forum",
         "Optimism Discord",
-        "Ethereum Magicians forum"
+        "Soneium GitHub repository"
       ],
-      "correctIndex": 0,
+      "correctIndex": 3,
       "id": 29
     },
     {
       "question": "What happens if a token is NOT deployed via the standard bridge on Soneium?",
       "options": [
         "It will be automatically bridged",
-        "It cannot be added to the Soneium Token List",
+        "It will use a different bridge",
         "It will be added with a warning",
-        "It will use a different bridge"
+        "It cannot be added to the Soneium Token List"
       ],
       "correctIndex": 3,
       "id": 30
@@ -352,22 +352,22 @@
       "question": "Which network's token list serves as the reference for Soneium?",
       "options": [
         "Ethereum",
-        "Optimism Superchain",
+        "Arbitrum",
         "Base",
-        "Arbitrum"
+        "Optimism Superchain"
       ],
-      "correctIndex": 0,
+      "correctIndex": 3,
       "id": 31
     },
     {
       "question": "The OptimismMintableERC20Factory address 0xc1047e30efc9e172cfe7aa0219895b6a43fc415f is on which network?",
       "options": [
         "Soneium L2",
-        "Ethereum L1",
+        "Base L2",
         "Optimism L2",
-        "Base L2"
+        "Ethereum L1"
       ],
-      "correctIndex": 1,
+      "correctIndex": 3,
       "id": 32
     },
     {
@@ -378,29 +378,29 @@
         "Only token symbol",
         "Marketing materials"
       ],
-      "correctIndex": 3,
+      "correctIndex": 0,
       "id": 33
     },
     {
       "question": "How many standard bridge contracts are referenced for Soneium?",
       "options": [
         "1 (only L1StandardBridge)",
-        "2 (L1StandardBridge and L1CrossDomainMessenger)",
         "3 (including OptimismMintableERC20Factory)",
+        "2 (L1StandardBridge and L1CrossDomainMessenger)",
         "4 (including L2 bridges)"
       ],
-      "correctIndex": 2,
+      "correctIndex": 1,
       "id": 34
     },
     {
       "question": "What is the role of L1StandardBridge in Soneium token deployment?",
       "options": [
         "Mint tokens on L2",
-        "Handle cross-domain messages",
         "Standard bridge for token deposits/withdrawals",
+        "Handle cross-domain messages",
         "Factory for ERC20 deployment"
       ],
-      "correctIndex": 2,
+      "correctIndex": 1,
       "id": 35
     },
     {
@@ -444,7 +444,7 @@
         "Yes, if approved by Soneium team",
         "Only for stablecoins"
       ],
-      "correctIndex": 3,
+      "correctIndex": 1,
       "id": 39
     },
     {
@@ -477,7 +477,7 @@
         "'soneium' and/or 'soneium-sepolia'",
         "Any EVM network"
       ],
-      "correctIndex": 3,
+      "correctIndex": 2,
       "id": 42
     },
     {
@@ -488,7 +488,7 @@
         "72 hours",
         "1 week"
       ],
-      "correctIndex": 3,
+      "correctIndex": 2,
       "id": 43
     },
     {
@@ -532,7 +532,7 @@
         "Token market cap",
         "Number of holders"
       ],
-      "correctIndex": 3,
+      "correctIndex": 1,
       "id": 47
     },
     {
