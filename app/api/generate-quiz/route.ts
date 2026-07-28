@@ -25,12 +25,6 @@ const MAX_URLS_TO_TRY = 6
 const JINA_PREFIX = "https://r.jina.ai/"
 const FETCH_TIMEOUT_MS = 8_000
 const FETCH_DELAY_MS = 300
-// --- Groq config ---
-const GROQ_API_ENDPOINT = "https://api.groq.com/openai/v1/chat/completions"
-const GROQ_MODEL = "llama-3.1-8b-instant"
-const GROQ_MAX_TOKENS = 2048
-const GROQ_TIMEOUT_MS = 30_000
-const GROQ_PING_TIMEOUT_MS = 5_000
 
 const TOPIC_ANGLES = [
   "consensus mechanisms",
@@ -541,114 +535,6 @@ function getFallbackQuestions(ecosystemName: "Ink" | "Soneium" | "Base" | "Unich
       correctIndex: 0,
     },
   ]
-}
-
-/** Dynamically discover all configured GROQ_API_KEY_{N} env vars (no hardcoded limit). */
-function discoverGroqKeys(): string[] {
-  const keys: string[] = []
-  for (const [name, value] of Object.entries(process.env)) {
-    if (name.startsWith("GROQ_API_KEY_") && value && value.length > 10) {
-      keys.push(value)
-    }
-  }
-  return keys
-}
-
-/** Ping a single API key with a tiny request to check it's healthy. */
-async function pingKey(apiKey: string, timeoutMs: number): Promise<boolean> {
-  try {
-    const response = await fetch(GROQ_API_ENDPOINT, {
-      method: "POST",
-      headers: { Authorization: `Bearer ${apiKey}`, "Content-Type": "application/json" },
-      body: JSON.stringify({
-        model: GROQ_MODEL,
-        messages: [{ role: "user", content: "ok" }],
-        max_tokens: 1,
-      }),
-      signal: AbortSignal.timeout(timeoutMs),
-    })
-    return response.ok
-  } catch {
-    return false
-  }
-}
-
-/**
- * Ping all Groq API keys in parallel (short timeout), pick the first healthy one,
- * then generate the full response on that key.
- * Keys are discovered dynamically — add GROQ_API_KEY_4, _5, … with zero code changes.
- */
-async function generateWithGroq(
-  messages: { role: "system" | "user"; content: string }[],
-  model: string = GROQ_MODEL,
-  timeoutMs: number = GROQ_TIMEOUT_MS,
-): Promise<string> {
-  const allKeys = discoverGroqKeys()
-  if (allKeys.length === 0) {
-    throw new Error("No Groq API keys configured. Add GROQ_API_KEY_1 (or _2, _3, …) to .env.local")
-  }
-
-  // Phase 1 — ping all keys in parallel with short timeout
-  const pingResults = await Promise.all(
-    allKeys.map((key) => pingKey(key, GROQ_PING_TIMEOUT_MS)),
-  )
-
-  const workingKeys = allKeys.filter((_, i) => pingResults[i])
-  if (workingKeys.length === 0) {
-    throw new Error("All Groq API keys failed health check — using fallback questions")
-  }
-
-  console.log(
-    `[generate-quiz] ${workingKeys.length}/${allKeys.length} keys healthy — trying sequentially on failure`,
-  )
-
-  // Phase 2 — try each working key sequentially
-  const errors: string[] = []
-  for (const apiKey of workingKeys) {
-    try {
-      const response = await fetch(GROQ_API_ENDPOINT, {
-        method: "POST",
-        headers: { Authorization: `Bearer ${apiKey}`, "Content-Type": "application/json" },
-        body: JSON.stringify({
-          model,
-          messages,
-          max_tokens: GROQ_MAX_TOKENS,
-          temperature: 1.0,
-          response_format: { type: "json_object" },
-        }),
-        signal: AbortSignal.timeout(timeoutMs),
-      })
-
-      if (!response.ok) {
-        const errorBody = await response.text().catch(() => "")
-        errors.push(`HTTP ${response.status}`)
-        console.warn(`[generate-quiz] Key #${allKeys.indexOf(apiKey) + 1} failed: HTTP ${response.status} ${errorBody.slice(0, 100)}`)
-        continue
-      }
-
-      const data = (await response.json()) as { choices: { message: { content: string } }[] }
-      const content = data.choices?.[0]?.message?.content
-      if (!content) {
-        errors.push("empty response")
-        console.warn(`[generate-quiz] Key #${allKeys.indexOf(apiKey) + 1} returned empty content`)
-        continue
-      }
-
-      console.log(`[generate-quiz] Generated on key #${allKeys.indexOf(apiKey) + 1}`)
-      return content
-    } catch (err) {
-      const msg = err instanceof Error ? err.message : String(err)
-      errors.push(msg)
-      // Timeout of a single key is expected during rotation — don't log loudly
-      if (!msg.toLowerCase().includes("timeout") && !msg.toLowerCase().includes("abort")) {
-        console.warn(`[generate-quiz] Key #${allKeys.indexOf(apiKey) + 1} error: ${msg}`)
-      }
-      continue
-    }
-  }
-
-  // All working keys exhausted
-  throw new Error(`All ${workingKeys.length} working keys failed: ${errors.join("; ")}`)
 }
 
 // ──────────────────────────────────────────────
