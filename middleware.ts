@@ -10,11 +10,28 @@ const ALLOWED_ORIGINS = [
   'https://app.startale.com',
 ]
 
+// ponytail: common crawlers, expand if a real user reports being blocked
+const BLOCKED_BOT_PATTERNS = [
+  'googlebot', 'bingbot', 'slurp', 'duckduckbot', 'baiduspider',
+  'yandexbot', 'facebookexternalhit', 'twitterbot', 'rogerbot',
+  'linkedinbot', 'embedly', 'quora link preview', 'showyoubot',
+  'outbrain', 'pinterest', 'slackbot', 'vkshare', 'w3c_validator',
+  'python-requests', 'python-urllib', 'go-http-client', 'curl',
+  'wget', 'scrapy', 'semrush', 'ahrefsbot', 'dotbot', 'mj12bot',
+]
+
 function isAllowed(value: string): boolean {
   return ALLOWED_ORIGINS.some((allowed) => value.replace(/\/$/, "") === allowed)
 }
 
 export function middleware(request: NextRequest) {
+  const ua = (request.headers.get('user-agent') ?? '').toLowerCase()
+  for (const pattern of BLOCKED_BOT_PATTERNS) {
+    if (ua.includes(pattern)) {
+      return new NextResponse(null, { status: 444 })
+    }
+  }
+
   const origin = request.headers.get('origin')
   const referer = request.headers.get('referer')
 
@@ -32,5 +49,5 @@ export function middleware(request: NextRequest) {
 }
 
 export const config = {
-  matcher: ['/api/sign-score', '/api/telegram'],
+  matcher: ['/api/:path*'],
 }
