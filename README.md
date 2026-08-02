@@ -80,7 +80,7 @@ to mint an exclusive NFT.
 - **Framework**: Next.js 15 (App Router), React 19
 - **Wallet**: RainbowKit 2.2.11, wagmi v3, viem 2.49.0
 - **Smart Contracts**: Solidity ^0.8.20, OpenZeppelin ^5.6.1, Hardhat ^2.28
-- **Quiz Generation**: Gemini SDK (gemini-3.1-flash-lite), Jina Reader
+- **Quiz Generation**: Pool-first — pre-generated verified questions per chain (`data/quizzes-*.json`), sequential per-wallet progress in Redis
 - **Answer Security**: JWT (jose) — correct answers stored in signed token
 - **Score Security**: ECDSA trusted signer pattern
 - **Styling**: Tailwind CSS v4, shadcn/ui, Lucide React
@@ -102,7 +102,6 @@ to mint an exclusive NFT.
 ## Environment Variables
 ```env
 # AI & Quiz
-GEMINI_API_KEY=                     # Google AI Studio API key (gemini-3.1-flash-lite)
 QUIZ_JWT_SECRET=                     # HMAC secret for signing quiz JWT tokens (jose)
 QUIZ_SIGNER_PRIVATE_KEY=             # ECDSA private key for on-chain score signatures
 SIGNER_PRIVATE_KEY=                  # Fallback for QUIZ_SIGNER_PRIVATE_KEY

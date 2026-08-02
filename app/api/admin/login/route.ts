@@ -1,7 +1,10 @@
 import { NextResponse } from "next/server"
 import { createSession, makeSessionCookie, getSession } from "@/lib/admin-session"
 
-const ADMIN_PASSWORD = process.env.ADMIN_PASSWORD || "123456789"
+const ADMIN_PASSWORD = process.env.ADMIN_PASSWORD
+if (!ADMIN_PASSWORD) {
+  throw new Error("ADMIN_PASSWORD is not set. Configure it in your environment variables.")
+}
 
 export async function POST(request: Request) {
   let body: { password?: string }

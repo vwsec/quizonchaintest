@@ -3,58 +3,11 @@ export const maxDuration = 60
 
 import { NextResponse } from "next/server"
 import { SignJWT } from "jose"
-import {
-  BASE_DOCS_PAGES,
-  INK_DOCS_PAGES,
-  SONEIUM_DOCS_PAGES,
-  UNICHAIN_DOCS_PAGES,
-  MEGAETH_DOCS_PAGES,
-  LITVM_DOCS_PAGES,
-  ARC_DOCS_PAGES,
-} from "@/lib/docsPages"
 import { z } from "zod"
 import fs from "fs"
 import path from "path"
 import { getEcosystem, getPoolFileKey, type PoolData } from "@/lib/quiz-data"
 import { getWalletProgress } from "@/lib/redis"
-
-const TARGET_CHARS = 3000
-const MIN_COMBINED_CHARS = 800
-const MIN_URL_TEXT_CHARS = 200
-const MAX_URLS_TO_TRY = 6
-const JINA_PREFIX = "https://r.jina.ai/"
-const FETCH_TIMEOUT_MS = 8_000
-const FETCH_DELAY_MS = 300
-
-const TOPIC_ANGLES = [
-  "consensus mechanisms",
-  "tokenomics",
-  "developer tooling",
-  "bridge architecture",
-  "account abstraction",
-  "gas model",
-  "governance",
-  "block explorer features",
-] as const
-
-const questionHistoryCache = new Map<string, string[]>()
-const MAX_CACHE_PER_ECOSYSTEM = 50
-
-const ECOSYSTEM_ALIASES: Record<string, string[]> = {
-  "litvm": ["litvm", "liteforge", "arbitrum"],
-  "megaeth": ["megaeth", "megath"],
-  "arc testnet": ["arc"],
-  "ink": ["ink"],
-  "soneium": ["soneium"],
-  "base": ["base"],
-  "unichain": ["unichain"],
-}
-
-const FORBIDDEN_IN_OPTIONS = [
-  'soneium', 'ink', 'base', 'unichain', 'megaeth', 'megath',
-  'arbitrum', 'optimism', 'polygon', 'solana', 'avalanche',
-  'litvm', 'liteforge', 'arc',
-]
 
 const MAX_BODY_BYTES = 10 * 1024
 
@@ -69,8 +22,6 @@ const quizItemSchema = z.object({
   options: z.array(z.string().min(1)).length(4),
   correctIndex: z.number().int().min(0).max(3),
 })
-
-const quizArraySchema = z.array(quizItemSchema).length(5)
 type ServerQuestion = z.infer<typeof quizItemSchema>
 type PublicQuestion = { id: number; question: string; options: string[]; correctIndex: number }
 const QUIZ_TOKEN_TTL_SECONDS = 15 * 60
@@ -156,129 +107,6 @@ function shuffleOptions<T extends { options: readonly string[]; correctIndex: nu
   return { ...question, options: shuffled, correctIndex: newCorrectIndex }
 }
 
-function sleep(ms: number) {
-  return new Promise((resolve) => setTimeout(resolve, ms))
-}
-
-async function fetchViaJinaReader(docUrl: string): Promise<string> {
-  const jinaUrl = `${JINA_PREFIX}${docUrl}`
-  const ctrl = new AbortController()
-  const timer = setTimeout(() => ctrl.abort(), FETCH_TIMEOUT_MS)
-  try {
-    const res = await fetch(jinaUrl, {
-      signal: ctrl.signal,
-      headers: {
-        Accept: "text/plain,text/markdown,*/*",
-      },
-    })
-    if (!res.ok) {
-      throw new Error(`Jina Reader HTTP ${res.status}`)
-    }
-    return await res.text()
-  } finally {
-    clearTimeout(timer)
-  }
-}
-
-function isValidContent(text: string): boolean {
-  if (text.length < 800) return false;
-  const badSignals = ['404', 'not found', 'redirects to', 'page not found', 'access denied', 'login required', 'javascript required'];
-  const lowerText = text.toLowerCase();
-  const badCount = badSignals.filter(s => lowerText.includes(s)).length;
-  return badCount < 2;
-}
-
-function isValidQuestion(q: ServerQuestion): boolean {
-  const badPhrases = ['url', '404', 'page not found', 'accessing', 'result of visiting', 'result when trying', 'navigate to', 'click on'];
-  const questionLower = q.question.toLowerCase();
-  return !badPhrases.some(p => questionLower.includes(p));
-}
-
-function hasContaminatedOptions(question: ServerQuestion, currentEcosystem: string): boolean {
-  const ecosystemLower = currentEcosystem.toLowerCase()
-  const aliases = ECOSYSTEM_ALIASES[ecosystemLower] ?? [ecosystemLower]
-  return question.options.some(option => {
-    const optionLower = option.toLowerCase()
-    return FORBIDDEN_IN_OPTIONS.some(forbidden => {
-      const isSelfReference = aliases.some(alias => forbidden === alias || forbidden.includes(alias) || alias.includes(forbidden))
-      if (isSelfReference) return false
-      return optionLower.includes(forbidden)
-    })
-  })
-}
-
-function trimCorpus(text: string, maxChars: number): string {
-  const collapsed = text.replace(/\s+/g, " ").trim()
-  if (collapsed.length <= maxChars) return collapsed
-  const start = Math.floor(Math.random() * Math.max(1, collapsed.length - maxChars))
-  return collapsed.slice(start, start + maxChars)
-}
-
-function normalizeQuestion(q: string): string {
-  return q.toLowerCase().replace(/[^\w\s]/g, "").trim()
-}
-
-function parseModelJson(raw: string): unknown {
-  const trimmed = raw.trim()
-  const fenced =
-    /^```(?:json)?\s*([\s\S]*?)```/m.exec(trimmed)?.[1]?.trim() ?? null
-  const candidate = fenced ?? trimmed
-  try {
-    return JSON.parse(candidate)
-  } catch {
-    const bracketStart = candidate.indexOf("[")
-    const bracketEnd = candidate.lastIndexOf("]")
-    if (bracketStart >= 0 && bracketEnd > bracketStart) {
-      return JSON.parse(candidate.slice(bracketStart, bracketEnd + 1))
-    }
-    const objStart = candidate.indexOf("{")
-    const objEnd = candidate.lastIndexOf("}")
-    if (objStart >= 0 && objEnd > objStart) {
-      return JSON.parse(candidate.slice(objStart, objEnd + 1))
-    }
-    throw new Error("Model response was not valid JSON")
-  }
-}
-
-function toValidatedQuizArray(parsed: unknown) {
-  if (Array.isArray(parsed)) {
-    return quizArraySchema.parse(parsed)
-  }
-  if (
-    parsed &&
-    typeof parsed === "object" &&
-    "questions" in parsed &&
-    Array.isArray((parsed as { questions: unknown }).questions)
-  ) {
-    return quizArraySchema.parse((parsed as { questions: unknown }).questions)
-  }
-  throw new Error("Expected a JSON array of 5 questions or { questions: [...] }")
-}
-
-function validateQuestions(data: unknown): ServerQuestion[] {
-  if (!Array.isArray(data)) throw new Error("Invalid response")
-  if (data.length !== 5) throw new Error("Wrong question count")
-  return data.map((q, i) => {
-    if (!q || typeof q !== "object") throw new Error(`Q${i}: invalid question`)
-    const maybe = q as { question?: unknown; options?: unknown; correctIndex?: unknown }
-    if (typeof maybe.question !== "string") throw new Error(`Q${i}: invalid question`)
-    if (!Array.isArray(maybe.options) || maybe.options.length !== 4) {
-      throw new Error(`Q${i}: invalid options`)
-    }
-    if (
-      typeof maybe.correctIndex !== "number" ||
-      maybe.correctIndex < 0 ||
-      maybe.correctIndex > 3
-    ) {
-      throw new Error(`Q${i}: invalid answer`)
-    }
-    return {
-      question: maybe.question,
-      options: maybe.options.map((opt) => String(opt)),
-      correctIndex: maybe.correctIndex,
-    }
-  })
-}
 
 async function signQuizToken(
   chainId: number | null,

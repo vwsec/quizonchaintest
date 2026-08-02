@@ -1,8 +1,10 @@
 import { SignJWT, jwtVerify } from "jose"
 
-const SESSION_SECRET = new TextEncoder().encode(
-  process.env.QUIZ_JWT_SECRET || process.env.ADMIN_PASSWORD || "dev-fallback-only",
-)
+const secret = process.env.QUIZ_JWT_SECRET
+if (!secret) {
+  throw new Error("QUIZ_JWT_SECRET is not set. Configure it in your environment variables.")
+}
+const SESSION_SECRET = new TextEncoder().encode(secret)
 const COOKIE_NAME = "admin_session"
 const COOKIE_MAX_AGE = 60 * 60 * 24 // 24 hours
 

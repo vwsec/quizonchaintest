@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useCallback, useRef } from 'react'
 import { sendTelegramMessage, formatTxAlertMessage } from '@/lib/telegram'
-import { getTxPrimaryType } from '@/components/bubble-explorer'
+import { getTxPrimaryType } from '@/lib/explorer-config'
 import { toast } from 'sonner'
 
 interface NativeCurrencyInfo {
