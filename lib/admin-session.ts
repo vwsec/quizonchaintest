@@ -1,10 +1,14 @@
 import { SignJWT, jwtVerify } from "jose"
 
-const secret = process.env.QUIZ_JWT_SECRET
-if (!secret) {
-  throw new Error("QUIZ_JWT_SECRET is not set. Configure it in your environment variables.")
+// Lazy getter: env checks run at request time, not module scope,
+// so `next build` (which imports every route) works without secrets.
+function getSessionSecret(): Uint8Array {
+  const secret = process.env.QUIZ_JWT_SECRET
+  if (!secret) {
+    throw new Error("QUIZ_JWT_SECRET is not set. Configure it in your environment variables.")
+  }
+  return new TextEncoder().encode(secret)
 }
-const SESSION_SECRET = new TextEncoder().encode(secret)
 const COOKIE_NAME = "admin_session"
 const COOKIE_MAX_AGE = 60 * 60 * 24 // 24 hours
 
@@ -13,7 +17,7 @@ export async function createSession(): Promise<string> {
     .setProtectedHeader({ alg: "HS256" })
     .setIssuedAt()
     .setExpirationTime(`${COOKIE_MAX_AGE}s`)
-    .sign(SESSION_SECRET)
+    .sign(getSessionSecret())
 }
 
 export function makeSessionCookie(token: string): string {
@@ -32,7 +36,7 @@ export async function getSession(request: Request): Promise<boolean> {
   const match = cookie.match(new RegExp(`(?:^|;\\s*)${COOKIE_NAME}=([^;]*)`))
   if (!match) return false
   try {
-    const { payload } = await jwtVerify(match[1], SESSION_SECRET)
+    const { payload } = await jwtVerify(match[1], getSessionSecret())
     return payload.role === "admin" && payload.t === "admin-session"
   } catch {
     return false

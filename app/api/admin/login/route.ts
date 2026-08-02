@@ -1,12 +1,12 @@
 import { NextResponse } from "next/server"
 import { createSession, makeSessionCookie, getSession } from "@/lib/admin-session"
 
-const ADMIN_PASSWORD = process.env.ADMIN_PASSWORD
-if (!ADMIN_PASSWORD) {
-  throw new Error("ADMIN_PASSWORD is not set. Configure it in your environment variables.")
-}
-
 export async function POST(request: Request) {
+  const adminPassword = process.env.ADMIN_PASSWORD
+  if (!adminPassword) {
+    return NextResponse.json({ error: "ADMIN_PASSWORD is not set. Configure it in your environment variables." }, { status: 500 })
+  }
+
   let body: { password?: string }
   try {
     body = await request.json()
@@ -14,7 +14,7 @@ export async function POST(request: Request) {
     return NextResponse.json({ error: "Invalid JSON" }, { status: 400 })
   }
 
-  if (body.password !== ADMIN_PASSWORD) {
+  if (body.password !== adminPassword) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 })
   }
 
