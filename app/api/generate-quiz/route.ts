@@ -568,6 +568,12 @@ async function handleGenerateQuiz(
     )
   }
 
+  // Anonymous responses (no wallet) are a random pick from a static pool — edge-cache
+  // for a minute. Address-bound responses hold a per-user JWT/startIndex, stay no-store.
+  const responseHeaders = address
+    ? headers
+    : { ...headers, "Cache-Control": "public, s-maxage=60, stale-while-revalidate=300" }
+
   // Try pool first
   const poolData = loadPool(ecosystem)
   if (poolData && poolData.quizzes.length >= 5) {
@@ -590,7 +596,7 @@ async function handleGenerateQuiz(
         shuffled,
         [],
         false,
-        headers,
+        responseHeaders,
         ecosystem,
         address,
         startIndex,
@@ -604,7 +610,7 @@ async function handleGenerateQuiz(
       items,
       [],
       false,
-      headers,
+      responseHeaders,
       ecosystem,
     )
   }
@@ -616,7 +622,7 @@ async function handleGenerateQuiz(
     getFallbackQuestions(ecosystem as any),
     [],
     true,
-    headers,
+    responseHeaders,
     ecosystem,
   )
 }

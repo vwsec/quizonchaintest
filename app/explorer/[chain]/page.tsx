@@ -1,6 +1,9 @@
 import BubbleExplorer from '@/components/bubble-explorer';
 import { redirect } from 'next/navigation';
 
+// Static shell, data loads client-side. ISR: at most one server render per URL per hour.
+export const revalidate = 3600
+
 interface ExplorerPageProps {
   params: Promise<{ chain: string }>;
 }

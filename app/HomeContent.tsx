@@ -222,34 +222,22 @@ function QuizApp() {
     setScreen("quiz")
   }
 
-  const handleQuizComplete = async (answers: number[]) => {
+  const handleQuizComplete = (answers: number[]) => {
     if (!quizToken) {
       setQuizError("Quiz session expired. Please shuffle and try again.")
       setScreen("home")
       return
     }
-    try {
-      const body = { quizToken, answers }
-      const res = await fetch("/api/verify-quiz", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(body),
-      })
-      if (!res.ok) {
-        const text = await res.text()
-        throw new Error(`Quiz API error ${res.status}: ${text.slice(0, 200)}`)
-      }
-      const data = (await res.json()) as { score?: number; error?: string }
-      if (typeof data.score !== "number") {
-        throw new Error(data.error ?? "Failed to verify quiz answers")
-      }
-      setFinalScore(data.score)
-      setUserAnswers(answers)
-      setScreen("results")
-    } catch (e) {
-      setQuizError(e instanceof Error ? e.message : "Failed to verify quiz answers")
-      setScreen("home")
-    }
+    // correctIndex is exposed in the questions payload and sign-score re-verifies
+    // server-side at submission — so score locally and skip the /api/verify-quiz
+    // round trip (one fewer serverless invocation per quiz).
+    const score = answers.reduce(
+      (acc, ans, i) => acc + (ans === questions[i]?.correctIndex ? 1 : 0),
+      0,
+    )
+    setFinalScore(score)
+    setUserAnswers(answers)
+    setScreen("results")
   }
 
   const handleRestart = () => {

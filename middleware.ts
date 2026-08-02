@@ -11,7 +11,7 @@ const ALLOWED_ORIGINS = [
   'https://app.startale.com',
 ]
 
-// ponytail: common crawlers, expand if a real user reports being blocked
+// ponytail: common crawlers + AI-crawler wave (they send no Origin/Referer, so UA is the only cheap filter); expand if a real user reports being blocked
 const BLOCKED_BOT_PATTERNS = [
   'googlebot', 'bingbot', 'slurp', 'duckduckbot', 'baiduspider',
   'yandexbot', 'facebookexternalhit', 'twitterbot', 'rogerbot',
@@ -19,6 +19,12 @@ const BLOCKED_BOT_PATTERNS = [
   'outbrain', 'pinterest', 'slackbot', 'vkshare', 'w3c_validator',
   'python-requests', 'python-urllib', 'go-http-client', 'curl',
   'wget', 'scrapy', 'semrush', 'ahrefsbot', 'dotbot', 'mj12bot',
+  // AI crawlers + scrapers (2024-2026 wave)
+  'gptbot', 'chatgpt-user', 'claudebot', 'anthropic-ai', 'perplexitybot',
+  'bytespider', 'ccbot', 'amazonbot', 'meta-externalagent',
+  'meta-externalfetcher', 'applebot', 'petalbot', 'cohere-ai', 'omgili',
+  'imagesiftbot', 'seekrbot', 'youbot', 'dataforseo', 'zoominfobot',
+  'diffbot', 'headlesschrome', 'phantomjs',
 ]
 
 function isAllowed(value: string): boolean {

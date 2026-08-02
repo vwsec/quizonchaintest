@@ -2,6 +2,9 @@ import BubbleExplorer from '@/components/bubble-explorer';
 import { redirect } from 'next/navigation';
 import { ExplorerBackButton } from '@/components/explorer-back-button';
 
+// Static shell, data loads client-side. ISR: at most one server render per URL per hour.
+export const revalidate = 3600
+
 interface SubExplorerPageProps {
   params: Promise<{ chain: string; address: string }>;
 }
