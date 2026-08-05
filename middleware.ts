@@ -6,6 +6,7 @@ const ALLOWED_ORIGINS = [
   'https://www.quizonchain.app',
   'https://quizonchaintest.vercel.app',
   'https://quizonchain0.vercel.app',
+  'https://quizonchain1.vercel.app',
   'http://localhost:3000',
   'http://localhost:3100',
   'https://app.startale.com',
