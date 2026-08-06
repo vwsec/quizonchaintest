@@ -47,8 +47,12 @@ export function middleware(request: NextRequest) {
     return NextResponse.json({ error: 'Forbidden' }, { status: 403 })
   }
   if (referer) {
-    const refUrl = referer.replace(/\/$/, "")
-    if (!isAllowed(refUrl)) {
+    try {
+      const refOrigin = new URL(referer).origin
+      if (!isAllowed(refOrigin)) {
+        return NextResponse.json({ error: 'Forbidden' }, { status: 403 })
+      }
+    } catch {
       return NextResponse.json({ error: 'Forbidden' }, { status: 403 })
     }
   }
